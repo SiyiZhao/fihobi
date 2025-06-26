@@ -201,7 +201,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=Fal
 def get_edges(corr_type='smu', bin_type='lin'):
 
     if bin_type == 'log':
-        sedges = np.geomspace(0.01, 30, 41)
+        sedges = np.geomspace(0.01, 30., 41)
     elif bin_type == 'lin':
         sedges = np.linspace(0., 200, 201)
     else:
@@ -212,7 +212,7 @@ def get_edges(corr_type='smu', bin_type='lin'):
         if bin_type == 'lin':
             edges = (sedges, np.linspace(-40., 40, 101)) #transverse and radial separations are coded to be the same here
         else:
-            edges = (sedges, np.linspace(0, 32, 9))
+            edges = (sedges, np.linspace(-40., 40., 81))
     elif corr_type == 'theta':
         edges = (np.linspace(0., 4., 101),)
     else:
@@ -444,7 +444,7 @@ if __name__ == '__main__':
                                 rebinned.save_txt(fn_txt, wedges=(-1., -2./3, -1./3, 0., 1./3, 2./3, 1.))
                             elif corr_type == 'rppi':
                                 fn_txt = corr_fn(file_type='wp', **txt_kwargs)
-                                rebinned.save_txt(fn_txt, pimax=32.)
+                                rebinned.save_txt(fn_txt, pimax=40.)
                                 for pifac in pi_rebinning_factors:
                                     rebinned = result[:(result.shape[0]//factor)*factor:factor,:(result.shape[1]//pifac)*pifac:pifac]
                                     txt_kwargs.update(bin_type=args.bin_type+str(factor)+'_'+str(pifac))
@@ -458,7 +458,7 @@ if __name__ == '__main__':
                                 if corr_type == 'smu':
                                     sep, xis = rebinned(ells=(0, 2, 4), return_sep=True, return_std=False)
                                 elif corr_type == 'rppi':
-                                    sep, xis = rebinned(pimax=32, return_sep=True, return_std=False)
+                                    sep, xis = rebinned(pimax=40, return_sep=True, return_std=False)
                                 else:
                                     sep, xis = rebinned(return_sep=True, return_std=False)
                                 if args.bin_type == 'log':
