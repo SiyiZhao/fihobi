@@ -21,6 +21,8 @@ cd abacusutils
 pip install -U -e ./
 ```
 
+==Attention==: We modify the `class AbacusHOD` in `AbacusUtils` to speed up the `compute_multipole` method, which is used in the HOD fitting. The origional version return `[wp, xi_l]`, we delete the `wp` part. To directly use our fitting code, please `git clone` my repository of `AbacusUtils` (https://github.com/SiyiZhao/abacusutils.git).
+
 ### CorrFunc
 
 `AbacusUtils` uses `CorrFunc` to compute the correlation functions. [Corrfunc](https://github.com/manodeep/Corrfunc) can be easily installed by following the [guide in ReadMe](https://github.com/manodeep/Corrfunc?tab=readme-ov-file#method-1-source-installation-recommended).
@@ -30,11 +32,22 @@ I installed it into `$HOME/lib` and added the path to the enviroment variable `P
 export PYTHONPATH=$PYTHONPATH:$HOME/lib
 ```
 
+### dynesty
+
+In HOD fitting, we need `dynesty` for nested sampling. 
+It can be installed by
+```sh
+pip install dynesty
+pip install dill
+```
+
+`dill` is used to save and load the sampler.
+
 ## Works
 
 ### Mock generation & verification
 
-We first generate a mock using the `AbacusHOD` with the parameters shown in [Yuan et al. 2024](https://arxiv.org/abs/2306.06314) to verify our pipeline.
+We first generate a mock using the `AbacusHOD` with the parameters shown in [Yuan et al. 2024](https://arxiv.org/abs/2306.06314) to verify our pipeline. (Refer `run_mock.sh`.)
 
 Take LRG in $0.6<z<0.8$ as an example. 
 We take the simplest model "Zheng07+fic" in Table 3 of the paper. 
@@ -50,6 +63,24 @@ They use the log-midpoint of the bins as the $r_p$ values, so the comparison sho
 
 
 ### HOD fitting with Y3 data
+
+Then we fit the AbacusHOD model to the DESI Y3 data.
+
+We select the 'non-NAN' part of the clustering measurement, the s range is around 0.11-30 Mpc/h.
+
+Info of the galaxy samples: 
+- tracer: LRG
+- z range is 0.6-0.8.
+- fitting at the snapshot $z=0.8$ of `AbacusSummit`.
+
+The results resampled by `getdist` are shown in the figure below. 
+The posterior is kind of skewed, a possible reason is that there are randomness in the HOD model while we have not generated severval mocks for each point in parameter space and averaged them to supress the randomness. Anyway we try to use $w_p$ for fitting (as yuan+24 did) to see if things get better...
+
+![](plot/y3_getdist.png)
+
+The best fit clustering is shown in the figure below. Though we only fit with $\xi_0$, we also show $\xi_2$ for reference. 
+
+![](plot/xi0_xi2_comparison.png)
 
 
 

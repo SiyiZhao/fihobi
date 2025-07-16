@@ -6,7 +6,7 @@
 sim_params:
     sim_name: 'AbacusSummit_base_c000_ph000'                                 # which simulation
     sim_dir: /global/cfs/cdirs/desi/public/cosmosim/AbacusSummit/              # where is the simulation
-    output_dir: '/pscratch/sd/s/siyizhao/fihobi/mocks_yuan24_Tab3_Col4/'          # where to output galaxy mocks
+    output_dir: '/pscratch/sd/s/siyizhao/fihobi/HOD_fit_y3/'          # where to output galaxy mocks
     subsample_dir: '/pscratch/sd/s/siyizhao/fihobi/subsample/'                 # where to output subsample data
     z_mock: 0.8                                                              # which redshift slice
     cleaned_halos: True                                                     # load cleaned halos?
@@ -26,7 +26,7 @@ HOD_params:
         ELG: False
         QSO: False
     want_rsd: True                 # want RSD?
-    write_to_disk: True
+    write_to_disk: False
 
     # parameters for setting up the HOD of LRGs
     LRG_params:
@@ -93,21 +93,14 @@ HOD_params:
 
 # clustering parameters
 clustering_params:
-    power_type: 'wp'
-    # clustering_type: 'xirppi'
+    clustering_type: 'multipole' # Options: ``wp``, ``xirppi``, default: ``xirppi``.
     bin_params:
-        logmin: -1
+        logmin: -0.9568636
         logmax: 1.47712
-        nbins: 14
-    pimax: 30
-    pi_bin_size: 5
-    clustering_type: 'multipole'  # multipole clustering
-    sbin_params:
-        logmin: -0.7
-        logmax: 1.47712
-        nbins: 16
-    mu_bin_size: 5  # number of mu bins for multipole clustering
-
+        nbins: 28
+    pimax: 30 # not used for xi
+    pi_bin_size: 200 # actually mu bin size, the value refers to xirunpc.py 
+    # mu_bin_size: 200 
 
 # ===========================================================================================
 # The following dictionaries are for using the provided emcee/likelihood templates. They
@@ -116,13 +109,13 @@ clustering_params:
 # parameters that indicate where the observed data that you would like to fit live.
 data_params:
     tracer_density_mean:
-        LRG: 3.0103e-4 # (mpc/h)^-3
+        LRG: 5.282e-4 # (Mpc/h)^-3
     tracer_density_std:
-        LRG: 4.0e-5 # (mpc/h)^-3
+        LRG: 5.282e-5 # (Mpc/h)^-3
     tracer_combos:
         LRG_LRG:
-            path2power: '/mnt/marvin1/syuan/scratch/targets_xi/data_xi_target_standard.npz'
-            path2cov: '/mnt/marvin1/syuan/scratch/targets_xi/data_xi_cov_mock_div8.npz'
+            path2power: '/global/homes/s/siyizhao/data/Y3/loa-v1/hodfit/xipoles_LRG_GCcomb_0.6_0.8_pip_angular_bitwise_log_njack128_nran4_split20.txt'
+            path2cov: '/global/homes/s/siyizhao/data/Y3/loa-v1/hodfit/cov_xi0_LRG_GCcomb_0.6_0.8_pip_angular_bitwise_log_njack128_nran4_split20.npy'
 #       LRG_ELG:
 #            path2power: '/mnt/marvin1/syuan/scratch/targets_xi/data_xi_target_standard.npz'
 #            path2cov: '/mnt/marvin1/syuan/scratch/targets_xi/data_xi_cov_mock_div8.npz'
@@ -130,38 +123,25 @@ data_params:
 #            path2power: '/mnt/marvin1/syuan/scratch/targets_xi/data_xi_target_standard.npz'
 #            path2cov: '/mnt/marvin1/syuan/scratch/targets_xi/data_xi_cov_mock_div8.npz'
 
-# Parameters to be fitted in MCMC
-# [mapping_index, mean, min, max, std, tr_type]
-fit_params:
-    logM_cut: [0, 13.1, 12.5, 13.8, 0.03, 'LRG']
-    logM1: [1, 14.5, 13.5, 15.5, 0.3, 'LRG']
-    sigma: [2, 0.8, 0.1, 1.5, 0.3, 'LRG']
-    alpha: [3, 1.0, 0.7, 1.5, 0.2, 'LRG']
-    kappa: [4, 0.5, 0.0, 1.0, 0.25, 'LRG']
-
-
-# Configuration parameters for emcee
-ch_config_params:
-    path2output: chains/test
-    chainsPrefix: test
-    use_mpi: 0
-    rerun: 0
-    walkersRatio: 4
-    burninIterations: 2000
-    sampleIterations: 40000
 
 # params to be fit for dynesty
+# [mapping_index, mean, min, max, std, tr_type]
 dynesty_fit_params:
-    logM_cut: [0, 13.3, 0.2, 'LRG']
-    logM1: [1, 14.3, 0.2, 'LRG']
-    sigma: [2, 0.5, 0.2, 'LRG']
+    logM_cut: [0, 13.3, 12, 13.8, 1.0, 'LRG']
+    logM1: [1, 14.0, 12.5, 15.5, 1.0, 'LRG']
+    sigma: [2, 0.5, 0.0, 3.0, 0.5, 'LRG']
+    alpha: [3, 1.0, 0.0, 2.0, 0.5, 'LRG']
+    kappa: [4, 0.5, 0.0, 10.0, 0.5, 'LRG']
+    # alpha_c: [5, 0.4, 0.4, 'LRG']
+    # alpha_s: [6, 0.8, 0.4, 'LRG']
 
 # configuration parameter for dynesty
 dynesty_config_params:
-    path2output: dynesty/test
-    chainsPrefix: test
-    rerun: 0
-    nlive: 200
-    bound: 'multi'
+    path2output: /pscratch/sd/s/siyizhao/fihobi/HOD_fit_y3/dynesty
+    chainsPrefix: nest
+    rerun: 1
+    nlive: 500
+    rseed: 42
+    # bound: 'multi'
     method: 'unif'
-    maxcall: 10000
+    maxcall: 200000
