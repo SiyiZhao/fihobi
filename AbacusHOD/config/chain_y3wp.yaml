@@ -1,0 +1,18 @@
+path_chain: '../data/l/HOD_fit_y3wp/dynesty/test_results.npz'
+# path2config: 'config/lrg_y3wp.yaml' 
+path_info: 'output/y3wp.txt'
+path_plot_run : 'plot/y3wp_run.png'
+path_plot_trace : 'plot/y3wp_trace.png'
+path_plot_corner : 'plot/y3wp_corner.png'
+path_plot_getdist : 'plot/y3wp_getdist.png'
+path_hod : 'plot/hod_stat_y3wp.png'
+
+
+# ## input
+# path_chain = '../data/l/HOD_fit_yuan/dynesty/test_results.npz'
+# ## output
+# path_info = 'output/sv3.txt'
+# path_plot_run = 'plot/sv3_run.png'
+# path_plot_trace = 'plot/sv3_trace.png'
+# path_plot_corner = 'plot/sv3_corner.png'
+# path_plot_getdist = 'plot/sv3_getdist.png'
