@@ -104,7 +104,7 @@ def weighted_statistics(data, weights):
     return mean, hi68, lo68, hi95, lo95
 
 def plot_HOD_stat(samples, weights, path='hod_stat.png', logMcut=None):
-    'calculate HOD for each sample and plot the statistics of HOD results. TODO: add weight?'
+    'calculate HOD for each sample and plot the statistics of HOD results.'
     min_logM = 11
     max_logM = 15
     logM = np.linspace(min_logM, max_logM, 1000)

@@ -1,0 +1,7 @@
+path_chain: '../data/l/HOD_fit_y3xi02/dynesty/rwalk_results.npz'
+path_info: 'output/y3xi02.txt'
+path_plot_run : 'plot/y3xi02_run.png'
+path_plot_trace : 'plot/y3xi02_trace.png'
+path_plot_corner : 'plot/y3xi02_corner.png'
+path_plot_getdist : 'plot/y3xi02_getdist.png'
+path_hod : 'plot/hod_stat_y3xi02.png'

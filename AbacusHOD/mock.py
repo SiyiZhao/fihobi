@@ -58,7 +58,7 @@ def main(path2config):
 
     wp = newBall.compute_wp(mock_dict, rpbins, pimax, pi_bin_size, Nthread = Nthread)
     wp_LRG = wp['LRG_LRG']
-    np.savetxt(outdir + 'wp.txt', wp_LRG)
+    np.savetxt(outdir + 'wp_LRG.txt', wp_LRG)
 
     multipole = newBall.compute_multipole(
         mock_dict, sbins, nbins_mu, orders=[0,2], Nthread=Nthread

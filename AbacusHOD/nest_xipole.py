@@ -32,6 +32,7 @@ class ObsData:
         """Initialize with observed data and covariance matrix. Optional number density and its standard deviation."""
         self.data = data
         self.cov = cov
+        self.icov = np.linalg.inv(cov)  # inverse covariance matrix
         self.ngal = ngal
         self.ngal_std = ngal_std
 
@@ -48,8 +49,7 @@ class ObsData:
             
         # Here we assume a Gaussian likelihood for simplicity
         diff = self.data - theory_density['clustering']
-        inv_cov = np.linalg.inv(self.cov)
-        chi_clustering = np.dot(diff.T, np.dot(inv_cov, diff))
+        chi_clustering = np.dot(diff.T, np.dot(self.icov, diff))
         
         # total chi-squared
         chi = chi_clustering + chi_n
@@ -73,14 +73,14 @@ def lnprob(p, param_mapping, param_tracer, Data, Ball):
     # )
     # sbins = Ball.rpbins
     clustering = Ball.compute_multipole(
-        mock_dict, Ball.rpbins, Ball.pi_bin_size, orders=[0], Nthread=Nthread
+        mock_dict, Ball.rpbins, Ball.pi_bin_size, orders=[0, 2], Nthread=Nthread
     )
     
     NgalDict, FsatDict = Ball.compute_ngal(Ball.tracers, Nthread=Nthread)
     
     # nbins = Ball.nbins
     # theory_density['clustering'] = clustering['LRG_LRG'][nbins:nbins+nbins]  # xi0 in old AbacusHOD version
-    theory_density['clustering'] = clustering['LRG_LRG']  # xi0
+    theory_density['clustering'] = clustering['LRG_LRG']  # xi0,xi2
     boxV = Ball.lbox ** 3  # volume of the box in (Mpc/h)^3  
     theory_density['ngal'] = NgalDict['LRG'] / boxV
     lnP = Data.compute_likelihood(theory_density) 
@@ -112,6 +112,9 @@ def ReadData(data_params, HOD_params):
     data = np.loadtxt(path2power)
     # sep = data[:, 0]
     xi0 = data[:, 1]
+    xi2 = data[:, 2]
+    # data = xi0  # only monopole is used for HOD fitting
+    data = np.hstack((xi0, xi2))
     cov = np.load(path2cov)
     
     ## read the number density and its standard deviation
@@ -119,7 +122,7 @@ def ReadData(data_params, HOD_params):
     density_std = data_params['tracer_density_std']['LRG']
     
     ## define the reference data
-    RefData = ObsData(data=xi0, cov=cov, ngal=density_mean, ngal_std=density_std)
+    RefData = ObsData(data=data, cov=cov, ngal=density_mean, ngal_std=density_std)
     return RefData
 
 

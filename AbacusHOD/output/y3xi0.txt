@@ -1,0 +1,17 @@
+WARNING:root:outlier fraction 0.0021765746156985444 
+WARNING:root:fine_bins_2D not large enough for optimal density: logM_cut, kappa
+WARNING:root:fine_bins_2D not large enough for optimal density: logM1, kappa
+WARNING:root:fine_bins_2D not large enough for optimal density: sigma, kappa
+args: {'path2config': 'config/chain_y3xi0.yaml'}
+Summary
+=======
+nlive: 500
+niter: 10653
+ncall: 686401
+eff(%):  1.625
+logz: -84.334 +/-  0.586
+Max logl sample: [13.79811376 14.06650255  0.70010092  0.87194481  0.02107571]
+MAP: [13.79811376 14.06650255  0.70010092  0.87194481  0.02107571]
+Removed no burn in
+
+bestfit (maginolized 1D): 13.67 14.048 0.659 0.862 0.0328

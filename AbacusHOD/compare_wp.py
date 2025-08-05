@@ -4,20 +4,16 @@ import yaml
 from matplotlib import pyplot as plt
 
 # %%
-aHOD_dir = '/pscratch/sd/s/siyizhao/fihobi/mocks/'
-
-# %%
-wp = [1260.64041083,  827.44231474,  528.56093459,  330.29807753,
-        205.96155382,  133.72149709,   97.39522361,   73.80377416,
-         55.43015369,   40.43294778,   28.61688253,   19.2606093 ,
-         12.05349031,    6.7478916 ]
-
-# %%
 path2config = 'config/abacus_hod.yaml'
 config = yaml.safe_load(open(path2config))
 clustering_params = config['clustering_params']
 bin_params = clustering_params['bin_params']
 rpbins = np.logspace(bin_params['logmin'], bin_params['logmax'], bin_params['nbins']+1)
+
+# %%
+sim_params = config['sim_params']
+outdir = sim_params['output_dir']
+wp = np.loadtxt(outdir + 'wp_LRG_yuan24_Tab3_Col4.txt')
 
 # %%
 rpbin_mid = 0.5 * (rpbins[1:] + rpbins[:-1])
@@ -54,5 +50,6 @@ plt.xlim(0.1, 35)
 plt.ylim(110, 230)
 plt.legend()
 plt.savefig('plot/wp.png', dpi=300)
+print('Saved plot to plot/wp.png')
 
 

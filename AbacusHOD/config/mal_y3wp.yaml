@@ -6,7 +6,7 @@
 sim_params:
     sim_name: 'AbacusSummit_base_c000_ph000'                                 # which simulation
     sim_dir: /global/cfs/cdirs/desi/public/cosmosim/AbacusSummit/              # where is the simulation
-    output_dir: '/pscratch/sd/s/siyizhao/fihobi/mocks_y3_xi0_bestfit/'          # where to output galaxy mocks
+    output_dir: '/pscratch/sd/s/siyizhao/fihobi/mocks_mal_y3wp/'          # where to output galaxy mocks
     subsample_dir: '/pscratch/sd/s/siyizhao/fihobi/subsample/'                 # where to output subsample data
     z_mock: 0.8                                                              # which redshift slice
     cleaned_halos: True                                                     # load cleaned halos?
@@ -30,11 +30,11 @@ HOD_params:
 
     # parameters for setting up the HOD of LRGs
     LRG_params:
-        logM_cut: 13.67
-        logM1: 14.048
-        sigma: 0.659
-        alpha: 0.862
-        kappa: 0.0328
+        logM_cut: 12.7
+        logM1: 13.8
+        sigma: 0.125
+        alpha: 1.221
+        kappa: 0.0028
         alpha_c: 0
         alpha_s: 1
         s: 0
@@ -50,13 +50,12 @@ HOD_params:
 # clustering parameters
 clustering_params:
     power_type: 'wp'
-    # clustering_type: 'xirppi'
     bin_params:
-        logmin: -1
-        logmax: 1.47712
-        nbins: 14
-    pimax: 30
-    pi_bin_size: 5
+        logmin: -1.0437916549520927
+        logmax: 1.4771212547196624
+        nbins: 29
+    pimax: 40
+    pi_bin_size: 80
     clustering_type: 'multipole'  # multipole clustering
     sbin_params:
         logmin: -0.9568636

@@ -42,6 +42,8 @@ def pcforfit_poles(dir, fix, check=False):
     xi2 = corr[1, :]
     cov00 = cov[:num, :num]
     cov22 = cov[num:2*num, num:2*num]
+    cov02 = cov[:num, num:2*num]
+    cov20 = cov[num:2*num, :num]
     
     ## cut the nan part
     mask = ~np.isnan(xi0)
@@ -49,14 +51,23 @@ def pcforfit_poles(dir, fix, check=False):
     xi0_sel = xi0[mask]
     xi2_sel = xi2[mask]
     cov00_sel = cov00[mask][:, mask]
-    cov22_sel = cov22[mask][:, mask]  # Assuming cov22 is the same as cov00 for xi2
+    cov22_sel = cov22[mask][:, mask]  
+    cov02_sel = cov02[mask][:, mask]
+    cov20_sel = cov20[mask][:, mask]
+    cov0022 = np.block([[cov00_sel, cov02_sel],
+                        [cov20_sel, cov22_sel]])
     if np.isnan(cov00_sel).any():
         print("Warning: cov00_sel contains NaN values.")
     if np.isnan(cov22_sel).any():
         print("Warning: cov22_sel contains NaN values.")
+    if np.isnan(cov02_sel).any():
+        print("Warning: cov02_sel contains NaN values.")
+    if np.isnan(cov20_sel).any():
+        print("Warning: cov20_sel contains NaN values.")
 
     ## save 
     np.savetxt(dir + f'/hodfit/xipoles_{fix}.dat', np.column_stack((sep_sel, xi0_sel, xi2_sel)), header='sep xi0 xi2')
+    np.save(dir + f'/hodfit/cov_xi02_{fix}.npy', cov0022)
     np.save(dir + f'/hodfit/cov_xi0_{fix}.dat', cov00_sel)
     np.save(dir + f'/hodfit/cov_xi2_{fix}.dat', cov22_sel)
 
