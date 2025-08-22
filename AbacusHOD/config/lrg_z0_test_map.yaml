@@ -26,17 +26,17 @@ HOD_params:
         ELG: False
         QSO: False
     want_rsd: True                 # want RSD?
-    write_to_disk: False
+    write_to_disk: True
 
     # parameters for setting up the HOD of LRGs
     LRG_params:
-        logM_cut: 12.78
-        logM1: 13.94
-        sigma: 0.17
-        alpha: 1.07
-        kappa: 0.55
-        alpha_c: 0
-        alpha_s: 1
+        logM_cut: 12.7019021
+        logM1: 13.7904104
+        sigma: 0.000480973438
+        alpha: 0.863707976
+        kappa: 1.81529475
+        alpha_c: 0.210299419
+        alpha_s: 0.888351433
         s: 0
         s_v: 0
         s_p: 0
@@ -46,8 +46,6 @@ HOD_params:
         Bcent: 0
         Bsat: 0
         ic: 1.0
-
-
 
 # clustering parameters
 clustering_params:
@@ -65,10 +63,6 @@ clustering_params:
         nbins: 13
     mu_bin_size: 200  # number of mu bins for multipole clustering
 
-# ===========================================================================================
-# The following dictionaries are for using the provided emcee/likelihood templates. They
-# are not needed for using the AbacusHOD class and running HODs.
-
 # parameters that indicate where the observed data that you would like to fit live.
 data_params:
     tracer_density_mean:
@@ -79,45 +73,7 @@ data_params:
         LRG_LRG:
             path2data: '/global/homes/s/siyizhao/projects/fihobi/data/hodfit/lrg_data_cov_arocher.h5'
 
-
-# params to be fit for dynesty
-# [mapping_index, mean, min, max, std, tr_type]
-dynesty_fit_params:
-    logM_cut: [0, 13.3, 12, 13.8, 1.0, 'LRG']
-    logM1: [1, 14.0, 12.5, 15.5, 1.0, 'LRG']
-    sigma: [2, 0.5, 0.0, 3.0, 0.5, 'LRG']
-    alpha: [3, 1.0, 0.0, 2.0, 0.5, 'LRG']
-    kappa: [4, 0.5, 0.0, 10.0, 0.5, 'LRG']
-    alpha_c: [5, 0.4, 0.0, 1.0, 0.4, 'LRG']
-    alpha_s: [6, 0.8, 0.0, 2.0, 0.4, 'LRG']
-
-# configuration parameter for dynesty
-dynesty_config_params:
-    path2output: /pscratch/sd/s/siyizhao/fihobi/HOD_fit_test/dynesty
-    chainsPrefix: rwalk
-    rerun: 1
-    nlive: 500
-    rseed: 42
-    # bound: 'multi'
-    method: 'rwalk' 
-    maxcall: 500000
-
-# params to be fit for pmn
-# [mapping_index, mean, min, max, std, tr_type]
-pmn_fit_params:
-    logM_cut: [0, 13.3, 12, 13.8, 1.0, 'LRG']
-    logM1: [1, 14.0, 12.5, 15.5, 1.0, 'LRG']
-    sigma: [2, 0.5, 0.0, 3.0, 0.5, 'LRG']
-    alpha: [3, 1.0, 0.0, 2.0, 0.5, 'LRG']
-    kappa: [4, 0.5, 0.0, 10.0, 0.5, 'LRG']
-    alpha_c: [5, 0.4, 0.0, 1.0, 0.4, 'LRG']
-    alpha_s: [6, 0.8, 0.0, 2.0, 0.4, 'LRG']
-
-# configuration parameter for pmn
-pmn_config_params:
-    path2output: /pscratch/sd/s/siyizhao/fihobi/HODfit_test_z0/pmn/
-    chainsPrefix: test
-    nlive: 500
-    tol: 0.5
-    plot: /global/homes/s/siyizhao/projects/fihobi/AbacusHOD/plot/pmn/corner.png
-    plot_hod: /global/homes/s/siyizhao/projects/fihobi/AbacusHOD/plot/pmn/hod.png
+clustering_plots:
+    path2wp: '/global/homes/s/siyizhao/projects/fihobi/AbacusHOD/plot/pmn/lrg_wp_arocher.png'
+    path2xi0: '/global/homes/s/siyizhao/projects/fihobi/AbacusHOD/plot/pmn/lrg_xi0_arocher.png'
+    path2xi2: '/global/homes/s/siyizhao/projects/fihobi/AbacusHOD/plot/pmn/lrg_xi2_arocher.png'
