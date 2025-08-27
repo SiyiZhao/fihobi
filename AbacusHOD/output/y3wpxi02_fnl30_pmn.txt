@@ -1,0 +1,4 @@
+WARNING:root:fine_bins_2D not large enough for optimal density: logM_cut, sigma
+args: {'path2config': 'config/lrg_z0_test_fnl30.yaml'}
+MAP: [1.27052765e+01 1.37515558e+01 8.43386256e-04 8.49368266e-01
+ 2.01461952e+00 2.32130953e-01 8.73147170e-01]

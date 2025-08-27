@@ -298,11 +298,11 @@ if __name__ == '__main__':
     
     # Make path to output
     path2output = pmn_config_params['path2output']
-    if not os.path.isdir(os.path.expanduser(path2output)):
-        try:
-            os.makedirs(os.path.expanduser(path2output))
-        except KeyError:
-            pass
+    # if not os.path.isdir(os.path.expanduser(path2output)):
+    #     try:
+    #         os.makedirs(os.path.expanduser(path2output))
+    #     except KeyError:
+    #         pass
 
     # pmn parameters
     chain_prefix = pmn_config_params['chainsPrefix']

@@ -71,13 +71,13 @@ class my_pmn:
             prior_transform, 
             self.param_num, 
             outputfiles_basename = self.outdir+self.filename,  ## path for output files, ensure it exits.
-            resume=False,
+            # resume=False,
             verbose = self.verbose, 
             n_live_points = self.live_points, 
             evidence_tolerance = self.tol,
             seed=70, 
             n_iter_before_update = 50, 
-            importance_nested_sampling = False,
+            # importance_nested_sampling = False,
             )
         print("Done pymultinest.")
 

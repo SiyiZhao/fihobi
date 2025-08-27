@@ -66,6 +66,29 @@ They use the log-midpoint of the bins as the $r_p$ values, so the comparison sho
 
 Then we fit the AbacusHOD model to the DESI Y3 data.
 
+#### basic test
+
+We test our fitting pipeline by comparing with Hanyu's work on *DR2 Abacus High Fidelity Mocks* [reference TBD].
+The test is done on:
+- fit to small-scale clustering of LRGs at z=0.4-0.6 (loa-v1.1-pip), wp (0.03-39)Mpc/h + xi02 (0.2-39) Mpc/h, 
+- HOD model: Zheng07+velocity bias
+- simulation: `AbacusSummit_base_c000_ph000`, z=0.5
+- Our current pipeline are differ from Hanyu's in:
+  - assign satellite to particles rather than using NFW profile; this results in that our bestfit parameters work better than Hanyu's, we highlight it due to the different strategies of assigning satellites. 
+  - sampler, we use `pymultinest`, it is fast while the posterior may not be so accurate.
+- See the comparison in `compare_clus_z0.ipynb` which is not submitted to GitHub repo but can be sorted and distributed if neccessary.
+
+#### move to PNG simulations
+
+Then we apply the fitting pipeline to AbacusPNG simulations 'Abacus_pngbase_c300_ph000' ($f_{\rm NL}=30$).
+The fitting results differ from those of the AbacusSummit simulation with fiducial cosmology, as the following plot shows, it indicates that PNG has influnces on small scale clusterings.
+
+![](plot/compare_chain_fnl30.png)
+
+#### previous test
+
+==In this test, we found that fitting results from $w_p$ and $[\xi_0, \xi_2]$ are inconsistent from each other. Learn from Hanyu that 1. in multipoles fitting, velocity bias parameters must be include; 2. it's better to fitting with the combined data vector $[w_p, \xi_0, \xi_2]$.==
+
 We select the 'non-NAN' part of the clustering measurement, the s range is around 0.11-30 Mpc/h.
 
 Info of the galaxy samples: 
