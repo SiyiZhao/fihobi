@@ -23,6 +23,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Measure power spectrum of mock catalog')
     parser.add_argument('data_file', help='Input data file (AbacusHOD write to disk format)')
     parser.add_argument('--boxsize', type=float, default=2000., help='Box size in Mpc/h')
+    parser.add_argument('--add_RSD', type=bool, default=False, help='Whether to add RSD to z direction, if you use catalog without RSD and want to add RSD to power spectrum, set True. Notice that RSD has already been added to z-axis in AbacusHOD if `want_rsd: True`, the dir name would contain "_rsd".')
     parser.add_argument('--nmesh', type=int, default=128, help='Number of mesh cells per dimension')
     parser.add_argument('--redshift', type=float, default=0., help='Redshift of the catalog')
     parser.add_argument('--kmin', type=float, default=0.0, help='Minimum k value')
@@ -41,22 +42,24 @@ fn = args.output
 plot_path = args.plot if hasattr(args, 'plot') and args.plot else None
 z = args.redshift
 boxL = args.boxsize
+add_RSD = args.add_RSD
 Nmesh = args.nmesh
 
-### cosmology for RSD
-Om0 = 0.315192
-Ode0 = 0.684808
-VELZ2KMS = 100 * np.sqrt(Om0 * (1+z)**3 + Ode0 ) / (1+z)
-
-def apply_periodic(x, L):
-    return (x + 0.5 * L) % L - 0.5 * L
+if add_RSD==True:
+    ### cosmology for RSD
+    Om0 = 0.315192
+    Ode0 = 0.684808
+    VELZ2KMS = 100 * np.sqrt(Om0 * (1+z)**3 + Ode0 ) / (1+z)
+    def apply_periodic(x, L):
+        return (x + 0.5 * L) % L - 0.5 * L
 
 def read(filename, weight=None):
     data = np.loadtxt(filename, skiprows=15)
     pos = data[:, :3]
-    ## add RSD to z direction
-    z_RSD=apply_periodic(pos[:, 2]+data[:, 5]/VELZ2KMS, boxL)
-    pos[:, 2]=z_RSD
+    if add_RSD==True:
+        ## add RSD to z direction
+        z_RSD=apply_periodic(pos[:, 2]+data[:, 5]/VELZ2KMS, boxL)
+        pos[:, 2]=z_RSD
     if weight is None:
         weight = np.ones(len(data))
     return pos, weight
