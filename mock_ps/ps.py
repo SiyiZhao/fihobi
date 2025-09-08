@@ -22,6 +22,7 @@ mpiroot = None # input positions/weights scattered on all processes
 def parse_args():
     parser = argparse.ArgumentParser(description='Measure power spectrum of mock catalog')
     parser.add_argument('data_file', help='Input data file (AbacusHOD write to disk format)')
+    parser.add_argument('--skiprows', type=int, default=15, help='Number of header rows to skip in the data file. Default is 15 for AbacusHOD output.')
     parser.add_argument('--boxsize', type=float, default=2000., help='Box size in Mpc/h')
     parser.add_argument('--add_RSD', type=bool, default=False, help='Whether to add RSD to z direction, if you use catalog without RSD and want to add RSD to power spectrum, set True. Notice that RSD has already been added to z-axis in AbacusHOD if `want_rsd: True`, the dir name would contain "_rsd".')
     parser.add_argument('--nmesh', type=int, default=128, help='Number of mesh cells per dimension')
@@ -35,7 +36,7 @@ def parse_args():
 
 ### settings
 args = parse_args()
-kedges = np.linspace(0, args.kmax, args.nkbins+1)
+kedges = np.linspace(args.kmin, args.kmax, args.nkbins+1)
 ells = (0, 2, 4)
 data_fn = args.data_file
 fn = args.output
@@ -54,7 +55,7 @@ if add_RSD==True:
         return (x + 0.5 * L) % L - 0.5 * L
 
 def read(filename, weight=None):
-    data = np.loadtxt(filename, skiprows=15)
+    data = np.loadtxt(filename, skiprows=args.skiprows)
     pos = data[:, :3]
     if add_RSD==True:
         ## add RSD to z direction
