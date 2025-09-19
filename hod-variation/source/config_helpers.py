@@ -333,6 +333,7 @@ cd {workdir}
 
 srun -n 4 -c 64 python -m abacusnbody.hod.prepare_sim_profiles --path2config $config
 srun -n {ntasks} -c {cpus_per_task} python {entry} --config $config > $outdir/run.log 2>&1
+srun -n 1 -c 64 python scripts/post.py --config $config > $outdir/post.log 2>&1
 """.lstrip()
 
     if output_path:

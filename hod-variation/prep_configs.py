@@ -23,6 +23,18 @@ from config_helpers import generate_config, fit_params_overrides, merge_override
 # yml = generate_config(template_path='configs/template_QSO_zall.yaml',
 #                       output_path='configs/QSO-Summit/z0_base.yaml')
 
+############## settings ##############
+# sim_model = "Summit"
+# sim_name = "AbacusSummit_base_c000_ph000"
+sim_model = "fnl30"
+sim_name = "Abacus_pngbase_c300_ph000"
+
+hod_model = "base" 
+# hod_model = "base-dv" # with redshift error
+want_dv = False if hod_model=="base" else True
+
+
+
 ############## for different redshift bins ##############
 # ! attention: z5 and z6 may have large alpha_s, and z6 has larger logM1, need to increase upper bound 
 qso_bins = {'z4': (1.7, 2.3), 'z5': (2.3, 2.8), 'z6': (2.8, 3.5)}
@@ -31,11 +43,13 @@ nbar = {'z4': 0.00001419, 'z5': 0.000007876, 'z6': 0.000005216} # from prep_data
 
 for tag, (zmin, zmax) in qso_bins.items():
     print(f"{tag}: {zmin} - {zmax}")
-    config_path = f"configs/QSO-Summit/{tag}_base-dv.yaml" #relative config file path
+    config_path = f"configs/QSO-{sim_model}/{tag}_{hod_model}.yaml" #relative config file path
     tweaks_qso = {
-        "HOD_params.dv_draw_Q": f"/global/cfs/projectdirs/desi/users/jiaxiyu/repeated_observations/EDR_vs_Y3/LSS-scripts_repeats/QSO_z{zmin}-{zmax}_CDF.npz", # change redshift error file
-        "chain_params.chain_prefix": f"QSO_{tag}_base", # change output chain name
-        "chain_params.output_dir": f"/pscratch/sd/s/siyizhao/desi-dr2-hod/QSO/{tag}/",
+        "sim_params.sim_name": sim_name, 
+        "HOD_params.want_dv": want_dv,
+        "HOD_params.dv_draw_Q": f"/global/homes/s/siyizhao/projects/fihobi/data/dv_draws/QSO_z{zmin}-{zmax}_CDF.npz", # change redshift error file
+        "chain_params.chain_prefix": f"{hod_model}", # change output chain name
+        "chain_params.output_dir": f"/pscratch/sd/s/siyizhao/desi-dr2-hod/QSO-{sim_model}/{tag}_{hod_model}/",
         "data_params.tracer_combos.QSO_QSO.path2cov": f"/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1/cov_QSO_{zmin}_{zmax}_cut.dat", # change data file
         "data_params.tracer_combos.QSO_QSO.path2wp": f"/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1/wp_QSO_{zmin}_{zmax}_cut.dat",
         "data_params.tracer_combos.QSO_QSO.path2xi02": f"/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1/xi02_QSO_{zmin}_{zmax}_cut.dat",
@@ -47,7 +61,7 @@ for tag, (zmin, zmax) in qso_bins.items():
     fitspec_qso = {
         "QSO": {"names": ["logM_cut","logM1","sigma","alpha","kappa", "alpha_c","alpha_s"], 
                 "lo": [11, 12.5, 0.001, 0.0, 0.0, 0.0, 0.0], 
-                "hi": [14, 15.5, 2.0, 3.0, 5.0, 3.0, 5.0]},
+                "hi": [14, 17.5, 2.0, 3.0, 5.0, 3.0, 8.0]},
     }
     fit_over_qso = fit_params_overrides(fitspec_qso)
 
@@ -87,12 +101,12 @@ for tag, (zmin, zmax) in qso_bins.items():
 ############## slurm files ##############
 for tag, (zmin, zmax) in qso_bins.items():
     print(f"{tag}: {zmin} - {zmax}")
-    chain_path = f"/pscratch/sd/s/siyizhao/desi-dr2-hod/QSO-Summit/{tag}_base-dv/"
-    config_path = f"configs/QSO-Summit/{tag}_base-dv.yaml" #relative config file path
-    launcher_path = f"launchers/QSO-Summit_{tag}_base-dv.sh" #relative launcher file path
-    generate_slurm_launcher(time_hms="12:00:00", #wall time, depending on number of samples you want, usually set to 24 or 48, you can always resume from a .state file if not enough time
+    chain_path = f"/pscratch/sd/s/siyizhao/desi-dr2-hod/QSO-{sim_model}/{tag}_{hod_model}/"
+    config_path = f"configs/QSO-{sim_model}/{tag}_{hod_model}.yaml" #relative config file path
+    launcher_path = f"launchers/QSO-{sim_model}_{tag}_{hod_model}.sh" #relative launcher file path
+    generate_slurm_launcher(time_hms="12:00:00",
                             config_path=config_path, 
                             chain_path=chain_path,
-                            job_name=f"QSO-Summit_{tag}_base",  #job name
+                            job_name=f"QSO-{sim_model}_{tag}_{hod_model}",  #job name
                             output_path=launcher_path,)   
     print('launcher generated.\n')
