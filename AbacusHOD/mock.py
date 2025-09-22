@@ -10,8 +10,6 @@ Usage
 $ python ./mock.py --help
 """
 
-import os
-import time
 import yaml
 import numpy as np
 import argparse

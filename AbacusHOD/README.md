@@ -2,6 +2,13 @@
 
 Here we generate galaxy mocks using AbacusHOD. 
 
+
+==Out-of-data Warning:==
+We need to modify the `AbacusUtils` package to enable 1. NFW profile for satellite assignment; 2. add redshift error effect to RSD mocks. This modification is done in Hanyu's `hod-variation` [repo](https://github.com/ahnyu/hod-variation). We also have a new workplace `hod-variation/` to deal with the HOD fitting pipeline.
+
+This dir is just kept for the preliminary tests.
+
+
 ## Pre-requisites
 
 ### AbacusUtils
@@ -21,7 +28,33 @@ cd abacusutils
 pip install -U -e ./
 ```
 
-==Attention==: We modify the `class AbacusHOD` in `AbacusUtils` to speed up the `compute_multipole` method, which is used in the HOD fitting. The origional version return `[wp, xi_l]`, we delete the `wp` part. To directly use our fitting code, please `git clone` my repository of `AbacusUtils` (https://github.com/SiyiZhao/abacusutils.git).
+#### special modifications
+
+==Out-of-data Warning: The following modifications are in 2 backup branches of my fork `no_wp_in_clustering` and `redshift_error`, we do NOT recommend them!==
+
+
+==Attention==: We have some modifications of `AbacusUtils` for our special purpose. To directly use our fitting code, please `git clone` my forked repository of `AbacusUtils` (https://github.com/SiyiZhao/abacusutils/tree/redshift_error).
+
+- Notice that we have a major modification -- enable redshift error as a free parameter for QSO. For this modification, we created a new branch `redshift_error`, this branch is used in most of our works except
+  - tests before 2025-9-4 are done by HOD models without redshift error model, which can be found in [the main branch](https://github.com/SiyiZhao/abacusutils.git).
+
+##### major modification: Redshift error model for QSOs
+
+The fitting of QSOs $[w_p, \xi_0, \xi_2]$ is not quite good, so we add a simple model of the redshift error to `AbacusHOD` models of QSOs. 
+It introduce a new free parameter $v_{\rm smear}$. Refer to [Yu et al. 2023](), we summarize the model of the redshift error as follows:
+The velocity of the galaxies in the LOS direction (z-axis in our case) is blurred by $v_{\rm smear}$ as
+$$
+v_{\rm pec,Z}^{\rm blur} = v_{\rm pec,Z}^{\rm true} + {\cal N}(0, v_{\rm smear}),
+$$
+where ${\cal N}(0, v_{\rm smear})$ is a Gaussian profile with mean 0 and standard deviation $v_{\rm smear}$.
+
+##### minor modifications
+
+Minor modifications do NOT affect the results of HOD fitting, just to speed up or avoid useless outputs.
+
+- We modify the `class AbacusHOD` in `AbacusUtils` to speed up the `compute_multipole` method, which is used in the HOD fitting. The origional version return `[wp, xi_l]`, we delete the `wp` part.
+- We also delete some `print` statements in the code to avoid unnecessary outputs.
+
 
 ### CorrFunc
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 source /global/common/software/desi/desi_environment.sh
-export PYTHONPATH=$PYTHONPATH:$HOME/lib
+export PYTHONPATH=$HOME/lib/abacusutils-re:$PYTHONPATH
 
 config=config/lrg_z0_test_fnl30_map.yaml
 outdir=/pscratch/sd/s/siyizhao/fihobi/HODfit_test_z0_fnl30
