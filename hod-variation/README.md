@@ -5,14 +5,20 @@ We fit HOD models to DESI DR2 data using AbacusUtils (modified by Hanyu).
 ## Work Flow
 
 1. Prepare the data, the config files and slurm scripts (follow `prep.sh`)
-2. Enter `launchers/` and submit the jobs to NERSC
-3. Analyze the chains and get the best-fit parameters (follow `post.sh`, we add it into the slurm script so it will be done automatically after the MCMC sampling is done)
+2. Enter `launchers/` and submit the jobs to NERSC, the launcher scripts contain three steps: 
+   1. prepare: prepare the Abacus simulations with the mode of profiles, 
+   2. fitting: run nest sampling to fit the HOD model,
+   3. post-process: Analyze the chains and get the best-fit parameters (follow `post.sh`, we add it into the slurm script so it will be done automatically after the MCMC sampling is done), generate mock catalogs with the best-fit HOD parameters and measure the correlation functions.
+3. NEXT: post-process has generated the best-fit catalogs, go `../mock-data-cov/` to measure the power spectrum.
 
 ## Works have been done with these codes 
 
 1. QSO z=0.8-2.1 ('z0' in our notation), on `AbacusSummit_base_c000_ph000` (fiducial cosmology), base HOD model with dv (redshift error).
-2. QSO z=1.7-2.3 ('z1'), on `AbacusSummit_base_c000_ph000`, base HOD model without dv.
-3. QSO z=1.7-2.3 ('z1'), on `Abacus_pngbase_c300_ph000` ($f_{\rm NL}=30$), base HOD model without dv.
+2. QSO z=1.7-2.3 ('z4'), on `AbacusSummit_base_c000_ph000`, base HOD model without dv. (rerun with right number density & larger prior)
+3. QSO z=1.7-2.3 ('z4'), on `Abacus_pngbase_c300_ph000` ($f_{\rm NL}=30$), base HOD model without dv.
+4. QSO z=1.7-2.3 ('z4'), on `AbacusSummit_base_c000_ph000`, base HOD model with dv.
+5. QSO z=1.4-1.7 ('z3'), on `AbacusSummit_base_c000_ph000`, base HOD model w/ & w/o dv.
+6. QSO z=0.8-1.1 ('z1'), on `Abacus_pngbase_c300_ph000` ($f_{\rm NL}=30$), base HOD model with dv.
 
 
 

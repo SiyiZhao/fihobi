@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=QSO-Summit_z4_base
+#SBATCH --job-name=QSO-Summit_z3_base
 #SBATCH --output=/global/homes/s/siyizhao/projects/fihobi/hod-variation/logs/%x_%j.log
 #SBATCH --error=/global/homes/s/siyizhao/projects/fihobi/hod-variation/logs/%x_%j.err
 #SBATCH --qos=regular
@@ -15,9 +15,9 @@ source /global/common/software/desi/desi_environment.sh
 export PYTHONPATH=$PYTHONPATH:$HOME/lib
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/lib/MultiNest/lib
 export OMP_NUM_THREADS=64
-outdir=/pscratch/sd/s/siyizhao/desi-dr2-hod/QSO-Summit/z4_base/
+outdir=/pscratch/sd/s/siyizhao/desi-dr2-hod/QSO-Summit/z3_base/
 mkdir -p $outdir
-config=configs/QSO-Summit/z4_base.yaml
+config=configs/QSO-Summit/z3_base.yaml
 cd /global/homes/s/siyizhao/projects/fihobi/hod-variation
 
 srun -n 4 -c 64 python -m abacusnbody.hod.prepare_sim_profiles --path2config $config

@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 '''
 This is a script for post-processing of the HOD fitting with pyMultiNest. 
-Using GetDist.
+- plot chain with GetDist.
+- generate best-fit mock and compute clustering.
 
 Usage
 ---
@@ -26,7 +27,7 @@ if source_dir not in sys.path:
     sys.path.insert(0, source_dir)
 from data_object import data_object
 from pmn_helpers import generate_prior
-from post_helpers import load_config, bestfit_params, assign_hod, compute_all, plot_all
+from post_helpers import load_config, bestfit_params, assign_hod, compute_all, plot_all, plot_all_compare
 
 def main(config):
     ## load config
@@ -40,6 +41,8 @@ def main(config):
     nthread = config_full.get("nthread", 32)
     data_obj = data_object(data_params, HOD_params, clustering_params)
     tracer = list(fit_params.keys())[0]
+    ## sim_outdir
+    sim_outdir = sim_params['output_dir']
         
     ## chain 
     chain_dir=chain_params['output_dir']
@@ -60,6 +63,30 @@ def main(config):
     assign_hod(ball_profiles, param_mapping, bf)
     mock_bf,clustering_bf=compute_all(ball_profiles, nthread=nthread, out=True, verbose=True)
     plot_all(data_obj,tracer,clustering_bf,out=chain_dir+'bestfit_'+tracer+'.png')
+    ## save bestfit clustering
+    if ball_profiles.want_rsd:
+        rsd_string = '_rsd'
+        if ball_profiles.want_dv:
+            rsd_string += '_dv'
+    else:
+        rsd_string = ''
+    outdir = (ball_profiles.mock_dir) / ('galaxies' + rsd_string)
+    path2cluster = (outdir) / (tracer + 's_clustering.npy')
+    np.save(path2cluster, clustering_bf)
+    print("Save bestfit clustering to:", path2cluster)
+
+    
+    # ## generate mock in real space
+    # mock_bf_r,clustering_bf_r=compute_all(ball_profiles, nthread=nthread, want_rsd=False, out=True, verbose=True)
+    # if ball_profiles.want_dv==False:
+    #     ## generate mock with dv
+    #     mock_bf_dv,clustering_bf_dv=compute_all(ball_profiles, nthread=nthread, want_rsd=True, want_dv=True, out=True, verbose=True)
+    #     ## plot compare
+    #     plot_all_compare(data_obj,tracer,clustering_bf, [clustering_bf_r, clustering_bf_dv], labels=['w/o rsd', 'w dv'], out=chain_dir+'bestfit_'+tracer+'_comp.png')
+    # else:
+    #     print("Already have dv, skip generating dv mock")
+    #     plot_all_compare(data_obj,tracer,clustering_bf, [clustering_bf_r], labels=['w/o rsd'], out=chain_dir+'bestfit_'+tracer+'_comp.png')
+    
     
     return None
 

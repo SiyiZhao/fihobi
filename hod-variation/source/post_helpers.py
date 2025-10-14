@@ -49,11 +49,22 @@ def compute_wp(Ball,nthread,out=False):
     
     return mock_dict,clustering
 
-def compute_all(Ball, nthread, out=False, verbose = False):
+def compute_all(Ball, nthread, out=False, want_rsd=None, want_dv=None, verbose = False):
     """
     Generate the mock with new parameters, and compute both wp and multipoles.
     """
-    mock_dict = Ball.run_hod(tracers=Ball.tracers, want_rsd=Ball.want_rsd, Nthread = nthread, verbose = verbose, write_to_disk=out)
+    if want_rsd is None:
+        want_rsd = Ball.want_rsd
+    if want_dv is not None:
+        print(f"Original want_dv: {Ball.want_dv}")
+        Ball.want_dv = want_dv
+        print(f"Set want_dv to {want_dv}")
+    else:
+        want_dv = Ball.want_dv
+    if want_rsd & want_dv:
+        mock_dict = Ball.run_hod(tracers=Ball.tracers, want_rsd=want_rsd, Nthread = nthread, verbose = verbose, write_to_disk=out, fn_ext='_dv')
+    else:
+        mock_dict = Ball.run_hod(tracers=Ball.tracers, want_rsd=want_rsd, Nthread = nthread, verbose = verbose, write_to_disk=out)
     clustering = Ball.compute_multipole(mock_dict, rpbins=Ball.rpbins, pimax=Ball.pimax, sbins=Ball.rpbins[5:], nbins_mu=40, Nthread = nthread)
     
     return mock_dict,clustering
