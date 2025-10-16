@@ -69,15 +69,15 @@ def compute_all(Ball, nthread, out=False, want_rsd=None, want_dv=None, verbose =
     
     return mock_dict,clustering
 
-def plot_all(data_obj,tracer,clustering,idxwp=np.arange(3,21), idxxi=np.arange(8,21),text=None,out=None):
+def plot_all(data_obj,tracer,clustering,idxwp=np.arange(3,21), idxxi=np.arange(8,21),clustering_other=None,labels=None,text=None,out=None):
 
     fig, axs = plt.subplots(2,3,constrained_layout=True,sharex='col',figsize=(24,8),gridspec_kw={'height_ratios': [3, 1]})
     
     composite_key = f"{tracer}_{tracer}"
     
+    # x-bins and midpoints
     rpbins=np.geomspace(0.01,100,25)
     rpbinsmid=(rpbins[1:]+rpbins[:-1])/2
-
     rp_wp=rpbinsmid[idxwp]
     s_xi=rpbinsmid[idxxi]
     
@@ -86,10 +86,10 @@ def plot_all(data_obj,tracer,clustering,idxwp=np.arange(3,21), idxxi=np.arange(8
     y1labels=[r'$\Delta w_{\rm p}/w_{\rm p}^{\rm obs}$',r'$\Delta \xi_{0}/\xi_{0}^{\rm obs}$',r'$\Delta \xi_{2}/\xi_{2}^{\rm obs}$']
     xlabels=[r'$r_{\rm p}$',r'$s$',r'$s$']
     
-    obs={}
-    obs['wp']=data_obj.wp[composite_key]
-    obs['xi0']=data_obj.xi02[composite_key][:,0]
-    obs['xi2']=data_obj.xi02[composite_key][:,1]
+    # Observations (background only)
+    obs_wp  = np.asarray(data_obj.wp[composite_key])
+    obs_xi  = np.asarray(data_obj.xi02[composite_key])
+    obs = {'wp': obs_wp, 'xi0': obs_xi[:,0], 'xi2': obs_xi[:,1]}
     err_obs={}
     the={}
     errall_d=np.sqrt(np.diag(data_obj.cov[composite_key]))
@@ -105,17 +105,34 @@ def plot_all(data_obj,tracer,clustering,idxwp=np.arange(3,21), idxxi=np.arange(8
     istart+=len(obs['xi0'])
     err_obs['xi2']=errall_d[istart:istart+len(obs['xi2'])]        
     the['xi2']=clustering[composite_key][istart:istart+len(obs['xi2'])]
-        
+    
+    # Slice other
+    if clustering_other is not None:
+        the_others = []
+        for vec in clustering_other:
+            d, istart = {}, 0
+            d['wp']  = vec[composite_key][istart:istart+len(obs['wp'])];  istart += len(obs['wp'])
+            d['xi0'] = vec[composite_key][istart:istart+len(obs['xi0'])]; istart += len(obs['xi0'])
+            d['xi2'] = vec[composite_key][istart:istart+len(obs['xi2'])]
+            the_others.append(d)
+        if labels is None:
+            labels = [f"Model {i+1}" for i in range(len(the_others))]
+    
+    # Plot    
     for i,ctype in enumerate(ctypes):
         if ctype=='wp':
             x=rp_wp
         else:
             x=s_xi
         axs[0,i].errorbar(x,x*obs[ctype],yerr=x*err_obs[ctype],marker='o',ls='',color='black',label='loa-v1.1')
-        axs[0,i].plot(x,x*the[ctype],color='black',label='Best fit')
+        label_the='Best fit' if labels is None else labels[0]
+        axs[0,i].plot(x,x*the[ctype],color='black',label=label_the)
         axs[1,i].plot(x,(the[ctype]-obs[ctype])/obs[ctype],color='black')
         axs[1,i].fill_between(x,(-err_obs[ctype])/obs[ctype],(err_obs[ctype])/obs[ctype],color='lightgray')
-        
+        if clustering_other is not None:
+            for j,d in enumerate(the_others):
+                axs[0,i].plot(x,x*d[ctype],lw=1.5,color=_DEEP_HEX[(j+1)%len(_DEEP_HEX)],label=labels[j+1] if i==0 else None)
+                axs[1,i].plot(x,(d[ctype]-obs[ctype])/obs[ctype],lw=1.5,color=_DEEP_HEX[(j+1)%len(_DEEP_HEX)])
         axs[0,i].set_xscale('log')
         axs[1,i].set_xscale('log')
         axs[0,i].set_ylabel(y0labels[i],fontsize=20)

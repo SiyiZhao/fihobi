@@ -37,15 +37,13 @@ want_dv = True
 if want_dv:
     hod_model += "-dv"
 
+chain_prefix = 'chain_'
 
 ############## for different redshift bins ##############
-qso_bins = {'z1': (0.8, 1.1), 'z2': (1.1, 1.4), 'z3': (1.4, 1.7)}
-z_mock = {'z1': 0.95, 'z2': 1.25, 'z3': 1.55}
-nbar = {'z1': 0.00003073, 'z2': 0.00003566, 'z3': 0.00003606} # from prep_data.py output
+qso_bins = {'z1': (0.8, 1.1), 'z2': (1.1, 1.4), 'z3': (1.4, 1.7), 'z4': (1.7, 2.3), 'z5': (2.3, 2.8), 'z6': (2.8, 3.5)}
+z_mock = {'z1': 0.95, 'z2': 1.25, 'z3': 1.55, 'z4': 2.0, 'z5': 2.5, 'z6': 3.0}
+nbar = {'z1': 0.00003073, 'z2': 0.00003566, 'z3': 0.00003606, 'z4': 0.00001419, 'z5': 0.000007876, 'z6': 0.000005216} # from prep_data.py output
 # ! attention: z5 and z6 may have large alpha_s, and z6 has larger logM1, need to increase upper bound 
-# qso_bins = {'z4': (1.7, 2.3), 'z5': (2.3, 2.8), 'z6': (2.8, 3.5)}
-# z_mock = {'z4': 2.0, 'z5': 2.5, 'z6': 3.0}
-# nbar = {'z4': 0.00001419, 'z5': 0.000007876, 'z6': 0.000005216} # from prep_data.py output
 
 for tag, (zmin, zmax) in qso_bins.items():
     print(f"{tag}: {zmin} - {zmax}")
@@ -54,7 +52,7 @@ for tag, (zmin, zmax) in qso_bins.items():
         "sim_params.sim_name": sim_name, 
         "HOD_params.want_dv": want_dv,
         "HOD_params.dv_draw_Q": f"/global/homes/s/siyizhao/projects/fihobi/data/dv_draws/QSO_z{zmin}-{zmax}_CDF.npz", # change redshift error file
-        "chain_params.chain_prefix": f"{hod_model}", # change output chain name
+        "chain_params.chain_prefix": f"{chain_prefix}", # change output chain name
         "chain_params.output_dir": f"/pscratch/sd/s/siyizhao/desi-dr2-hod/QSO-{sim_model}/{tag}_{hod_model}/",
         "data_params.tracer_combos.QSO_QSO.path2cov": f"/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1/cov_QSO_{zmin}_{zmax}_cut.dat", # change data file
         "data_params.tracer_combos.QSO_QSO.path2wp": f"/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1/wp_QSO_{zmin}_{zmax}_cut.dat",
@@ -110,7 +108,7 @@ for tag, (zmin, zmax) in qso_bins.items():
     chain_path = f"/pscratch/sd/s/siyizhao/desi-dr2-hod/QSO-{sim_model}/{tag}_{hod_model}/"
     config_path = f"configs/QSO-{sim_model}/{tag}_{hod_model}.yaml" #relative config file path
     launcher_path = f"launchers/QSO-{sim_model}_{tag}_{hod_model}.sh" #relative launcher file path
-    generate_slurm_launcher(time_hms="12:00:00",
+    generate_slurm_launcher(time_hms="6:00:00",
                             config_path=config_path, 
                             chain_path=chain_path,
                             job_name=f"QSO-{sim_model}_{tag}_{hod_model}",  #job name

@@ -291,7 +291,7 @@ def generate_slurm_launcher(
     account: str = "desi",
     qos: str = "regular",
     ntasks: int = 4,
-    cpus_per_task: int = 128,
+    cpus_per_task: int = 64,
     constraint: str = "cpu",
     omp_num_threads: int = 64,
     conda_env: str = "hod_variation",
