@@ -22,7 +22,8 @@ We fit HOD models to DESI DR2 data using AbacusUtils (modified by Hanyu).
 7. QSO z=1.1-1.4 ('z2'), on `Abacus_pngbase_c300_ph000` ($f_{\rm NL}=30$), base HOD model with dv.
 8. QSO z=1.4-1.7 ('z3'), on `Abacus_pngbase_c300_ph000` ($f_{\rm NL}=30$), base HOD model with dv.
 9. QSO z=1.7-2.3 ('z4'), on `Abacus_pngbase_c300_ph000` ($f_{\rm NL}=30$), base HOD model with dv.
-
+10. same as 7, but cut 3 more bins at small scales in wp (from 6) and xi (from 11).
+11. same as 9, but cut 3 more bins at small scales in wp (from 6) and xi (from 11).
 
 
 

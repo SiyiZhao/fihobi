@@ -21,9 +21,10 @@ if source_dir not in sys.path:
     sys.path.insert(0, source_dir)
 from loading_helpers import readwp, readxi02, get_combined_jkcov, cov2corr, nz_comb, compute_zeff
 
-outdir='../data/for_hod/v1.1/'
+outdir='../data/for_hod/v1.1_rp6s11/'
 ## rp/s bin midpoints saved to data files
 rpbins=np.geomspace(0.01,100,25)
+print('x bins:', rpbins)
 rpbinsmid=(rpbins[1:]+rpbins[:-1])/2
 
 
@@ -39,6 +40,13 @@ y3rppidir='/pscratch/sd/h/hanyuz/measurements_smallscale/rppi/'
 y3smudir='/pscratch/sd/h/hanyuz/measurements_smallscale/smu/'
 qso_bins = {'z4': (1.7, 2.3), 'z5': (2.3, 2.8), 'z6': (2.8, 3.5)}
 
+# idx_min_rp = 3
+idx_min_rp = 6
+idx_max_rp = 21
+# idx_min_s  = 8
+idx_min_s  = 11
+idx_max_s  = 21
+
 wpqso = {}
 xiqso = {}
 for tag, (zmin, zmax) in qso_bins.items():
@@ -47,21 +55,20 @@ for tag, (zmin, zmax) in qso_bins.items():
     xiqso[tag] = readxi02(y3smudir + fname)
 
 ## get jackknife covariance
-idxwp_qso   = np.arange(3, 21)
-idxxi02_qso = np.concatenate((np.arange(8, 21), np.arange(8 + 24, 21 + 24)))
+idx_wp_cut   = np.arange(idx_min_rp, idx_max_rp)  
+idx_xi_cut  = np.arange(idx_min_s, idx_max_s)
+idx_xi02_cut = np.concatenate((idx_xi_cut, idx_xi_cut + 24))  
 covqso = {}
 for tag in qso_bins:
-    covqso[tag] = get_combined_jkcov(wpqso[tag][3], xiqso[tag][3], idxwp_qso, idxxi02_qso)
+    covqso[tag] = get_combined_jkcov(wpqso[tag][3], xiqso[tag][3], idx_wp_cut, idx_xi02_cut)
 
 ## save wp cut
-idx_wp_cut = np.arange(3, 21)
 for tag, (zmin, zmax) in qso_bins.items():
     np.savetxt(outdir+f"wp_QSO_{zmin:.1f}_{zmax:.1f}_cut.dat",
                np.column_stack((rpbinsmid[idx_wp_cut],
                                 wpqso[tag][0][idx_wp_cut],
                                 wpqso[tag][2][idx_wp_cut])))
 ## save xi02 cut
-idx_xi_cut = np.arange(8, 21)
 for tag, (zmin, zmax) in qso_bins.items():
     np.savetxt(outdir+f"xi02_QSO_{zmin:.1f}_{zmax:.1f}_cut.dat",
                np.column_stack((rpbinsmid[idx_xi_cut],

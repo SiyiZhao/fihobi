@@ -3,6 +3,9 @@
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 
+# outdir=../data/for_hod/v1.1/
+# mkdir -p $ourdir
+
 python prep_data.py > output/arocher_meas.txt
 
 # ! change path & zbin

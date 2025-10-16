@@ -37,7 +37,8 @@ want_dv = True
 if want_dv:
     hod_model += "-dv"
 
-chain_prefix = 'chain_'
+# chain_prefix = 'chain_'
+chain_prefix = 'chain_rp6s11_'
 
 ############## for different redshift bins ##############
 qso_bins = {'z1': (0.8, 1.1), 'z2': (1.1, 1.4), 'z3': (1.4, 1.7), 'z4': (1.7, 2.3), 'z5': (2.3, 2.8), 'z6': (2.8, 3.5)}
@@ -52,11 +53,13 @@ for tag, (zmin, zmax) in qso_bins.items():
         "sim_params.sim_name": sim_name, 
         "HOD_params.want_dv": want_dv,
         "HOD_params.dv_draw_Q": f"/global/homes/s/siyizhao/projects/fihobi/data/dv_draws/QSO_z{zmin}-{zmax}_CDF.npz", # change redshift error file
+        "clustering_params.bin_params.logmin": -1.0, # change binning
+        "clustering_params.bin_params.nbins": 15,
         "chain_params.chain_prefix": f"{chain_prefix}", # change output chain name
         "chain_params.output_dir": f"/pscratch/sd/s/siyizhao/desi-dr2-hod/QSO-{sim_model}/{tag}_{hod_model}/",
-        "data_params.tracer_combos.QSO_QSO.path2cov": f"/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1/cov_QSO_{zmin}_{zmax}_cut.dat", # change data file
-        "data_params.tracer_combos.QSO_QSO.path2wp": f"/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1/wp_QSO_{zmin}_{zmax}_cut.dat",
-        "data_params.tracer_combos.QSO_QSO.path2xi02": f"/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1/xi02_QSO_{zmin}_{zmax}_cut.dat",
+        "data_params.tracer_combos.QSO_QSO.path2cov": f"/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1_rp6s11/cov_QSO_{zmin}_{zmax}_cut.dat", # change data file
+        "data_params.tracer_combos.QSO_QSO.path2wp": f"/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1_rp6s11/wp_QSO_{zmin}_{zmax}_cut.dat",
+        "data_params.tracer_combos.QSO_QSO.path2xi02": f"/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1_rp6s11/xi02_QSO_{zmin}_{zmax}_cut.dat",
         "data_params.tracer_density_mean.QSO": nbar[tag], # change number density, check output of prep_data.py for numbers
         "data_params.tracer_density_std.QSO": 0.1*nbar[tag],
         "sim_params.z_mock": z_mock[tag], # change redshift

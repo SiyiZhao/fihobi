@@ -47,7 +47,7 @@ def main(config):
     ## chain 
     chain_dir=chain_params['output_dir']
     chain_prefix=chain_params['chain_prefix']
-    path_plot_getdist = chain_dir + chain_prefix + '_getdist.png'
+    path_plot_getdist = chain_dir + chain_prefix + 'getdist.png'
     ## getdist
     gdsamples = loadMCSamples(chain_dir+chain_prefix, settings={'ignore_rows':0.01})
     bf = bestfit_params(gdsamples)
@@ -62,7 +62,8 @@ def main(config):
     _, param_mapping = generate_prior(fit_params)
     assign_hod(ball_profiles, param_mapping, bf)
     mock_bf,clustering_bf=compute_all(ball_profiles, nthread=nthread, out=True, verbose=True)
-    plot_all(data_obj,tracer,clustering_bf,out=chain_dir+'bestfit_'+tracer+'.png')
+    plot_all(data_obj,tracer,clustering_bf,out=chain_dir+chain_prefix+'bestfit_'+tracer+'.png', idxwp=np.arange(6,21), idxxi=np.arange(11,21))
+    # plot_all(data_obj,tracer,clustering_bf,out=chain_dir+chain_prefix+'bestfit_'+tracer+'.png')
     ## save bestfit clustering
     if ball_profiles.want_rsd:
         rsd_string = '_rsd'

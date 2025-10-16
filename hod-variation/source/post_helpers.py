@@ -69,6 +69,30 @@ def compute_all(Ball, nthread, out=False, want_rsd=None, want_dv=None, verbose =
     
     return mock_dict,clustering
 
+def read_bf_clus(config_path, tracer='QSO'):
+    'read the best-fit clustering measured by post.py, input: config file'
+    config_full=load_config(config_path)
+    sim_params = config_full['sim_params']
+    hod_params = config_full['HOD_params']
+    output_dir = sim_params['output_dir']
+    sim_name = sim_params['sim_name']
+    z_mock = sim_params['z_mock']
+    mock_dir = output_dir + sim_name + f'/z{z_mock:.3f}'
+    want_rsd = hod_params.get('want_rsd', False)
+    want_dv = hod_params.get('want_dv', False)
+    if want_rsd:
+        rsd_string = '_rsd'
+        if want_dv:
+            rsd_string += '_dv'
+    else:
+        rsd_string = ''
+    outdir = mock_dir + '/galaxies' + rsd_string
+    path2cluster = outdir + f'/{tracer}s_clustering.npy'
+    clustering_bf = np.load(path2cluster, allow_pickle=True).item()
+    return clustering_bf
+
+
+
 def plot_all(data_obj,tracer,clustering,idxwp=np.arange(3,21), idxxi=np.arange(8,21),clustering_other=None,labels=None,text=None,out=None):
 
     fig, axs = plt.subplots(2,3,constrained_layout=True,sharex='col',figsize=(24,8),gridspec_kw={'height_ratios': [3, 1]})
