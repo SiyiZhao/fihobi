@@ -4,12 +4,16 @@ current_dir = os.getcwd()
 source_dir = os.path.join(current_dir, "source")
 if source_dir not in sys.path:
     sys.path.insert(0, source_dir)
+from abacus_helpers import path_to_mock_dir
 from pypower_helpers import run_pypower_redshift
 
-data_fn = sys.argv[1]
-out_path = sys.argv[2]
-out_for_EZmock = sys.argv[3]
+config2Abacus = sys.argv[1]  # e.g. configs/QSO-fnl30/z4_base-dv.yaml
+path2mock = path_to_mock_dir(config2Abacus)
+data_fn = path2mock / 'QSOs.dat'
+out_path = path2mock / 'pypower_poles.npy'
+out_for_EZmock = path2mock / 'pypower2powspec.txt'
 
+print(f"Loading mock from {data_fn}")
 data = np.loadtxt(data_fn, skiprows=15)
 x, y, z = data[:, 0], data[:, 1], data[:, 2]
 poles = run_pypower_redshift(x,y,z)
