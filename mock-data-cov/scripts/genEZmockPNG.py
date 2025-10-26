@@ -12,12 +12,13 @@ if source_dir not in sys.path:
     sys.path.insert(0, source_dir)
 from config_helpers import generate_2lpt_param
 # from pypower_helpers import run_pypower
+from pypower_helpers import run_pypower_redshift
 
 
 seed = sys.argv[1] 
 odir='/pscratch/sd/s/siyizhao/EZmock/output/mocks/QSO-z4_c300'
 redshift = 2.0
-fnl = 200.
+fnl = 470.
 ntracer = 3288003
 rho_c, rho_exp, pdf_base, sigma_v = [0.89981, 4.4848, 0.4031527, 468.7988]
 
@@ -28,6 +29,7 @@ Lbox = 2000
 Ngrid = 256
 EZseed = 42
 nthread=16
+ells = (0, 2)
 
 # prepare parameter file for 2LPTnonlocal --------------------------------------
 
@@ -77,11 +79,22 @@ mydz = np.loadtxt(pdir + f'dispz_{seed}.txt')
 ez.create_dens_field_from_disp(mydx, mydy, mydz, deepcopy=True)
 rsd_fac = (1 + redshift) / (100 * np.sqrt(Omega_m0 * (1 + redshift)**3 + (1 - Omega_m0)))
 # x, y, z, vx, vy, vz = ez.populate_tracer(rho_c, rho_exp, pdf_base, sigma_v, ntracer)
-filename= odir + f'/EZmock_seed{seed}.txt'
+filename= odir + f'/EZmock_r{seed}.txt'
 ez.populate_tracer_to_file(rho_c, rho_exp, pdf_base, sigma_v, ntracer, filename, rsd_fac=rsd_fac)
 
 print('EZmock generated and saved to', filename)
 
+
+# measure pypower poles and save------------------------------------------------
+data = np.loadtxt(filename)
+x = data[:, 0]
+y = data[:, 1]
+z_rsd = data[:, 2]
+poles = run_pypower_redshift(x, y, z_rsd, ells=ells)
+outpath = odir + f'/pypowerpoles_r{seed}.npy'
+poles.save(outpath)
+print(f"Saved pypower poles to {outpath}")
 # poles = run_pypower(x, y, z, vz, rsd_fac)
 # poles_all.append(poles)
+
 print(f'Finished seed {seed}.')
