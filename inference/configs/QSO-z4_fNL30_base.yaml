@@ -1,0 +1,12 @@
+redshift: 2.0
+fnl: 30.0
+
+input: 
+  abacus_poles: /pscratch/sd/s/siyizhao/desi-dr2-hod/mocks/Abacus_pngbase_c300_ph000/z2.000/galaxies_rsd/pypower_poles.npy
+  ezmock_poles: /pscratch/sd/s/siyizhao/EZmock/output/mocks/QSO-z4_c300/
+
+prior:
+  p:
+    limits: [-1, 3.]
+  sigmas:
+    limits: [0, 20.]
