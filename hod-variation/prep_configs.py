@@ -26,19 +26,25 @@ from config_helpers import generate_config, fit_params_overrides, merge_override
 ############## settings ##############
 # sim_model = "Summit"
 # sim_name = "AbacusSummit_base_c000_ph000"
-sim_model = "fnl30"
-sim_name = "Abacus_pngbase_c300_ph000"
+# sim_model = "fnl30"
+# sim_name = "Abacus_pngbase_c300_ph000"
+sim_model = "fnl100"
+sim_name = "Abacus_pngbase_c302_ph000"
 
 hod_model = "base" 
-# hod_model = "base-dv" # with redshift error
-# want_dv = False if hod_model=="base" else True
-want_dv = True 
-# want_dv = False
+Assembly=False 
+BiasENV=False
+# want_dv = True 
+want_dv = False
+if Assembly:
+    hod_model += "-A"
+if BiasENV:
+    hod_model += "-B"
 if want_dv:
     hod_model += "-dv"
 
 # chain_prefix = 'chain_'
-chain_prefix = 'chain_rp6s11_'
+chain_prefix = 'chain_rp6s11_11M118_'
 
 ############## for different redshift bins ##############
 qso_bins = {'z1': (0.8, 1.1), 'z2': (1.1, 1.4), 'z3': (1.4, 1.7), 'z4': (1.7, 2.3), 'z5': (2.3, 2.8), 'z6': (2.8, 3.5)}
@@ -67,42 +73,21 @@ for tag, (zmin, zmax) in qso_bins.items():
 
     fitspec_qso = {
         "QSO": {"names": ["logM_cut","logM1","sigma","alpha","kappa", "alpha_c","alpha_s"], 
-                "lo": [11, 12.5, 0.001, 0.0, 0.0, 0.0, 0.0], 
-                "hi": [14, 17.5, 2.0, 3.0, 5.0, 3.0, 8.0]},
+                "lo": [11, 11, 0.001, 0.0, 0.0, 0.0, 0.0], 
+                "hi": [14, 18, 2.0, 3.0, 5.0, 3.0, 10.0]},
     }
+    if Assembly:
+        fitspec_qso["QSO"]["names"] += ["Acent", "Asat"]
+        fitspec_qso["QSO"]["lo"] += [-1.0, -1.0]
+        fitspec_qso["QSO"]["hi"] += [1.0, 1.0]
+    
     fit_over_qso = fit_params_overrides(fitspec_qso)
-
     overrides_qso = merge_overrides(fit_over_qso, tweaks_qso) # combine fit_params and other tweaks
 
     yml = generate_config(template_path='configs/template_QSO_zall.yaml',
                         overrides=overrides_qso,
                         output_path=config_path)
     print('config generated.\n')
-
-
-
-
-
-
-## if add assembly bias
-
-# fitspec_lrg_A = {
-#     "LRG": {"names": ["logM_cut","logM1","sigma","alpha", "kappa","alpha_c","alpha_s","Acent", "Asat"], # HOD params to vary
-#             "lo": [11, 12.5, 0.001, 0.0, 0.0, 0.0, 0.0, -1.0, -1.0],  # lower bound
-#             "hi": [14, 15.5, 2.0, 3.0, 5.0, 2.0, 2.0, 1.0, 1.0]}, # upper bound
-# }
-# fit_over_lrg_A = fit_params_overrides(fitspec_lrg_A)
-
-# tweaks_lrg_z0_A = {
-#     "chain_params.chain_prefix": "LRG_z0_base_A", # change output chain name
-# }
-
-# overrides_lrg_z0_A = merge_overrides(fit_over_lrg_A, tweaks_lrg_z0_A) # combine fit_params and other tweaks
-
-# yml = generate_config(template_path='configs/LRG/z0_base.yaml',
-#                       overrides=overrides_lrg_z0_A,
-#                       output_path='configs/LRG/z0_base_A.yaml')
-
 
 
 ############## slurm files ##############

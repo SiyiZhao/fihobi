@@ -2,6 +2,7 @@
 # please read before run 
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+cd /global/homes/s/siyizhao/projects/fihobi/hod-variation
 
 # outdir=../data/for_hod/v1.1/
 # mkdir -p $ourdir

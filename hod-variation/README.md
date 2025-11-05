@@ -9,7 +9,8 @@ We fit HOD models to DESI DR2 data using AbacusUtils (modified by Hanyu).
    1. prepare: prepare the Abacus simulations with the mode of profiles, 
    2. fitting: run nest sampling to fit the HOD model,
    3. post-process: Analyze the chains and get the best-fit parameters (follow `post.sh`, we add it into the slurm script so it will be done automatically after the MCMC sampling is done), generate mock catalogs with the best-fit HOD parameters and measure the correlation functions.
-3. NEXT: post-process has generated the best-fit catalogs, go `../mock-data-cov/` to measure the power spectrum.
+3. Analysis among different fittings (Optional): use `comp_fit.py` to compare the fitting results from different simulations / HOD models. (Pay attention the data vector should be the same among the different fittings you want to compare.)
+4. NEXT: post-process has generated the best-fit catalogs, go `../mock-data-cov/` to measure the power spectrum.
 
 ## Works have been done with these codes 
 
@@ -24,6 +25,8 @@ We fit HOD models to DESI DR2 data using AbacusUtils (modified by Hanyu).
 9. QSO z=1.7-2.3 ('z4'), on `Abacus_pngbase_c300_ph000` ($f_{\rm NL}=30$), base HOD model with dv.
 10. same as 7, but cut 3 more bins at small scales in wp (from 6) and xi (from 11).
 11. same as 9, but cut 3 more bins at small scales in wp (from 6) and xi (from 11).
+12. QSO z=2.3-2.8 ('z5') and z=2.8-3.5 ('z6'), start from the 6th rp and 11th s bin (noted as 'rp6s11'), on `Abacus_pngbase_c300_ph000` ($f_{\rm NL}=30$), base HOD model with dv.
+13. QSO at all 6 redshift bins ('z1', 'z4', 'z6' would have different prior on logM1), in 'rp6s11' mode, on `AbacusSummit_base_c302_ph000`($f_{\rm NL}=100$), base HOD model w/ & w/o dv.
 
 
 
@@ -57,3 +60,7 @@ I installed it into `$HOME/lib` and added the path to the enviroment variable `P
 ```sh
 export PYTHONPATH=$PYTHONPATH:$HOME/lib
 ```
+
+## Others
+
+- On NERSC, in order to reach out the results easily, I have create a link by `ln -sT /pscratch/sd/s/siyizhao/desi-dr2-hod /global/homes/s/siyizhao/projects/fihobi/hod-variation/output/desi-dr2-hod`, so you can find the output files in `./output/desi-dr2-hod/`.

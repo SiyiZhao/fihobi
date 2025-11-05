@@ -93,7 +93,7 @@ def read_bf_clus(config_path, tracer='QSO'):
 
 
 
-def plot_all(data_obj,tracer,clustering,idxwp=np.arange(3,21), idxxi=np.arange(8,21),clustering_other=None,labels=None,text=None,out=None):
+def plot_all(data_obj,tracer,clustering,idxwp=np.arange(3,21), idxxi=np.arange(8,21),clustering_other=None,labels=None,colors=None,text=None,out=None):
 
     fig, axs = plt.subplots(2,3,constrained_layout=True,sharex='col',figsize=(24,8),gridspec_kw={'height_ratios': [3, 1]})
     
@@ -141,6 +141,8 @@ def plot_all(data_obj,tracer,clustering,idxwp=np.arange(3,21), idxxi=np.arange(8
             the_others.append(d)
         if labels is None:
             labels = [f"Model {i+1}" for i in range(len(the_others))]
+        if colors is None:
+            colors = _DEEP_HEX
     
     # Plot    
     for i,ctype in enumerate(ctypes):
@@ -155,8 +157,8 @@ def plot_all(data_obj,tracer,clustering,idxwp=np.arange(3,21), idxxi=np.arange(8
         axs[1,i].fill_between(x,(-err_obs[ctype])/obs[ctype],(err_obs[ctype])/obs[ctype],color='lightgray')
         if clustering_other is not None:
             for j,d in enumerate(the_others):
-                axs[0,i].plot(x,x*d[ctype],lw=1.5,color=_DEEP_HEX[(j+1)%len(_DEEP_HEX)],label=labels[j+1] if i==0 else None)
-                axs[1,i].plot(x,(d[ctype]-obs[ctype])/obs[ctype],lw=1.5,color=_DEEP_HEX[(j+1)%len(_DEEP_HEX)])
+                axs[0,i].plot(x,x*d[ctype],lw=1.5,color=colors[(j+1)%len(colors)],label=labels[j+1] if i==0 else None)
+                axs[1,i].plot(x,(d[ctype]-obs[ctype])/obs[ctype],lw=1.5,color=colors[(j+1)%len(colors)])
         axs[0,i].set_xscale('log')
         axs[1,i].set_xscale('log')
         axs[0,i].set_ylabel(y0labels[i],fontsize=20)
@@ -182,6 +184,7 @@ def plot_all_compare(
     clustering_baseline,
     clustering_others,
     labels=None,
+    color=None,
     idxwp=np.arange(3,21),
     idxxi=np.arange(8,21),
     text=None,
@@ -234,6 +237,8 @@ def plot_all_compare(
     # Labels
     if labels is None:
         labels = [f"Model {i+1}" for i in range(len(the_others))]
+    if color is None:
+        color = _DEEP_HEX
 
     for i, ctype in enumerate(ctypes):
         x = rp_wp if ctype == 'wp' else s_xi
@@ -247,7 +252,7 @@ def plot_all_compare(
 
         # Others in color
         for j, d in enumerate(the_others):
-            axs[0, i].plot(x, x*d[ctype], lw=2.2, color=_DEEP_HEX[j % len(_DEEP_HEX)],
+            axs[0, i].plot(x, x*d[ctype], lw=2.2, color=color[j % len(color)],
                            label=labels[j] if i==0 else None)
 
         # --- Bottom: ratio to baseline ---
@@ -255,7 +260,7 @@ def plot_all_compare(
         base = the_base[ctype]
         denom = np.where(base != 0.0, base, np.nan)
         for j, d in enumerate(the_others):
-            axs[1, i].plot(x, d[ctype]/denom, lw=2.0, color=_DEEP_HEX[j % len(_DEEP_HEX)])
+            axs[1, i].plot(x, d[ctype]/denom, lw=2.0, color=color[j % len(color)])
 
         # Cosmetics
         axs[0, i].set_xscale('log'); axs[1, i].set_xscale('log')

@@ -1,0 +1,94 @@
+HOD_params:
+  tracer_flags:
+    ELG: false
+    LRG: false
+    QSO: true
+  use_particles: false
+  use_profiles: true
+  want_AB: true
+  want_rsd: true
+  want_dv: true
+  write_to_disk: false
+  QSO_params:
+    logM_cut: 12.03
+    logM1: 13.11
+    sigma: 0.08
+    alpha: 1.03
+    kappa: 0.39
+    alpha_c: 0.92
+    alpha_s: 2.7
+    ic: 1.0
+    profile_code: 1
+  dv_draw_Q: /global/homes/s/siyizhao/projects/fihobi/data/dv_draws/QSO_z1.7-2.3_CDF.npz
+clustering_params:
+  bin_params:
+    logmax: 1.5
+    logmin: -1.0
+    nbins: 15
+  clustering_type: all
+  pi_bin_size: 40
+  pimax: 40
+nthread: 64
+prepare_sim:
+  Nparallel_load: 18
+sim_params:
+  cleaned_halos: true
+  output_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/mocks/
+  sim_dir: /global/cfs/projectdirs/desi/cosmosim/Abacus/
+  sim_name: Abacus_pngbase_c302_ph000
+  subsample_dir: /pscratch/sd/s/siyizhao/AbacusSummit/subsample_desidr2_profile_withAB/
+  z_mock: 2.0
+  force_mt: true
+data_params:
+  tracer_combos:
+    QSO_QSO:
+      path2cov: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1_rp6s11/cov_QSO_1.7_2.3_cut.dat
+      path2wp: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1_rp6s11/wp_QSO_1.7_2.3_cut.dat
+      path2xi02: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1_rp6s11/xi02_QSO_1.7_2.3_cut.dat
+  tracer_density_mean:
+    QSO: 1.419e-05
+  tracer_density_std:
+    QSO: 1.419e-06
+chain_params:
+  chain_prefix: chain_rp6s11_
+  output_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/QSO-fnl100/z4_base-dv/
+  nlive: 500
+  tol: 0.5
+  labels:
+  - \log M_{\text{cut}}
+  - \log M_1
+  - \sigma
+  - \alpha
+  - \kappa
+  - \alpha_{\text{c}}
+  - \alpha_{\text{s}}
+fit_params:
+  QSO:
+    logM_cut:
+    - 0
+    - 11.0
+    - 14.0
+    logM1:
+    - 1
+    - 12.5
+    - 17.5
+    sigma:
+    - 2
+    - 0.001
+    - 2.0
+    alpha:
+    - 3
+    - 0.0
+    - 3.0
+    kappa:
+    - 4
+    - 0.0
+    - 5.0
+    alpha_c:
+    - 5
+    - 0.0
+    - 3.0
+    alpha_s:
+    - 6
+    - 0.0
+    - 10.0
