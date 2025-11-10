@@ -1,9 +1,11 @@
 # Mock Data and Covariance
 
-In this directory, we 
-1. measure the clusterings of AbacusPNG mocks, 
-2. use the clusterings to calibrate the parameters of EZmock, (this part is underway with the help of Zhuoyang Li & Yunyi Tang),
-3. and then generate EZmocks power spectrum multipoles for the covariance matrix.
+Here we prepare the data and covariance for the PNG inferences.
+
+The main tasks:
+1. Measure the power spectrum of AbacusPNG mocks with `pypower`. Refer to `mock_ps.sh`, where *for one sample* we measure the power spectra of best-fit HOD mocks in different settings of simulations and HOD models, and then compare them with a plot @ mock-data-cov/out
+2. Calibrate the parameters of EZmock, (this part works elsewhere and with the help of Zhuoyang Li, Yunyi Tang & Cheng Zhao),
+3. Generate EZmocks power spectrum multipoles for the covariance matrix. Refer to `genEZmocks.sh`. (You may want to replot with `plot_ps.py` in `scripts/` once the EZmocks are generated.)
 
 ## Measure AbacusPNG mocks
 
@@ -16,6 +18,7 @@ Please refer to `genEZmocks.sh` for the script, where we generate EZmocks with P
 
 - `sleep 1` 52:39 for 500 realizations.
 - no `sleep` 53:39 for 500 realizations.
+- delete write `rand_ampl` and `rand_phase` files in 2LPT code. Now no `sleep`, around 1 hour for 500 realizations with 512^3 on 4 nodes.
 
 
 ## Other Works 

@@ -32,4 +32,4 @@ nmodes = poles.nmodes
 k, pk0 = poles(ell=0, return_k=True, complex=False)
 pk2 = poles(ell=2, return_k=False, complex=False)
 array_form_powspec = np.vstack([k, kmin, kmax, kavg, nmodes, pk0, pk2]).T
-np.savetxt(out_for_EZmock, array_form_powspec)
+np.savetxt(out_for_EZmock, array_form_powspec, header='kcen kmin kmax kavg nmod P_0 P_2')

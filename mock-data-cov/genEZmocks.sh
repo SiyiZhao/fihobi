@@ -13,9 +13,9 @@ config=configs/ezQSOz1fnl100.yaml
 # we recommend to soft link logs and confs to scratch for faster I/O and enough space
 mkdir -p logs/ezmock/ conf_2lpt/params_2lpt/ /pscratch/sd/s/siyizhao/2LPTdisp/ "$odir"
 
-TOTAL=400      # total number of EZmocks to generate
-START=12101    # starting ID
-CPUS=32        # each mock uses 32 CPUs
+TOTAL=500      # total number of EZmocks to generate
+START=13501    # starting ID
+CPUS=16        # each mock uses 16 CPUs
 
 # === Detect environment ===
 # Get number of nodes and total CPUs
@@ -47,5 +47,4 @@ wait
 echo "All EZmock tasks completed."
 
 # === Optional cleanup ===
-rm -f rand_ampl.bin rand_phase.bin
 # rm conf_2lpt/params_2lpt/r*.param

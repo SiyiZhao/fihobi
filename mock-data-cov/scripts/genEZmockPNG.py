@@ -42,6 +42,7 @@ run_disp_2lpt(seed=seed, redshift=redshift, fnl=fnl, Ngrid=Ngrid, Lbox=Lbox, fix
 # generate EZmock and save -----------------------------------------------------
 # ensure the Python process (and libraries) use the desired thread count for EZmock
 print(f"Generating EZmock for seed {seed}...")
+print(f"nthread={nthread}")
 ez = EZmock(Lbox=Lbox, Ngrid=Ngrid, seed=EZseed, nthread=nthread)
 ez.eval_growth_params(z_out=redshift, z_pk=z_pk, Omega_m=Omega_m0, Omega_nu=Omega_nu)
 mydx = np.loadtxt(pdir + f'dispx_{seed}.txt')
@@ -63,7 +64,7 @@ print('EZmock generated, now measuring pypower poles...')
 # y = data[:, 1]
 # z_rsd = data[:, 2]
 # poles = run_pypower_redshift(x, y, z_rsd, ells=ells)
-poles = run_pypower(x, y, z, vz, rsd_fac)
+poles = run_pypower(x, y, z, vz, rsd_fac, ells=ells)
 outpath = odir + f'/pypowerpoles_r{seed}.npy'
 poles.save(outpath)
 print(f"Saved pypower poles to {outpath}")
