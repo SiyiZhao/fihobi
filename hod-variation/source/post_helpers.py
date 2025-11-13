@@ -170,7 +170,7 @@ def plot_all(data_obj,tracer,clustering,idxwp=np.arange(3,21), idxxi=np.arange(8
         axs[1,i].set_xlabel(xlabels[i],fontsize=20)
         axs[1,i].plot(x,np.zeros_like(x),ls='-.',color='black')    
     axs[1,2].set_ylim(-0.5,0.5)
-    axs[0,0].legend(frameon=False,fontsize=20,loc=4)
+    axs[0,1].legend(frameon=False,fontsize=20,loc=3)
     if text is not None:
         axs[0,0].annotate(text,xy=(0.05,0.85),xycoords='axes fraction',fontsize=20)
     if out is not None:

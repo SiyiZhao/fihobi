@@ -35,11 +35,12 @@ if __name__ == "__main__":
     # colors = ['black', "#1458C5", "#C44536"]
     # chains_out = 'output/comp_chains_z6.png'
     # clus_out = 'output/comp_clustering_z6.png'
-    tags = ['z1', 'z2', 'z3', 'z4', 'z5', 'z6']
+    tags = ['z1', 'z5']
+    # tags = ['z1', 'z2', 'z3', 'z4', 'z5', 'z6']
     for tag in tags:
-        configs = [f'configs/QSO-fnl100/{tag}_base-dv.yaml', f'configs/QSO-fnl100/{tag}_base.yaml']
-        labels = ['c302(fnl=100), w/ dv', 'c302(fnl=100), w/o dv']
-        colors = ['black', "#1458C5"]
+        configs = [f'configs/QSO-fnl100/{tag}_base-dv.yaml', f'configs/QSO-fnl100/{tag}_base.yaml', f'configs/QSO-fnl100/{tag}_base-A-dv.yaml']
+        labels = ['c302(fnl=100), w/ dv', 'c302(fnl=100), w/o dv', 'c302(fnl=100), w/ dv, c']
+        colors = ['black', "#1458C5", "#C44536"]
         chains_out = f'output/comp_chains_{tag}.png'
         clus_out = f'output/comp_clustering_{tag}.png'
         ## compare chains

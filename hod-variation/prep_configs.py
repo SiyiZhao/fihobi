@@ -32,10 +32,12 @@ sim_model = "fnl100"
 sim_name = "Abacus_pngbase_c302_ph000"
 
 hod_model = "base" 
+# Assembly=True
 Assembly=False 
-BiasENV=False
-# want_dv = True 
-want_dv = False
+BiasENV=True
+# BiasENV=False
+want_dv = True 
+# want_dv = False
 if Assembly:
     hod_model += "-A"
 if BiasENV:
@@ -50,19 +52,20 @@ chain_prefix = 'chain_rp6s11_11M118_'
 qso_bins = {'z1': (0.8, 1.1), 'z2': (1.1, 1.4), 'z3': (1.4, 1.7), 'z4': (1.7, 2.3), 'z5': (2.3, 2.8), 'z6': (2.8, 3.5)}
 z_mock = {'z1': 0.95, 'z2': 1.25, 'z3': 1.55, 'z4': 2.0, 'z5': 2.5, 'z6': 3.0}
 nbar = {'z1': 0.00003073, 'z2': 0.00003566, 'z3': 0.00003606, 'z4': 0.00001419, 'z5': 0.000007876, 'z6': 0.000005216} # from prep_data.py output
-# ! attention: z5 and z6 may have large alpha_s, and z6 has larger logM1, need to increase upper bound 
 
 for tag, (zmin, zmax) in qso_bins.items():
     print(f"{tag}: {zmin} - {zmax}")
     config_path = f"configs/QSO-{sim_model}/{tag}_{hod_model}.yaml" #relative config file path
     tweaks_qso = {
         "sim_params.sim_name": sim_name, 
+        "sim_params.output_dir": f"/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_{hod_model}/",
         "HOD_params.want_dv": want_dv,
         "HOD_params.dv_draw_Q": f"/global/homes/s/siyizhao/projects/fihobi/data/dv_draws/QSO_z{zmin}-{zmax}_CDF.npz", # change redshift error file
         "clustering_params.bin_params.logmin": -1.0, # change binning
         "clustering_params.bin_params.nbins": 15,
         "chain_params.chain_prefix": f"{chain_prefix}", # change output chain name
         "chain_params.output_dir": f"/pscratch/sd/s/siyizhao/desi-dr2-hod/QSO-{sim_model}/{tag}_{hod_model}/",
+        "chain_params.labels": ["\log M_{\\text{cut}}","\log M_1","\sigma","\\alpha","\kappa", "\\alpha_{\\text{c}}","\\alpha_{\\text{s}}"],
         "data_params.tracer_combos.QSO_QSO.path2cov": f"/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1_rp6s11/cov_QSO_{zmin}_{zmax}_cut.dat", # change data file
         "data_params.tracer_combos.QSO_QSO.path2wp": f"/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1_rp6s11/wp_QSO_{zmin}_{zmax}_cut.dat",
         "data_params.tracer_combos.QSO_QSO.path2xi02": f"/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1_rp6s11/xi02_QSO_{zmin}_{zmax}_cut.dat",
@@ -77,10 +80,16 @@ for tag, (zmin, zmax) in qso_bins.items():
                 "hi": [14, 18, 2.0, 3.0, 5.0, 3.0, 10.0]},
     }
     if Assembly:
+        tweaks_qso["chain_params.labels"] += ["A_{\\text{cent}}", "A_{\\text{sat}}"]
         fitspec_qso["QSO"]["names"] += ["Acent", "Asat"]
         fitspec_qso["QSO"]["lo"] += [-1.0, -1.0]
         fitspec_qso["QSO"]["hi"] += [1.0, 1.0]
-    
+    if BiasENV:
+        tweaks_qso["chain_params.labels"] += ["B_{\\text{cent}}", "B_{\\text{sat}}"]
+        fitspec_qso["QSO"]["names"] += ["Bcent", "Bsat"]
+        fitspec_qso["QSO"]["lo"] += [-2.0, -2.0]
+        fitspec_qso["QSO"]["hi"] += [2.0, 2.0]
+
     fit_over_qso = fit_params_overrides(fitspec_qso)
     overrides_qso = merge_overrides(fit_over_qso, tweaks_qso) # combine fit_params and other tweaks
 
