@@ -19,7 +19,7 @@ HOD_params:
     alpha_s: 2.7
     ic: 1.0
     profile_code: 1
-  dv_draw_Q: /global/homes/s/siyizhao/projects/fihobi/data/dv_draws/QSO_z0.8-1.1_CDF.npz
+  dv_draw_Q: /global/homes/s/siyizhao/projects/fihobi/data/dv_draws/QSO_z1.4-1.7_CDF.npz
 clustering_params:
   bin_params:
     logmax: 1.5
@@ -37,21 +37,21 @@ sim_params:
   sim_dir: /global/cfs/projectdirs/desi/cosmosim/Abacus/
   sim_name: Abacus_pngbase_c302_ph000
   subsample_dir: /pscratch/sd/s/siyizhao/AbacusSummit/subsample_desidr2_profile_withAB/
-  z_mock: 0.95
+  z_mock: 1.55
   force_mt: true
 data_params:
   tracer_combos:
     QSO_QSO:
-      path2cov: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1_rp6s11/cov_QSO_0.8_1.1_cut.dat
-      path2wp: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1_rp6s11/wp_QSO_0.8_1.1_cut.dat
-      path2xi02: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1_rp6s11/xi02_QSO_0.8_1.1_cut.dat
+      path2cov: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1_rp6s11/cov_QSO_1.4_1.7_cut.dat
+      path2wp: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1_rp6s11/wp_QSO_1.4_1.7_cut.dat
+      path2xi02: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1_rp6s11/xi02_QSO_1.4_1.7_cut.dat
   tracer_density_mean:
-    QSO: 3.073e-05
+    QSO: 3.606e-05
   tracer_density_std:
-    QSO: 3.073e-06
+    QSO: 3.606e-06
 chain_params:
   chain_prefix: chain_rp6s11_11M118_
-  output_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/QSO-fnl100/z1_base-A-dv/
+  output_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/QSO-fnl100/z3_base-A-dv/
   nlive: 500
   tol: 0.5
   labels:
@@ -96,9 +96,9 @@ fit_params:
     - 10.0
     Acent:
     - 7
-    - -5.0
-    - 5.0
+    - -2.0
+    - 2.0
     Asat:
     - 8
-    - -5.0
-    - 5.0
+    - -2.0
+    - 2.0

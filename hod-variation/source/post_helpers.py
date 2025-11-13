@@ -157,7 +157,7 @@ def plot_all(data_obj,tracer,clustering,idxwp=np.arange(3,21), idxxi=np.arange(8
         axs[1,i].fill_between(x,(-err_obs[ctype])/obs[ctype],(err_obs[ctype])/obs[ctype],color='lightgray')
         if clustering_other is not None:
             for j,d in enumerate(the_others):
-                axs[0,i].plot(x,x*d[ctype],lw=1.5,color=colors[(j+1)%len(colors)],label=labels[j+1] if i==0 else None)
+                axs[0,i].plot(x,x*d[ctype],lw=1.5,color=colors[(j+1)%len(colors)],label=labels[j+1] if i==1 else None)
                 axs[1,i].plot(x,(d[ctype]-obs[ctype])/obs[ctype],lw=1.5,color=colors[(j+1)%len(colors)])
         axs[0,i].set_xscale('log')
         axs[1,i].set_xscale('log')

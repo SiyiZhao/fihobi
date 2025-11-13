@@ -32,10 +32,10 @@ sim_model = "fnl100"
 sim_name = "Abacus_pngbase_c302_ph000"
 
 hod_model = "base" 
-# Assembly=True
-Assembly=False 
-BiasENV=True
-# BiasENV=False
+Assembly=True
+# Assembly=False 
+# BiasENV=True
+BiasENV=False
 want_dv = True 
 # want_dv = False
 if Assembly:
@@ -82,8 +82,8 @@ for tag, (zmin, zmax) in qso_bins.items():
     if Assembly:
         tweaks_qso["chain_params.labels"] += ["A_{\\text{cent}}", "A_{\\text{sat}}"]
         fitspec_qso["QSO"]["names"] += ["Acent", "Asat"]
-        fitspec_qso["QSO"]["lo"] += [-1.0, -1.0]
-        fitspec_qso["QSO"]["hi"] += [1.0, 1.0]
+        fitspec_qso["QSO"]["lo"] += [-2.0, -2.0]
+        fitspec_qso["QSO"]["hi"] += [2.0, 2.0]
     if BiasENV:
         tweaks_qso["chain_params.labels"] += ["B_{\\text{cent}}", "B_{\\text{sat}}"]
         fitspec_qso["QSO"]["names"] += ["Bcent", "Bsat"]
