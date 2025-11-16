@@ -8,13 +8,13 @@ source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 cd /global/homes/s/siyizhao/projects/fihobi/mock-data-cov
 
 # === Set and Create output dirs ===
-odir=/pscratch/sd/s/siyizhao/EZmock/output/mocks/QSO-z1_c302
-config=configs/ezQSOz1fnl100.yaml
+odir=/pscratch/sd/s/siyizhao/EZmock/output/mocks/QSO-z6_c302
+config=configs/ezQSOz6fnl100.yaml
 # we recommend to soft link logs and confs to scratch for faster I/O and enough space
 mkdir -p logs/ezmock/ conf_2lpt/params_2lpt/ /pscratch/sd/s/siyizhao/2LPTdisp/ "$odir"
 
-TOTAL=500      # total number of EZmocks to generate
-START=13501    # starting ID
+TOTAL=1000      # total number of EZmocks to generate
+START=10001    # starting ID
 CPUS=16        # each mock uses 16 CPUs
 
 # === Detect environment ===
@@ -32,7 +32,7 @@ for ((k=0; k<TOTAL; k++)); do
     id=$((START + k))
     # each srun gets 1 task, exclusive CPUs so tasks don't overlap
     srun -N1 -n1 --cpus-per-task=$CPUS --exclusive --cpu-bind=cores \
-        --output=logs/ezmock/id${id}.log \
+        --output=$odir/log_r${id}.log \
         env OMP_NUM_THREADS=$CPUS MKL_NUM_THREADS=$CPUS \
         python scripts/genEZmockPNG.py "$id" "$odir" "$config" &
     

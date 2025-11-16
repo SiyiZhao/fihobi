@@ -1,0 +1,15 @@
+redshift: 3.0
+
+ntracer: 4985722
+# fnl4ezmocks: 600
+# # [1.2, 8, 0.35, 480],
+# rho_c: 1.2
+# rho_exp: 8
+# pdf_base: 0.35
+# sigma_v: 480.
+fnl4ezmocks: 400
+# [1.31, 8, 0.32, 450],
+rho_c: 1.31
+rho_exp: 8
+pdf_base: 0.32
+sigma_v: 450.
