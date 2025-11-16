@@ -13,9 +13,24 @@ data_fn = path2mock / 'QSOs.dat'
 out_path = path2mock / 'pypower_poles.npy'
 out_for_EZmock = path2mock / 'pypower2powspec.txt'
 
-print(f"Loading mock from {data_fn}")
-data = np.loadtxt(data_fn, skiprows=15)
-x, y, z = data[:, 0], data[:, 1], data[:, 2]
+def read_AbacusHOD_cat(fname):
+    '''
+    Read AbacusHOD catalog file.
+    Return: x, y, z arrays in Mpc/h
+    '''
+    print(f"Loading mock from {fname}")
+    with open(fname, 'r') as f:
+        it = iter(f)
+        for line in it:
+            if not line.lstrip().startswith('#'):
+                break
+        data = np.loadtxt(it)
+    x = data[:, 0]
+    y = data[:, 1]
+    z = data[:, 2]
+    return x, y, z
+
+x, y, z = read_AbacusHOD_cat(data_fn)
 poles = run_pypower_redshift(x,y,z)
 
 print('Shot noise is {:.4f}.'.format(poles.shotnoise)) # cross-correlation, shot noise is 0.

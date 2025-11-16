@@ -9,6 +9,7 @@ import glob
 from pypower import PowerSpectrumMultipoles
 from matplotlib import pyplot as plt
 import matplotlib as mpl
+import os
 mpl.rc_file('../fig/matplotlibrc')
 color = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 
@@ -20,6 +21,10 @@ def parse_args():
 args = parse_args()
 tag = args.tag
 dirEZmocks = args.dirEZmocks if args.dirEZmocks else None
+if dirEZmocks is not None:
+    if not os.path.exists(dirEZmocks):
+        print(f"Warning: dirEZmocks '{dirEZmocks}' not found; skipping EZmocks plotting")
+        dirEZmocks = None
 
 # Data -------------------------------------------------------------------------
 z_mock = {'z1': 0.95, 'z2': 1.25, 'z3': 1.55, 'z4': 2.0, 'z5': 2.5, 'z6': 3.0}
@@ -27,14 +32,17 @@ z = z_mock[tag]
 dir_c300_dv=f'/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks/Abacus_pngbase_c300_ph000/z{z:.3f}/galaxies_rsd_dv/'
 dir_c302=f'/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd/'
 dir_c302_dv=f'/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/'
+dir_c302_A_dv=f'/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_base-A-dv/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/'
 poles_c302 = PowerSpectrumMultipoles.load(dir_c302 + 'pypower_poles.npy')
 poles_c300_dv = PowerSpectrumMultipoles.load(dir_c300_dv + 'pypower_poles.npy')
 poles_c302_dv = PowerSpectrumMultipoles.load(dir_c302_dv + 'pypower_poles.npy')
+poles_c302_A_dv = PowerSpectrumMultipoles.load(dir_c302_A_dv + 'pypower_poles.npy')
 k, P0_c302 = poles_c302(ell=0, return_k=True, complex=False)
 k_tmp1, P0_c302_dv = poles_c302_dv(ell=0, return_k=True, complex=False)
 k_tmp2, P0_c300_dv = poles_c300_dv(ell=0, return_k=True, complex=False)
+k_tmp3, P0_c302_A_dv = poles_c302_A_dv(ell=0, return_k=True, complex=False)
 # ignore NaNs when comparing k arrays
-if not (np.allclose(k_tmp1, k, equal_nan=True) and np.allclose(k_tmp2, k, equal_nan=True)):
+if not (np.allclose(k_tmp1, k, equal_nan=True) and np.allclose(k_tmp2, k, equal_nan=True) and np.allclose(k_tmp3, k, equal_nan=True)):
     raise ValueError("k arrays do not match!")
 
 if dirEZmocks is not None:
@@ -66,6 +74,7 @@ if dirEZmocks is not None:
 axs[0].plot(k[1:], P0_c302_dv[1:], label='base: fNL=100, dv', color=color[0])
 axs[0].plot(k[1:], P0_c302[1:], '--', label='fNL=100', color=color[1])
 axs[0].plot(k[1:], P0_c300_dv[1:], ':', label='fNL=30, dv', color=color[2])
+axs[0].plot(k[1:], P0_c302_A_dv[1:], '-.', label='fNL=100, dv, A', color=color[3])
 axs[0].set_xscale('log')
 axs[0].set_yscale('log')
 axs[0].set_ylabel(r'$P_0(k)$ [$(\mathrm{Mpc}/h)^{3}$]')
@@ -74,9 +83,11 @@ axs[0].legend()
 # bottom panel: fractional errors (P_variant - P_base) / P_base
 frac_c302 = P0_c302 / P0_c302_dv - 1
 frac_c300_dv = P0_c300_dv / P0_c302_dv - 1
+frac_c302_A_dv = P0_c302_A_dv / P0_c302_dv - 1
 axs[1].axhline(0, color='gray', lw=0.8)
 axs[1].plot(k[1:], frac_c302[1:], '--', color=color[1])
 axs[1].plot(k[1:], frac_c300_dv[1:], ':', color=color[2])
+axs[1].plot(k[1:], frac_c302_A_dv[1:], '-.', color=color[3])
 axs[1].set_xscale('log')
 axs[1].set_xlabel(r'$k$ [$h/\mathrm{Mpc}$]')
 axs[1].set_ylabel(r'$P^{\rm xx}/P^{\rm base}-1$')
