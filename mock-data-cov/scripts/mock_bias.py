@@ -138,19 +138,21 @@ if __name__ == "__main__":
     IDIR = "/global/homes/s/siyizhao/lib/AbacusSummit/Cosmologies/abacus_cosm000/"
     args = parse_args()
     tag = args.tag
-    fn_out = f'out/mock_bias_{tag}.png'
+    # hod_model = ''
+    hod_model = '_base-A-dv'
+    fn_out = f'out/mock_bias_{tag}{hod_model}.png'
     
     z_mock = {'z1': 0.95, 'z2': 1.25, 'z3': 1.55, 'z4': 2.0, 'z5': 2.5, 'z6': 3.0}
     z = z_mock[tag]
-    dir_c302_dv=f'/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/'
+    path2dir=f'/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks{hod_model}/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/'
 
-    k_mock, P0_mock = read_pypower(dir_c302_dv + 'pypower_poles.npy')
+    k_mock, P0_mock = read_pypower(path2dir + 'pypower_poles.npy')
     klin, plin_z1 = load_Abacus_linear_power(IDIR)
     plin_z = grow_plin(z, plin_z1, z_in=1.0)
     k_plot, bk = measure_bias_k(k_mock, P0_mock, klin, plin_z)
     bias = average_bias(k_plot, bk, bkmin=bkmin, bkmax=bkmax)
     plot_bias(k_plot, bk, bias, bkmin, bkmax, fn=fn_out)
     print(f"Measured bias for {tag} (z={z}): {bias:.4f}")
-    np.savetxt(dir_c302_dv + f'mock_bias.txt', [bias])
-    print(f"Bias value saved to {dir_c302_dv + f'mock_bias.txt'}")
+    np.savetxt(path2dir + f'mock_bias.txt', [bias])
+    print(f"Bias value saved to {path2dir + f'mock_bias.txt'}")
     
