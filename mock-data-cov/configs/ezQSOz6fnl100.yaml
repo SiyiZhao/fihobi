@@ -7,7 +7,8 @@ ntracer: 4985722
 # rho_exp: 8
 # pdf_base: 0.35
 # sigma_v: 480.
-fnl4ezmocks: 400
+# fnl4ezmocks: 400
+fnl4ezmocks: 300
 # [1.31, 8, 0.32, 450],
 rho_c: 1.31
 rho_exp: 8

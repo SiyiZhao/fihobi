@@ -3,7 +3,7 @@ fnl: 100.0
 
 input: 
   abacus_poles: /pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_base-A-dv/Abacus_pngbase_c302_ph000/z3.000/galaxies_rsd_dv/pypower_poles.npy
-  ezmock_poles: /pscratch/sd/s/siyizhao/EZmock/output/mocks/QSO-z6_c302/
+  ezmock_poles: /pscratch/sd/s/siyizhao/EZmock/output/mocks/QSO-z6_c302_fnl300/
 
 prior:
   p:

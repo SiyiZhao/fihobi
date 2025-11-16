@@ -8,7 +8,7 @@ source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 cd /global/homes/s/siyizhao/projects/fihobi/mock-data-cov
 
 # === Set and Create output dirs ===
-odir=/pscratch/sd/s/siyizhao/EZmock/output/mocks/QSO-z6_c302
+odir=/pscratch/sd/s/siyizhao/EZmock/output/mocks/QSO-z6_c302_fnl300
 config=configs/ezQSOz6fnl100.yaml
 # we recommend to soft link logs and confs to scratch for faster I/O and enough space
 mkdir -p logs/ezmock/ conf_2lpt/params_2lpt/ /pscratch/sd/s/siyizhao/2LPTdisp/ "$odir"

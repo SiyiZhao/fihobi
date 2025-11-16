@@ -3,7 +3,6 @@
 # pypower requires `source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main` on NERSC
 
 import argparse
-import sys
 import numpy as np
 import glob
 from pypower import PowerSpectrumMultipoles
@@ -17,10 +16,12 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Plot power spectra for a redshift bin.')
     parser.add_argument('--tag', type=str, required=True, help='Tag for the mock (e.g., z1, z2, etc.)')
     parser.add_argument('--dirEZmocks', type=str, help='Directory of EZmocks to plot. If empty, skip EZmocks plotting.')
+    parser.add_argument('--base', type=str, help='Base directory for the mocks')
     return parser.parse_args()
 args = parse_args()
 tag = args.tag
 dirEZmocks = args.dirEZmocks if args.dirEZmocks else None
+base = args.base if args.base else 'c302_dv'
 if dirEZmocks is not None:
     if not os.path.exists(dirEZmocks):
         print(f"Warning: dirEZmocks '{dirEZmocks}' not found; skipping EZmocks plotting")
@@ -55,6 +56,15 @@ if dirEZmocks is not None:
     p0_ez_avg = np.mean(p0_ez, axis=0)
     p0_err = np.std(p0_ez, axis=0)
     print(f"Loaded {len(files)} EZmock power spectra from {dirEZmocks}")
+
+# base
+if base == 'c302_dv':
+    P0_base = P0_c302_dv 
+elif base == 'c302_dv_A':
+    P0_base = P0_c302_A_dv
+else:
+    raise ValueError(f"Unknown base: {base}")
+    
 # Plot -------------------------------------------------------------------------
 
 fig, axs = plt.subplots(2,1,constrained_layout=True,sharex='col',figsize=(8,8),gridspec_kw={'height_ratios': [3, 1]})
@@ -66,8 +76,8 @@ if dirEZmocks is not None:
     for p in p0_ez[1:]:
         axs[0].plot(k_ez[1:], p[1:], color='gray', alpha=0.3)
     axs[0].plot(k_ez[1:], p0_ez_avg[1:], color='black', lw=2, label='EZmock average')
-    frac_ez = p0_ez_avg / P0_c302_dv - 1
-    frac_err = p0_err / P0_c302_dv 
+    frac_ez = p0_ez_avg / P0_base - 1
+    frac_err = p0_err / P0_base 
     axs[1].plot(k[1:], frac_ez[1:], color='black', lw=2)
     axs[1].fill_between(k[1:], - frac_err[1:], frac_err[1:], color='gray', alpha=0.5, label=r'EZmock $1\sigma$')    
 # top panel: original spectra
@@ -81,10 +91,12 @@ axs[0].set_ylabel(r'$P_0(k)$ [$(\mathrm{Mpc}/h)^{3}$]')
 axs[0].legend()
 
 # bottom panel: fractional errors (P_variant - P_base) / P_base
-frac_c302 = P0_c302 / P0_c302_dv - 1
-frac_c300_dv = P0_c300_dv / P0_c302_dv - 1
-frac_c302_A_dv = P0_c302_A_dv / P0_c302_dv - 1
+frac_c302_dv = P0_c302_dv / P0_base - 1
+frac_c302 = P0_c302 / P0_base - 1
+frac_c300_dv = P0_c300_dv / P0_base - 1
+frac_c302_A_dv = P0_c302_A_dv / P0_base - 1
 axs[1].axhline(0, color='gray', lw=0.8)
+axs[1].plot(k[1:], frac_c302_dv[1:], color=color[0])
 axs[1].plot(k[1:], frac_c302[1:], '--', color=color[1])
 axs[1].plot(k[1:], frac_c300_dv[1:], ':', color=color[2])
 axs[1].plot(k[1:], frac_c302_A_dv[1:], '-.', color=color[3])
@@ -100,4 +112,4 @@ ylim=0.2
 axs[1].set_ylim(-ylim, ylim)
 axs[1].legend()
 plt.tight_layout()
-plt.savefig(f'out/ps_comparison{tag}.png', dpi=300)
+plt.savefig(f'out/ps_comparison{tag}_{base}.png', dpi=300)
