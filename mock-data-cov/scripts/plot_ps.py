@@ -34,16 +34,19 @@ dir_c300_dv=f'/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks/Abacus_pngbase_c300_ph0
 dir_c302=f'/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd/'
 dir_c302_dv=f'/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/'
 dir_c302_A_dv=f'/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_base-A-dv/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/'
+dir_c302_B_dv=f'/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_base-B-dv/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/'
 poles_c302 = PowerSpectrumMultipoles.load(dir_c302 + 'pypower_poles.npy')
 poles_c300_dv = PowerSpectrumMultipoles.load(dir_c300_dv + 'pypower_poles.npy')
 poles_c302_dv = PowerSpectrumMultipoles.load(dir_c302_dv + 'pypower_poles.npy')
 poles_c302_A_dv = PowerSpectrumMultipoles.load(dir_c302_A_dv + 'pypower_poles.npy')
+poles_c302_B_dv = PowerSpectrumMultipoles.load(dir_c302_B_dv + 'pypower_poles.npy')
 k, P0_c302 = poles_c302(ell=0, return_k=True, complex=False)
 k_tmp1, P0_c302_dv = poles_c302_dv(ell=0, return_k=True, complex=False)
 k_tmp2, P0_c300_dv = poles_c300_dv(ell=0, return_k=True, complex=False)
 k_tmp3, P0_c302_A_dv = poles_c302_A_dv(ell=0, return_k=True, complex=False)
+k_tmp4, P0_c302_B_dv = poles_c302_B_dv(ell=0, return_k=True, complex=False)
 # ignore NaNs when comparing k arrays
-if not (np.allclose(k_tmp1, k, equal_nan=True) and np.allclose(k_tmp2, k, equal_nan=True) and np.allclose(k_tmp3, k, equal_nan=True)):
+if not (np.allclose(k_tmp1, k, equal_nan=True) and np.allclose(k_tmp2, k, equal_nan=True) and np.allclose(k_tmp3, k, equal_nan=True) and np.allclose(k_tmp4, k, equal_nan=True)):
     raise ValueError("k arrays do not match!")
 
 if dirEZmocks is not None:
@@ -85,6 +88,7 @@ axs[0].plot(k[1:], P0_c302_dv[1:], label='base: fNL=100, dv', color=color[0])
 axs[0].plot(k[1:], P0_c302[1:], '--', label='fNL=100', color=color[1])
 axs[0].plot(k[1:], P0_c300_dv[1:], ':', label='fNL=30, dv', color=color[2])
 axs[0].plot(k[1:], P0_c302_A_dv[1:], '-.', label='fNL=100, dv, A', color=color[3])
+axs[0].plot(k[1:], P0_c302_B_dv[1:], '-', label='fNL=100, dv, B', color=color[4])
 axs[0].set_xscale('log')
 axs[0].set_yscale('log')
 axs[0].set_ylabel(r'$P_0(k)$ [$(\mathrm{Mpc}/h)^{3}$]')
@@ -95,11 +99,13 @@ frac_c302_dv = P0_c302_dv / P0_base - 1
 frac_c302 = P0_c302 / P0_base - 1
 frac_c300_dv = P0_c300_dv / P0_base - 1
 frac_c302_A_dv = P0_c302_A_dv / P0_base - 1
+frac_c302_B_dv = P0_c302_B_dv / P0_base - 1
 axs[1].axhline(0, color='gray', lw=0.8)
 axs[1].plot(k[1:], frac_c302_dv[1:], color=color[0])
 axs[1].plot(k[1:], frac_c302[1:], '--', color=color[1])
 axs[1].plot(k[1:], frac_c300_dv[1:], ':', color=color[2])
 axs[1].plot(k[1:], frac_c302_A_dv[1:], '-.', color=color[3])
+axs[1].plot(k[1:], frac_c302_B_dv[1:], '-', color=color[4])
 axs[1].set_xscale('log')
 axs[1].set_xlabel(r'$k$ [$h/\mathrm{Mpc}$]')
 axs[1].set_ylabel(r'$P^{\rm xx}/P^{\rm base}-1$')

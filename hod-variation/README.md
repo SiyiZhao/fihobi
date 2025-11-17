@@ -12,6 +12,76 @@ We fit HOD models to DESI DR2 data using AbacusUtils (modified by Hanyu).
 3. Analysis among different fittings (Optional): use `comp_fit.py` to compare the fitting results from different simulations / HOD models. (Pay attention the data vector should be the same among the different fittings you want to compare.)
 4. NEXT: post-process has generated the best-fit catalogs, go `../mock-data-cov/` to measure the power spectrum.
 
+## Settings
+
+We refer to the methods of the [DR2HFAbacusMocks](https://desi.lbl.gov/trac/wiki/CrossAnalysisInfrastructureWG/LSSMocks/DR2HFAbacusMocks) (Login-in Needed), mainly on v1 since v2 is generated at the same time with this project. 
+
+### Data 
+
+The reference data are correlation functions measured from the catalog loa-v1.1, including:
+- $w_p(r_p)$ at $r_p=0.1-32$ Mpc/h, 15 (log) bins
+   - The original setting refers to DR2HFAbacusMocks is $0.03<r_p<32$ Mpc/h with 18 bins, but for QSOs at highest 2 redshift bins, there are some NAN, so we further cut the first 3 bins. We have tested that this cut does not affect the fitting results of $p$ much at the 4-th redshift bin, see `inference/` for details.
+- $\xi_0(s)$ and $\xi_2(s)$ at $s=0.7-32$ Mpc/h, 10 (log) bins 
+   - Same as $w_p$, we cut the first 3 bins compared to the original setting of DR2HFAbacusMocks ($0.2<s<32$ Mpc/h with 13 bins).
+The covariance are Jackknife covariance from 128 regions.
+
+### Simulation
+
+The main analysis is based on `Abacus_pngbase_c302_ph000` (Box: 2Gpc/h, N4096, fNL=100)
+
+### HOD models
+
+#### Default model
+
+For QSOs, we use the base HOD model with 5 parameters + velocity bias + redshift error effect (dv) as default. The base model is described as 
+$$
+\begin{aligned}
+& \bar{n}_{\mathrm{cen}}^{\mathrm{QSO}}(M)=\frac{1}{2} \operatorname{erfc}\left[\frac{\log _{10}\left(M_{\mathrm{cut}} / M\right)}{\sqrt{2} \sigma}\right], \\
+& \bar{n}_{\mathrm{sat}}^{\mathrm{QSO}}(M)=\left[\frac{M-\kappa M_{\mathrm{cut}}}{M_1}\right]^\alpha ,
+\end{aligned}
+$$
+and the velocity bias is applied to both centrals and satellites when assigning the velocities:
+$$
+\begin{aligned}
+& v^b_{x, \mathrm{cen}}=v_{x, \mathrm{halo}}+\alpha_{\mathrm{c}} \sigma_{v_x}, \\
+& v^b_{x, \mathrm{sat}}=v_{x, \mathrm{halo}}+\alpha_{\mathrm{s}} \sigma_{v_x}, 
+\end{aligned}
+$$
+where $\sigma_{v_x}$ is the 1D velocity dispersion of dark matter particles in the halo in the x-direction, velocity bias is also applied in y- and z-directions. 
+
+Additionally, we add redshift error effect (dv) to the line-of-sight velocity (z-direction) when generating the redshift space positions. The additional velocity is drawn from the distribution measured in the repeat observations, see `redshift_error/` for details.
+
+#### Assembly bias models
+
+`AbacusHOD` has two types of assembly bias models, one is concentration-based, the other is environment-based. We have tested both of them.
+
+To samplify the computation, `AbacusHOD` models the assembly bias effect by modifying the two mass scales, $M_{\rm cut}$ and $M_1$, as
+$$
+\begin{aligned}
+\log_{10} M_{\mathrm{cut}}^{\mathrm{mod}}&=\log_{10} M_{\mathrm{cut}}+A_c\left(c^{\mathrm{rank}}-0.5\right)+B_c\left(\delta^{\mathrm{rank}}-0.5\right), \\
+\log_{10} M_1^{\mathrm{mod}}&=\log_{10} M_1+A_s\left(c^{\mathrm{rank}}-0.5\right)+B_s\left(\delta^{\mathrm{rank}}-0.5\right),
+\end{aligned}
+$$
+where $A$ and $B$ are the parameters to control the strength of concentration-based and environment-based assembly bias, respectively. $c^{\mathrm{rank}}$ and $\delta^{\mathrm{rank}}$ are the rank of concentration and environment among halos in a narrow mass bin, scaled to $[0,1]$.
+
+
+### Likelihood
+
+Our likelihood contains two parts, the main part is from the correlation functions, and an additional part from the number density constraint if the HOD could not generate enough galaxies.
+
+$$\mathcal{L} = -\frac{1}{2}(\chi_{\xi}^2 + \chi_{n_g}^2),$$
+where
+$$\chi_{\xi}^2=\left(\xi_{\text {model }}-\xi_{\text {data }}\right)^T \boldsymbol{C}^{-1}\left(\xi_{\text {model }}-\xi_{\text {data }}\right),$$
+and
+$$\chi_{n_g}^2= \begin{cases}\left(\frac{n_{\text {mock }}-n_{\text {data }}}{\sigma_n}\right)^2 & \left(n_{\text {mock }}<n_{\text {data }}\right), \\ 0 & \left(n_{\text {mock }} \geq n_{\text {data }}\right) .\end{cases}$$
+The $\sigma_n$ is set to be 10% of $n_{\text {data }}$.
+
+Note in some early fittings, we also include the punishment when $n_{\text {mock }}$ is larger than $n_{\text {data }}$, but it should not affect the results much.
+
+### Sampler
+
+We use `pyMultiNest` as the sampler, with 500 live points and the tolerance set to 0.5.
+
 ## Works have been done with these codes 
 
 1. QSO z=0.8-2.1 ('z0' in our notation), on `AbacusSummit_base_c000_ph000` (fiducial cosmology), base HOD model with dv (redshift error).

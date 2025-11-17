@@ -32,10 +32,10 @@ sim_model = "fnl100"
 sim_name = "Abacus_pngbase_c302_ph000"
 
 hod_model = "base" 
-Assembly=True
-# Assembly=False 
-# BiasENV=True
-BiasENV=False
+# Assembly=True
+Assembly=False 
+BiasENV=True
+# BiasENV=False
 want_dv = True 
 # want_dv = False
 if Assembly:
@@ -87,8 +87,8 @@ for tag, (zmin, zmax) in qso_bins.items():
     if BiasENV:
         tweaks_qso["chain_params.labels"] += ["B_{\\text{cent}}", "B_{\\text{sat}}"]
         fitspec_qso["QSO"]["names"] += ["Bcent", "Bsat"]
-        fitspec_qso["QSO"]["lo"] += [-2.0, -2.0]
-        fitspec_qso["QSO"]["hi"] += [2.0, 2.0]
+        fitspec_qso["QSO"]["lo"] += [-5.0, -5.0]
+        fitspec_qso["QSO"]["hi"] += [5.0, 5.0]
 
     fit_over_qso = fit_params_overrides(fitspec_qso)
     overrides_qso = merge_overrides(fit_over_qso, tweaks_qso) # combine fit_params and other tweaks
@@ -105,7 +105,7 @@ for tag, (zmin, zmax) in qso_bins.items():
     chain_path = f"/pscratch/sd/s/siyizhao/desi-dr2-hod/QSO-{sim_model}/{tag}_{hod_model}/"
     config_path = f"configs/QSO-{sim_model}/{tag}_{hod_model}.yaml" #relative config file path
     launcher_path = f"launchers/QSO-{sim_model}_{tag}_{hod_model}.sh" #relative launcher file path
-    generate_slurm_launcher(time_hms="7:00:00",
+    generate_slurm_launcher(time_hms="8:00:00",
                             config_path=config_path, 
                             chain_path=chain_path,
                             job_name=f"QSO-{sim_model}_{tag}_{hod_model}",  #job name

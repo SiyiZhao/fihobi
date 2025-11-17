@@ -5,7 +5,7 @@
 #SBATCH --error=/global/homes/s/siyizhao/projects/fihobi/hod-variation/logs/%x_%j.err
 #SBATCH --qos=regular
 #SBATCH --account=desi
-#SBATCH --time=6:00:00
+#SBATCH --time=8:00:00
 #SBATCH --ntasks=4
 #SBATCH --cpus-per-task=64
 #SBATCH -C cpu

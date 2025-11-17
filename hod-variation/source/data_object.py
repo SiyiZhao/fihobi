@@ -108,7 +108,10 @@ class data_object:
             if tracer not in theory_density:
                 print(f"Warning: No theory density for tracer {tracer}.")
                 continue
-            diff = obs_density - theory_density[tracer]
-            std = self.density_std[tracer]
-            loglike_density += -0.5 * (diff ** 2 / (std ** 2))
+            if theory_density[tracer] >= obs_density:
+                continue  # No penalty if theory density >= observed
+            else:
+                diff = obs_density - theory_density[tracer]
+                std = self.density_std[tracer]
+                loglike_density += -0.5 * ( (diff ** 2) / (std ** 2) ) 
         return loglike_cluster + loglike_density
