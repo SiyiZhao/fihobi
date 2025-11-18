@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 import matplotlib as mpl
 import os
 mpl.rc_file('../fig/matplotlibrc')
-color = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+color = ['#1f77b4', '#ff7f0e', '#9467bd', '#d62728', '#2ca02c', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Plot power spectra for a redshift bin.')
@@ -88,7 +88,7 @@ axs[0].plot(k[1:], P0_c302_dv[1:], label='base: fNL=100, dv', color=color[0])
 axs[0].plot(k[1:], P0_c302[1:], '--', label='fNL=100', color=color[1])
 axs[0].plot(k[1:], P0_c300_dv[1:], ':', label='fNL=30, dv', color=color[2])
 axs[0].plot(k[1:], P0_c302_A_dv[1:], '-.', label='fNL=100, dv, A', color=color[3])
-axs[0].plot(k[1:], P0_c302_B_dv[1:], '-', label='fNL=100, dv, B', color=color[4])
+axs[0].plot(k[1:], P0_c302_B_dv[1:], '-.', label='fNL=100, dv, B', color=color[4])
 axs[0].set_xscale('log')
 axs[0].set_yscale('log')
 axs[0].set_ylabel(r'$P_0(k)$ [$(\mathrm{Mpc}/h)^{3}$]')
@@ -105,7 +105,7 @@ axs[1].plot(k[1:], frac_c302_dv[1:], color=color[0])
 axs[1].plot(k[1:], frac_c302[1:], '--', color=color[1])
 axs[1].plot(k[1:], frac_c300_dv[1:], ':', color=color[2])
 axs[1].plot(k[1:], frac_c302_A_dv[1:], '-.', color=color[3])
-axs[1].plot(k[1:], frac_c302_B_dv[1:], '-', color=color[4])
+axs[1].plot(k[1:], frac_c302_B_dv[1:], '-.', color=color[4])
 axs[1].set_xscale('log')
 axs[1].set_xlabel(r'$k$ [$h/\mathrm{Mpc}$]')
 axs[1].set_ylabel(r'$P^{\rm xx}/P^{\rm base}-1$')
@@ -119,3 +119,4 @@ axs[1].set_ylim(-ylim, ylim)
 axs[1].legend()
 plt.tight_layout()
 plt.savefig(f'out/ps_comparison{tag}_{base}.png', dpi=300)
+print(f'Saved figure to out/ps_comparison{tag}_{base}.png')

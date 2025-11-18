@@ -35,7 +35,7 @@ if __name__ == "__main__":
     # colors = ['black', "#1458C5", "#C44536"]
     # chains_out = 'output/comp_chains_z6.png'
     # clus_out = 'output/comp_clustering_z6.png'
-    tags = ['z1']
+    tags = ['z1', 'z6']
     # tags = ['z1', 'z5']
     # tags = ['z1', 'z2', 'z3', 'z4', 'z5', 'z6']
     for tag in tags:
