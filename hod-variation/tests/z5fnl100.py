@@ -17,8 +17,10 @@ from data_object import data_object
 path_cfg = '/global/homes/s/siyizhao/projects/fihobi/hod-variation/configs/QSO-fnl30/z5_base-dv.yaml'
 path_c300 = '/pscratch/sd/s/siyizhao/data_learnCosm/AbacusMocks/QSOz5-fnl30bf/Abacus_pngbase_c300_ph000/z2.500/galaxies_rsd_dv/clustering.npy'
 path_c302 = '/pscratch/sd/s/siyizhao/data_learnCosm/AbacusMocks/QSOz5-fnl30bf/Abacus_pngbase_c302_ph000/z2.500/galaxies_rsd_dv/clustering.npy'
+path_c302bf = '/pscratch/sd/s/siyizhao/data_learnCosm/AbacusMocks/QSOz5-fnl100bf/Abacus_pngbase_c302_ph000/z2.500/galaxies_rsd_dv/clustering.npy'
 clus_c300 = np.load(path_c300, allow_pickle=True).item()['QSO_QSO']
 clus_c302 = np.load(path_c302, allow_pickle=True).item()['QSO_QSO']
+clus_c302bf = np.load(path_c302bf, allow_pickle=True).item()['QSO_QSO']
 
 # %% [markdown]
 # observation data
@@ -43,22 +45,25 @@ errall_d=np.sqrt(np.diag(data_obj.cov['QSO_QSO']))
 err_obs={}
 the_c300={}
 the_c302={}
+the_c302bf={}
 
 istart=0
 err_obs['wp']=errall_d[istart:istart+len(obs['wp'])]
 the_c300['wp']=clus_c300[istart:istart+len(obs['wp'])]
 the_c302['wp']=clus_c302[istart:istart+len(obs['wp'])]
+the_c302bf['wp']=clus_c302bf[istart:istart+len(obs['wp'])]
 
 istart+=len(obs['wp'])
 err_obs['xi0']=errall_d[istart:istart+len(obs['xi0'])]
 the_c300['xi0']=clus_c300[istart:istart+len(obs['xi0'])]
 the_c302['xi0']=clus_c302[istart:istart+len(obs['xi0'])]
+the_c302bf['xi0']=clus_c302bf[istart:istart+len(obs['xi0'])]
 
 istart+=len(obs['xi0'])
 err_obs['xi2']=errall_d[istart:istart+len(obs['xi2'])]        
 the_c300['xi2']=clus_c300[istart:istart+len(obs['xi2'])]
 the_c302['xi2']=clus_c302[istart:istart+len(obs['xi2'])]
-
+the_c302bf['xi2']=clus_c302bf[istart:istart+len(obs['xi2'])]
 
 # %% [markdown]
 # plot
@@ -93,6 +98,8 @@ for i,ctype in enumerate(ctypes):
     axs[1,i].plot(x,(the_c300[ctype]-obs[ctype])/obs[ctype],color='black')
     axs[0,i].plot(x,x*the_c302[ctype],color='red',label='fNL=100 base-dv')
     axs[1,i].plot(x,(the_c302[ctype]-obs[ctype])/obs[ctype],color='red')
+    axs[0,i].plot(x,x*the_c302bf[ctype],color='blue',label='fNL=100 base-dv bf')
+    axs[1,i].plot(x,(the_c302bf[ctype]-obs[ctype])/obs[ctype],color='blue')
     axs[0,i].set_xscale('log')
     axs[1,i].set_xscale('log')
     axs[0,i].set_ylabel(y0labels[i],fontsize=20)
@@ -105,7 +112,6 @@ for i,ctype in enumerate(ctypes):
     axs[1,i].plot(x,np.zeros_like(x),ls='-.',color='black')    
 axs[1,2].set_ylim(-0.5,0.5)
 axs[0,0].legend(frameon=False,fontsize=20,loc=4)
-plt.show()
 
 # %%
 fig.savefig('output/test_z5fnl100.png',dpi=300)

@@ -23,3 +23,5 @@ cd /global/homes/s/siyizhao/projects/fihobi/hod-variation
 # srun -n 4 -c 64 python -m abacusnbody.hod.prepare_sim_profiles --path2config $config
 srun -n 4 -c 64 python scripts/run_pmn.py --config $config > $outdir/run.log 2>&1
 srun -n 1 -c 64 python scripts/post.py --config $config > $outdir/post.log 2>&1
+
+# srun -n 1 -c 64 python scripts/run_pmn.py --config $config > $outdir/test_chi2.log 2>&1

@@ -96,8 +96,10 @@ def main():
     fit_.write_prior_file()
 
     ## test
-    # test = log_likelihood(np.array([12.03,13.11,0.08,1.03,0.39,0.92,2.7 ]))  # example call
-    # print(test)
+    # test = log_likelihood(np.array([11.7209282, 11.1767657, 0.04491125, 0.90375827, 3.85540798, 1.81135532, 1.90593657]))  # example call
+    # print('lnL of this MAP:', test)
+    # test2 = log_likelihood(np.array([12.07452977, 12.9662911, 0.13082451, 1.32434491, 0.53177675, 1.80176316, 2.7631462 ]))
+    # print('lnL of the MAP on fNL=30:', test2)
     ## run 
     fit_.run_pmn()
 

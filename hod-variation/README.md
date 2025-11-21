@@ -71,12 +71,19 @@ Our likelihood contains two parts, the main part is from the correlation functio
 
 $$\mathcal{L} = -\frac{1}{2}(\chi_{\xi}^2 + \chi_{n_g}^2),$$
 where
-$$\chi_{\xi}^2=\left(\xi_{\text {model }}-\xi_{\text {data }}\right)^T \boldsymbol{C}^{-1}\left(\xi_{\text {model }}-\xi_{\text {data }}\right),$$
+$$\chi_{\xi}^2=\left(\xi_{\mathrm{model }}-\xi_{\mathrm{data }}\right)^T \boldsymbol{C}^{-1}\left(\xi_{\mathrm{model }}-\xi_{\mathrm{data }}\right),$$
 and
-$$\chi_{n_g}^2= \begin{cases}\left(\frac{n_{\text {mock }}-n_{\text {data }}}{\sigma_n}\right)^2 & \left(n_{\text {mock }}<n_{\text {data }}\right), \\ 0 & \left(n_{\text {mock }} \geq n_{\text {data }}\right) .\end{cases}$$
-The $\sigma_n$ is set to be 10% of $n_{\text {data }}$.
+$$\chi_{n_g}^2= \begin{cases}\left(\frac{n_{\mathrm {mock }}-n_{\mathrm{data }}}{\sigma_n}\right)^2 & \left(n_{\mathrm{mock }}<n_{\mathrm{data }}\right), \\ 0 & \left(n_{\mathrm{mock }} \geq n_{\mathrm{data }}\right) .\end{cases}$$
+The $\sigma_n$ is set to be 10% of $n_{\mathrm{data }}$.
 
-Note in some early fittings, we also include the punishment when $n_{\text {mock }}$ is larger than $n_{\text {data }}$, but it should not affect the results much.
+Note in some early fittings, we also include the punishment when $n_{\mathrm{mock }}$ is larger than $n_{\mathrm{data }}$, but it should not affect the results much.
+
+Additionally, there are some requirements:
+- for LRGs, the $\kappa M_{\rm cut} \geq 10^{12}$, and for QSOs, the $\kappa M_{\rm cut} \geq 2\times 10^{11}$;
+- satellite fraction $f_{\rm sat} \leq 0.6$;
+and addtional operates:
+- about the incompleteness, first set $f_{\rm ic}=1$ and find the mock number density; for LRGs, if the mock number density larger than the observed one, the incompleteness $f_{\rm ic}$ is adjusted accordingly, (then this parameter would downsample the mock galaxies?); for other tracers, the refined number density is set to 0.001 rather than the observed one.
+- before compute the likelihood, the "mock number density" is set to the observed one if the real mock number density is larger than the observed one. So there is no punishment for having too many mock galaxies.
 
 ### Sampler
 
