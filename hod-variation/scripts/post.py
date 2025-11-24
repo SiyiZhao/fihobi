@@ -40,7 +40,8 @@ def main(config):
     chain_params = config_full.get("chain_params",{})
     nthread = config_full.get("nthread", 32)
     data_obj = data_object(data_params, HOD_params, clustering_params)
-    tracer = list(fit_params.keys())[0]
+    tracers = list(fit_params.keys())
+    tracer = tracers[0]
     ## sim_outdir
     sim_outdir = sim_params['output_dir']
         
@@ -53,15 +54,17 @@ def main(config):
     bf = bestfit_params(gdsamples)
     ## plot
     g = plots.get_subplot_plotter()
-    g.triangle_plot(gdsamples, truths=bf, filled=True, title_limit=1)
+    g.triangle_plot(gdsamples, markers=bf, marker_args={'linestyle':'-', 'linewidth':5}, filled=True, title_limit=1)
     plt.savefig(path_plot_getdist, dpi=300, bbox_inches='tight')
     plt.clf()
 
     ## generate AbacusHOD object
     ball_profiles = AbacusHOD(sim_params, HOD_params, clustering_params)
     _, param_mapping = generate_prior(fit_params)
-    assign_hod(ball_profiles, param_mapping, bf)
+    density_bf = assign_hod(ball_profiles, param_mapping, bf, tracers, data_obj, nthread)
     mock_bf,clustering_bf=compute_all(ball_profiles, nthread=nthread, out=True, verbose=True)
+    loglike_bf = data_obj.compute_loglike(clustering_bf, density_bf)
+    print("Best-fit loglike:", loglike_bf)
     plot_all(data_obj,tracer,clustering_bf,out=chain_dir+chain_prefix+'bestfit_'+tracer+'.png', idxwp=np.arange(6,21), idxxi=np.arange(11,21))
     # plot_all(data_obj,tracer,clustering_bf,out=chain_dir+chain_prefix+'bestfit_'+tracer+'.png')
     ## save bestfit clustering

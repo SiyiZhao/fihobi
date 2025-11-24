@@ -37,11 +37,40 @@ def bestfit_params(gdsamples):
 
 
 
-def assign_hod(Ball,param_mapping,params):
+def assign_hod(Ball,param_mapping,params,tracers,data_obj,nthread):
     for tracer in param_mapping.keys():
         for param_name in param_mapping[tracer]:
             mapping_idx = param_mapping[tracer][param_name]
             Ball.tracers[tracer][param_name] = params[mapping_idx]
+            
+    # Reset 'ic' and compute theoretical number density.
+    for tracer in tracers:
+        Ball.tracers[tracer]['ic'] = 1
+    ngal_dict, fsat_dict = Ball.compute_ngal(Nthread=nthread)
+    # Update 'ic' for non-ELG tracers.
+    box_volume = Ball.params['Lbox']**3
+    for tracer in tracers:
+        if tracer == 'LRG':
+            ngal = ngal_dict[tracer]
+            if ngal > data_obj.density_mean[tracer] * box_volume:
+                Ball.tracers[tracer]['ic'] = data_obj.density_mean[tracer] * box_volume / ngal
+        else:
+            ngal = ngal_dict[tracer]
+            if ngal > 0.001 * box_volume:
+                Ball.tracers[tracer]['ic'] = 0.001 * box_volume / ngal
+                
+    # Compute theoretical density for each tracer.
+    theory_density_dict = {}
+    
+    for tracer in tracers:
+        ngal = ngal_dict[tracer]
+        data_mean = data_obj.density_mean[tracer]
+        if data_mean < ngal / box_volume:
+            theory_density_dict[tracer] = data_mean
+            print(f"Set theoretical density of {tracer} to data mean: {data_mean}")
+        else:
+            theory_density_dict[tracer] = ngal / box_volume
+    return theory_density_dict
     
 def compute_wp(Ball,nthread,out=False):
     mock_dict = Ball.run_hod(tracers=Ball.tracers, want_rsd=Ball.want_rsd, Nthread = nthread, verbose = False, write_to_disk=out)
