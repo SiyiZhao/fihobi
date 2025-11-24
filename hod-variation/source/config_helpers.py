@@ -286,6 +286,7 @@ def generate_slurm_launcher(
     config_path: str,
     chain_path: str,
     *,
+    version: str = "v2",
     job_name: str | None = None,
     logs_dir: str | None = None,   # defaults to workdir/logs if None
     account: str = "desi",
@@ -331,9 +332,9 @@ mkdir -p $outdir
 config={config_path}
 cd {workdir}
 
-srun -n 4 -c 64 python -m abacusnbody.hod.prepare_sim_profiles --path2config $config
-srun -n {ntasks} -c {cpus_per_task} python {entry} --config $config > $outdir/run.log 2>&1
-srun -n 1 -c 64 python scripts/post.py --config $config > $outdir/post.log 2>&1
+# srun -n 1 -c 64 --cpu-bind=cores python -m abacusnbody.hod.prepare_sim_profiles --path2config $config
+srun -n {ntasks} -c {cpus_per_task} --cpu-bind=cores python {entry} --config $config > $outdir/run_{version}.log 2>&1
+srun -n 1 -c 64 --cpu-bind=cores python scripts/post.py --config $config > $outdir/post_{version}.log 2>&1
 """.lstrip()
 
     if output_path:

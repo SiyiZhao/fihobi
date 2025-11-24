@@ -4,10 +4,10 @@
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 cd /global/homes/s/siyizhao/projects/fihobi/hod-variation
 
-# outdir=../data/for_hod/v1.1/
+# outdir=../data/for_hod/v2_rp6s11/
 # mkdir -p $ourdir
 
-python prep_data.py > output/arocher_meas.txt
+python prep_data.py > output/arocher_meas_v2.txt
 
 # ! change path & zbin
 

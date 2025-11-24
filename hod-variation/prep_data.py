@@ -21,7 +21,7 @@ if source_dir not in sys.path:
     sys.path.insert(0, source_dir)
 from loading_helpers import readwp, readxi02, get_combined_jkcov, cov2corr, nz_comb, compute_zeff
 
-outdir='../data/for_hod/v1.1_rp6s11/'
+outdir='../data/for_hod/v2_rp6s11/'
 ## rp/s bin midpoints saved to data files
 rpbins=np.geomspace(0.01,100,25)
 print('x bins:', rpbins)
@@ -31,14 +31,14 @@ rpbinsmid=(rpbins[1:]+rpbins[:-1])/2
 ## QSO
 
 ## arocher's meas
-# y3rppidir='/global/cfs/cdirs/desi/users/arocher/Y3/loa-v1/v1.1/PIP/cosmo_0/rppi/'
-# y3smudir='/global/cfs/cdirs/desi/users/arocher/Y3/loa-v1/v1.1/PIP/cosmo_0/smu/'
-# qso_bins = {'z0': (0.8, 2.1), 'z1': (0.8, 1.1), 'z2': (1.1, 1.4), 'z3': (1.4, 1.7)}
+y3rppidir='/global/cfs/cdirs/desi/users/arocher/Y3/loa-v1/v2/PIP/cosmo_0/rppi/'
+y3smudir='/global/cfs/cdirs/desi/users/arocher/Y3/loa-v1/v2/PIP/cosmo_0/smu/'
+qso_bins = {'z1': (0.8, 1.1), 'z2': (1.1, 1.4), 'z3': (1.4, 1.7)}
 
 ## hanyu's meas
-y3rppidir='/pscratch/sd/h/hanyuz/measurements_smallscale/rppi/'
-y3smudir='/pscratch/sd/h/hanyuz/measurements_smallscale/smu/'
-qso_bins = {'z4': (1.7, 2.3), 'z5': (2.3, 2.8), 'z6': (2.8, 3.5)}
+# y3rppidir='/pscratch/sd/h/hanyuz/measurements_smallscale/rppi/'
+# y3smudir='/pscratch/sd/h/hanyuz/measurements_smallscale/smu/'
+# qso_bins = {'z4': (1.7, 2.3), 'z5': (2.3, 2.8), 'z6': (2.8, 3.5)}
 
 # idx_min_rp = 3
 idx_min_rp = 6
@@ -83,14 +83,15 @@ for tag, (zmin, zmax) in qso_bins.items():
 
 ## n(z) for QSO
 
-QSO_nz_NGC=np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v1.1/PIP/QSO_NGC_nz.txt',skiprows=2)
-QSO_nz_SGC=np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v1.1/PIP/QSO_SGC_nz.txt',skiprows=2)
+QSO_nz_NGC=np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/PIP/QSO_NGC_nz.txt',skiprows=2)
+QSO_nz_SGC=np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/PIP/QSO_SGC_nz.txt',skiprows=2)
 
 nzqso={}
 for tag, (zmin, zmax) in qso_bins.items():
     z_idx=np.where((QSO_nz_NGC[:,0]>=zmin) & (QSO_nz_NGC[:,0]<zmax))[0]
     nzqso[tag]=nz_comb(QSO_nz_NGC,QSO_nz_SGC,z_idx)
 
-    zeff = compute_zeff('/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y3/LSS/loa-v1/LSScats/v1.1/PIP/QSO_clustering.dat.fits',zrange=[zmin, zmax])
+    # zeff = compute_zeff('/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y3/LSS/loa-v1/LSScats/v2/PIP/QSO_clustering.dat.fits',zrange=[zmin, zmax])
+    zeff = 'No FKP weight now, no zeff.'
     print(tag, zmin,'-', zmax, 'zeff:', zeff)
 print(nzqso)
