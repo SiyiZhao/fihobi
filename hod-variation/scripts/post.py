@@ -54,7 +54,7 @@ def main(config):
     bf = bestfit_params(gdsamples)
     ## plot
     g = plots.get_subplot_plotter()
-    g.triangle_plot(gdsamples, markers=bf, marker_args={'linestyle':'-', 'linewidth':5}, filled=True, title_limit=1)
+    g.triangle_plot(gdsamples, markers=bf, marker_args={'ls':'-', 'lw':1.5}, filled=True, title_limit=1)
     plt.savefig(path_plot_getdist, dpi=300, bbox_inches='tight')
     plt.clf()
 
