@@ -1,0 +1,94 @@
+HOD_params:
+  LRG_params:
+    alpha: 1.02
+    alpha_c: 0.2
+    alpha_s: 0.88
+    ic: 1.0
+    kappa: 1.27
+    logM1: 13.81
+    logM_cut: 12.67
+    sigma: 0.02
+    profile_code: 1
+  tracer_flags:
+    ELG: false
+    LRG: true
+    QSO: false
+  use_particles: false
+  use_profiles: true
+  want_AB: true
+  want_rsd: true
+  want_dv: false
+  dv_draw_L: /global/cfs/projectdirs/desi/users/jiaxiyu/repeated_observations/EDR_vs_Y3/LSS-scripts_repeats/LRG_z0.4-0.6_CDF.npz
+  write_to_disk: false
+clustering_params:
+  bin_params:
+    logmax: 1.5
+    logmin: -1.5
+    nbins: 18
+  clustering_type: all
+  pi_bin_size: 40
+  pimax: 40
+data_params:
+  tracer_combos:
+    LRG_LRG:
+      path2cov: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1/cov_LRG_0.4_0.6_cut.dat
+      path2wp: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1/wp_LRG_0.4_0.6_cut.dat
+      path2xi02: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v1.1/xi02_LRG_0.4_0.6_cut.dat
+  tracer_density_mean:
+    LRG: 0.000528198
+  tracer_density_std:
+    LRG: 5.2819800000000005e-05
+nthread: 64
+prepare_sim:
+  Nparallel_load: 18
+sim_params:
+  cleaned_halos: true
+  output_dir: /pscratch/sd/h/hanyuz/desi-dr2-hod/mocks/
+  sim_dir: /global/cfs/projectdirs/desi/cosmosim/Abacus/
+  sim_name: AbacusSummit_base_c000_ph000
+  subsample_dir: /pscratch/sd/h/hanyuz/AbacusSummit/subsample_desidr2_profile_withAB/
+  z_mock: 0.5
+  force_mt: true
+chain_params:
+  chain_prefix: LRG_z0_base
+  output_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/LRG/z0/
+  nlive: 500
+  tol: 0.5
+  labels: 
+    - '\log M_{\text{cut}}'
+    - '\log M_1'
+    - '\sigma'
+    - '\alpha'
+    - '\kappa'
+    - '\alpha_{\text{c}}'
+    - '\alpha_{\text{s}}'
+fit_params:
+  LRG:
+    logM_cut:
+    - 0
+    - 11.0
+    - 14.0
+    logM1:
+    - 1
+    - 12.5
+    - 15.5
+    sigma:
+    - 2
+    - 0.001
+    - 2.0
+    alpha:
+    - 3
+    - 0.0
+    - 3.0
+    kappa:
+    - 4
+    - 0.0
+    - 5.0
+    alpha_c:
+    - 5
+    - 0.0
+    - 2.0
+    alpha_s:
+    - 6
+    - 0.0
+    - 2.0

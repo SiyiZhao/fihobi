@@ -4,12 +4,13 @@
 """
 This is a script for preparing the configuration & slurm files used in HOD fitting.
 
-Refer to: https://github.com/ahnyu/hod-variation/blob/main/prep_configs.ipynb
-
 Usage
 -----
 $ source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 $ python prep_configs.py
+
+Author: Siyi Zhao
+Refer to: https://github.com/ahnyu/hod-variation/blob/main/prep_configs.ipynb
 """
 
 import os, sys
@@ -19,11 +20,7 @@ if source_dir not in sys.path:
     sys.path.insert(0, source_dir)
 from config_helpers import generate_config, fit_params_overrides, merge_overrides, generate_slurm_launcher
 
-## z0: 0.8-2.1  
-# yml = generate_config(template_path='configs/template_QSO_zall.yaml',
-#                       output_path='configs/QSO-Summit/z0_base.yaml')
-
-############## settings ##############
+### settings -------------------------------------------------------------------
 # sim_model = "Summit"
 # sim_name = "AbacusSummit_base_c000_ph000"
 # sim_model = "fnl30"
@@ -47,68 +44,116 @@ if want_dv:
 
 # chain_prefix = 'chain_'
 chain_prefix = 'chain_v2_' # p6s11, larger prior
+clusdir="/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/"
+fitdir="/pscratch/sd/s/siyizhao/desi-dr2-hod/"
 
-############## for different redshift bins ##############
-qso_bins = {'z1': (0.8, 1.1), 'z2': (1.1, 1.4), 'z3': (1.4, 1.7), 'z4': (1.7, 2.3), 'z5': (2.3, 2.8), 'z6': (2.8, 3.5)}
-z_mock = {'z1': 0.95, 'z2': 1.25, 'z3': 1.55, 'z4': 2.0, 'z5': 2.5, 'z6': 3.0}
-nbar = {'z1': 0.00003052, 'z2': 0.00003542, 'z3': 0.00003572, 'z4': 0.00001419, 'z5': 0.000007876, 'z6': 0.000005216} # from prep_data.py output, z4-z6 not updated yet
+### Info: different redshift bins ----------------------------------------------
+zbins = {
+    'LRG': {'z1': (0.4, 0.6), 'z2': (0.6, 0.8), 'z3': (0.8, 1.1)},
+    'QSO': {'z1': (0.8, 1.1), 'z2': (1.1, 1.4), 'z3': (1.4, 1.7), 'z4': (1.7, 2.3), 'z5': (2.3, 2.8), 'z6': (2.8, 3.5)}
+}
+## from prep_data.py output
+nbar_all = {
+    'LRG': {'z1': 0.0005241, 'z2': 0.0005247, 'z3': 0.0002834}, 
+    'QSO': {'z1': 0.00003052, 'z2': 0.00003542, 'z3': 0.00003572, 'z4': 0.00001419, 'z5': 0.000007876, 'z6': 0.000005216} # from prep_data.py output, z4-z6 not updated yet
+}
+z_mock_all = {
+    'LRG': {'z1': 0.5, 'z2': 0.725, 'z3': 0.95}, 
+    'QSO': {'z1': 0.95, 'z2': 1.25, 'z3': 1.55, 'z4': 2.0, 'z5': 2.5, 'z6': 3.0}
+}
 
-for tag, (zmin, zmax) in qso_bins.items():
-    print(f"{tag}: {zmin} - {zmax}")
-    config_path = f"configs/QSO-{sim_model}/{tag}_{hod_model}.yaml" #relative config file path
-    tweaks_qso = {
-        "sim_params.sim_name": sim_name, 
-        "sim_params.output_dir": f"/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_{hod_model}/",
-        "HOD_params.want_dv": want_dv,
-        "HOD_params.dv_draw_Q": f"/global/homes/s/siyizhao/projects/fihobi/data/dv_draws/QSO_z{zmin}-{zmax}_CDF.npz", # change redshift error file
-        "clustering_params.bin_params.logmin": -1.0, # change binning
-        "clustering_params.bin_params.nbins": 15,
-        "chain_params.chain_prefix": f"{chain_prefix}", # change output chain name
-        "chain_params.output_dir": f"/pscratch/sd/s/siyizhao/desi-dr2-hod/QSO-{sim_model}/{tag}_{hod_model}/",
-        "chain_params.labels": ["\log M_{\\text{cut}}","\log M_1","\sigma","\\alpha","\kappa", "\\alpha_{\\text{c}}","\\alpha_{\\text{s}}"],
-        "data_params.tracer_combos.QSO_QSO.path2cov": f"/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/cov_QSO_{zmin}_{zmax}_cut.dat", # change data file
-        "data_params.tracer_combos.QSO_QSO.path2wp": f"/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/wp_QSO_{zmin}_{zmax}_cut.dat",
-        "data_params.tracer_combos.QSO_QSO.path2xi02": f"/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/xi02_QSO_{zmin}_{zmax}_cut.dat",
-        "data_params.tracer_density_mean.QSO": nbar[tag], # change number density, check output of prep_data.py for numbers
-        "data_params.tracer_density_std.QSO": 0.1*nbar[tag],
-        "sim_params.z_mock": z_mock[tag], # change redshift
-    }
+### Functions ------------------------------------------------------------------
+def generate_config_files(tracer):
+    ''' generate config files for all redshift bins of a given tracer.'''
+    t_zbins = zbins[tracer]
+    nbar = nbar_all[tracer]
+    z_mock = z_mock_all[tracer]
+    config_dir = f"configs/{tracer}-{sim_model}/"
+    if not os.path.exists(config_dir):
+        os.makedirs(config_dir)
+    for tag, (zmin, zmax) in t_zbins.items():
+        print(f"{tag}: {zmin} - {zmax}")
+        config_path = config_dir+f"{tag}_{hod_model}.yaml" #relative config file path
+        tweaks = {
+            "sim_params.sim_name": sim_name, 
+            "sim_params.output_dir": fitdir+f"mocks_{hod_model}/",
+            "HOD_params.want_dv": want_dv,
+            "clustering_params.bin_params.logmin": -1.0, # change binning
+            "clustering_params.bin_params.nbins": 15,
+            "chain_params.chain_prefix": f"{chain_prefix}", # change output chain name
+            "chain_params.output_dir": fitdir+f"{tracer}-{sim_model}/{tag}_{hod_model}/",
+            "chain_params.labels": ["\log M_{\\text{cut}}","\log M_1","\sigma","\\alpha","\kappa", "\\alpha_{\\text{c}}","\\alpha_{\\text{s}}"],
+            f"data_params.tracer_combos.{tracer}_{tracer}.path2cov": clusdir+f"cov_{tracer}_{zmin}_{zmax}_cut.dat", # change data file
+            f"data_params.tracer_combos.{tracer}_{tracer}.path2wp": clusdir+f"wp_{tracer}_{zmin}_{zmax}_cut.dat", # change data file
+            f"data_params.tracer_combos.{tracer}_{tracer}.path2xi02": clusdir+f"xi02_{tracer}_{zmin}_{zmax}_cut.dat",
+            f"data_params.tracer_density_mean.{tracer}": nbar[tag], # change number density, check output of prep_data.py for numbers
+            f"data_params.tracer_density_std.{tracer}": 0.1*nbar[tag],
+            "sim_params.z_mock": z_mock[tag], # change redshift
+        }
+        # change redshift error file
+        if tracer == 'QSO':
+            tweaks["HOD_params.dv_draw_Q"] = f"/global/homes/s/siyizhao/projects/fihobi/data/dv_draws/QSO_z{zmin}-{zmax}_CDF.npz"
+        elif tracer == 'LRG':
+            tweaks["HOD_params.dv_draw_L"] = f"/global/homes/s/siyizhao/projects/fihobi/data/dv_draws/LRG_z{zmin}-{zmax}_CDF.npz"
+        ## priors specification
+        fitspec = {
+            tracer: {"names": ["logM_cut","logM1","sigma","alpha","kappa", "alpha_c","alpha_s"], 
+                    "lo": [11, 10, 0.0001, -1.0, 0.0, 0.0, 0.0], 
+                    "hi": [15, 18, 3.0, 3.0, 6.0, 3.0, 30.0]},
+        }
+        if Assembly:
+            tweaks["chain_params.labels"] += ["A_{\\text{cent}}", "A_{\\text{sat}}"]
+            fitspec[tracer]["names"] += ["Acent", "Asat"]
+            fitspec[tracer]["lo"] += [-10.0, -10.0]
+            fitspec[tracer]["hi"] += [10.0, 10.0]
+        if BiasENV:
+            tweaks["chain_params.labels"] += ["B_{\\text{cent}}", "B_{\\text{sat}}"]
+            fitspec[tracer]["names"] += ["Bcent", "Bsat"]
+            fitspec[tracer]["lo"] += [-20.0, -20.0]
+            fitspec[tracer]["hi"] += [20.0, 20.0]
+        fit_over = fit_params_overrides(fitspec)
+        ## generate config
+        overrides = merge_overrides(fit_over, tweaks) # combine fit_params and other tweaks
+        if tracer=='QSO':
+            template='configs/template_QSO_zall.yaml'
+        elif tracer=='LRG':
+            template='configs/template_LRG_z0.yaml'
+        yml = generate_config(template_path=template,
+                            overrides=overrides,
+                            output_path=config_path)
+        print(f'config generated in {config_path}.\n')
 
-    fitspec_qso = {
-        "QSO": {"names": ["logM_cut","logM1","sigma","alpha","kappa", "alpha_c","alpha_s"], 
-                "lo": [11, 10, 0.0001, -1.0, 0.0, 0.0, 0.0], 
-                "hi": [15, 18, 3.0, 3.0, 6.0, 3.0, 30.0]},
-    }
-    if Assembly:
-        tweaks_qso["chain_params.labels"] += ["A_{\\text{cent}}", "A_{\\text{sat}}"]
-        fitspec_qso["QSO"]["names"] += ["Acent", "Asat"]
-        fitspec_qso["QSO"]["lo"] += [-10.0, -10.0]
-        fitspec_qso["QSO"]["hi"] += [10.0, 10.0]
-    if BiasENV:
-        tweaks_qso["chain_params.labels"] += ["B_{\\text{cent}}", "B_{\\text{sat}}"]
-        fitspec_qso["QSO"]["names"] += ["Bcent", "Bsat"]
-        fitspec_qso["QSO"]["lo"] += [-20.0, -20.0]
-        fitspec_qso["QSO"]["hi"] += [20.0, 20.0]
-
-    fit_over_qso = fit_params_overrides(fitspec_qso)
-    overrides_qso = merge_overrides(fit_over_qso, tweaks_qso) # combine fit_params and other tweaks
-
-    yml = generate_config(template_path='configs/template_QSO_zall.yaml',
-                        overrides=overrides_qso,
-                        output_path=config_path)
-    print('config generated.\n')
 
 
-############## slurm files ##############
-for tag, (zmin, zmax) in qso_bins.items():
-    print(f"{tag}: {zmin} - {zmax}")
-    chain_path = f"/pscratch/sd/s/siyizhao/desi-dr2-hod/QSO-{sim_model}/{tag}_{hod_model}/"
-    config_path = f"configs/QSO-{sim_model}/{tag}_{hod_model}.yaml" #relative config file path
-    launcher_path = f"launchers/QSO-{sim_model}_{tag}_{hod_model}.sh" #relative launcher file path
-    generate_slurm_launcher(time_hms="8:00:00",
-                            config_path=config_path, 
-                            chain_path=chain_path,
-                            job_name=f"QSO-{sim_model}_{tag}_{hod_model}",  #job name
-                            output_path=launcher_path,
-                            version="v2")   
-    print('launcher generated.\n')
+def generate_slurm_files(tracer):
+    ''' generate slurm files for all redshift bins of a given tracer.
+    default version: v2
+    '''
+    t_zbins = zbins[tracer]
+    for tag, (zmin, zmax) in t_zbins.items():
+        print(f"{tag}: {zmin} - {zmax}")
+        chain_path = fitdir+f"{tracer}-{sim_model}/{tag}_{hod_model}/"
+        config_path = f"configs/{tracer}-{sim_model}/{tag}_{hod_model}.yaml" #relative config file path
+        launcher_path = f"launchers/{tracer}-{sim_model}_{tag}_{hod_model}.sh" #relative launcher file path
+        generate_slurm_launcher(time_hms="8:00:00",
+                                config_path=config_path, 
+                                chain_path=chain_path,
+                                job_name=f"{tracer}-{sim_model}_{tag}_{hod_model}",  #job name
+                                output_path=launcher_path,
+                                version="v2")   
+        print(f'launcher generated in {launcher_path}.\n')
+        
+        
+### Usage Example --------------------------------------------------------------
+if __name__ == "__main__":
+    # tracer='QSO'
+    tracer='LRG'
+    
+    if tracer not in ['QSO', 'LRG']:
+        raise ValueError("tracer must be 'QSO' or 'LRG'")
+    
+    ############## config files ##############
+    generate_config_files(tracer)
+    ############## slurm files ##############
+    generate_slurm_files(tracer)
+    
