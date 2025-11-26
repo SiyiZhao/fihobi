@@ -42,8 +42,6 @@ def main(config):
     data_obj = data_object(data_params, HOD_params, clustering_params)
     tracers = list(fit_params.keys())
     tracer = tracers[0]
-    ## sim_outdir
-    sim_outdir = sim_params['output_dir']
         
     ## chain 
     chain_dir=chain_params['output_dir']
