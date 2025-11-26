@@ -24,6 +24,7 @@ odir = sys.argv[2]
 config_file = f'configs/{name}.yaml'
 config = yaml.safe_load(open(config_file))
 mode = config.get('mode', 'b-p')  # parameterization mode for PNG bias
+klim0 = config.get('klim0', [0.003, 0.1])  # k range for monopole fitting
 
 ## define output ---------------------------------------------------------------
 fn_triangle = odir+'/triangle.png'
@@ -58,8 +59,7 @@ for key in priors:
 for key in theory.params:
     print(key, theory.params[key].value, theory.params[key].fixed, theory.params[key].derived, theory.params[key].prior, theory.params[key].ref)
 observable = TracerPowerSpectrumMultipolesObservable(data=data, covariance=cov, 
-        klim={0: [0.003, 0.1]},
-        # klim={0: [0.003, 0.1, 0.005]},
+        klim={0: klim0},
         # klim={0: [0.005, 0.2, 0.005], 2: [0.005, 0.2, 0.005]}, # fit monopole and quadrupole, between 0.005 and 0.2 h/Mpc
         theory=theory)
 

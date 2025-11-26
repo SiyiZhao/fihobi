@@ -19,6 +19,7 @@ def load_data(config):
     cov : list of pypower.PowerSpectrumMultipoles or paths to such files
         Covariance matrix estimated from EZmocks.
     '''
+    n_EZmocks = config.get('n_EZmocks', None)
     config_input = config['input']
     abacus_poles = config_input['abacus_poles']  # path to the power spectrum multipoles from AbacusHOD mock
     ezmock_poles = config_input['ezmock_poles']  # path to the power spectrum multipoles from EZmocks, used to estimate covariance matrix
@@ -36,6 +37,11 @@ def load_data(config):
         print(f'Read covariance from a single file {ezmock_poles} ...')
         cov = np.load(ezmock_poles, allow_pickle=True)
         cov = list(cov)
+    if n_EZmocks is not None:
+        if n_EZmocks > len(cov):
+            raise ValueError(f"Requested n_EZmocks={n_EZmocks} exceeds available {len(cov)} EZmocks!")
+        print(f'Using only first {n_EZmocks} EZmocks for covariance estimation ...')
+        cov = cov[:n_EZmocks] 
     return data, cov
 
 

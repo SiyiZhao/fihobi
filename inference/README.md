@@ -10,7 +10,7 @@ However, we want to test whether the data^[small scale clusterings for each trac
 
 The scripts to run the inference are in `launchers/` folder. 
 In these scripts, we define a `name` for each inference run, which corresponds to a configuration file in `configs/`, and a folder in `out/fit_PNG_bias_v2/` to save the results. 
-The main script to run the inference is `scripts/fit_p.py`. It has two modes: `b-p` mode fits $p$, while `bphi` mode fits $b_{\phi}$ directly. Both modes fixed $f_{\rm NL}$ to the simulation value.
+The main script to run the inference is `scripts/fit_PNG_bias.py`. It has two modes: `b-p` mode fits $p$, while `bphi` mode fits $b_{\phi}$ directly. Both modes fixed $f_{\rm NL}$ to the simulation value.
 
 ## Post-processing
 

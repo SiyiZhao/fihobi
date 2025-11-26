@@ -7,4 +7,4 @@ name=QSO-z4_fNL30_base
 odir=/pscratch/sd/s/siyizhao/desilike/fit_p/${name}
 mkdir -p ${odir}
 
-srun -n 1 -c 64 -C gpu -t 04:00:00 --gpus 4 --qos interactive --account desi_g python scripts/fit_p.py ${name} ${odir} > ${odir}/std.log 2>&1
+srun -n 1 -c 64 -C gpu -t 04:00:00 --gpus 4 --qos interactive --account desi_g python scripts/fit_PNG_bias.py ${name} ${odir} > ${odir}/std.log 2>&1
