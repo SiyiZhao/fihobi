@@ -1,4 +1,3 @@
-import numpy as np
 import yaml
 from desilike.theories.galaxy_clustering import FixedPowerSpectrumTemplate, PNGTracerPowerSpectrumMultipoles
 from desilike.observables.galaxy_clustering import TracerPowerSpectrumMultipolesObservable
@@ -24,6 +23,7 @@ name = sys.argv[1]
 odir = sys.argv[2]
 config_file = f'configs/{name}.yaml'
 config = yaml.safe_load(open(config_file))
+mode = config.get('mode', 'b-p')  # parameterization mode for PNG bias
 
 ## define output ---------------------------------------------------------------
 fn_triangle = odir+'/triangle.png'
@@ -47,7 +47,7 @@ template = FixedPowerSpectrumTemplate(z=z, fiducial=cosmology)
 # - "bphi": bphi as a parameter
 # - "bfnl_loc": bfnl_loc = bphi * fnl_loc as a parameter'
 # Here we choose b-p parameterization
-theory = PNGTracerPowerSpectrumMultipoles(template=template, mode='b-p')
+theory = PNGTracerPowerSpectrumMultipoles(template=template, mode=mode)
 ## fixed fNL
 theory.init.params['fnl_loc'].update(value=fnl, fixed=True) 
 ## other parameters may need larger prior ranges
@@ -93,8 +93,18 @@ for key in theory.all_params:
     bestfit_dict[str(key)] = bestfit_value
 
 ## plot triangle
-plotting.plot_triangle(chain, markers={'p': bestfit_dict['p'], 'b1': bestfit_dict['b1'], 'sn0': bestfit_dict['sn0'], 'sigmas': bestfit_dict['sigmas']}, fn=fn_triangle)
+if mode == 'b-p':
+    plotting.plot_triangle(chain, markers={'p': bestfit_dict['p'], 'b1': bestfit_dict['b1'], 'sn0': bestfit_dict['sn0'], 'sigmas': bestfit_dict['sigmas']}, fn=fn_triangle)
+elif mode == 'bphi':
+    plotting.plot_triangle(chain, markers={'bphi': bestfit_dict['bphi'], 'b1': bestfit_dict['b1'], 'sn0': bestfit_dict['sn0'], 'sigmas': bestfit_dict['sigmas']}, fn=fn_triangle)
+else:
+    raise NotImplementedError(f"Mode {mode} not implemented for triangle plot.")
 
 ## plot power spectrum
-prediction = theory(fnl_loc=bestfit_dict['fnl_loc'], p=bestfit_dict['p'], b1=bestfit_dict['b1'], sn0=bestfit_dict['sn0'], sigmas=bestfit_dict['sigmas'])
+if mode == 'b-p':
+    prediction = theory(fnl_loc=bestfit_dict['fnl_loc'], p=bestfit_dict['p'], b1=bestfit_dict['b1'], sn0=bestfit_dict['sn0'], sigmas=bestfit_dict['sigmas'])
+elif mode == 'bphi':
+    prediction = theory(fnl_loc=bestfit_dict['fnl_loc'], bphi=bestfit_dict['bphi'], b1=bestfit_dict['b1'], sn0=bestfit_dict['sn0'], sigmas=bestfit_dict['sigmas'])
+else:
+    raise NotImplementedError(f"Mode {mode} not implemented for power spectrum plot.")
 plot_observable(observable, prediction, scaling='kpk', fn=fn_ps)

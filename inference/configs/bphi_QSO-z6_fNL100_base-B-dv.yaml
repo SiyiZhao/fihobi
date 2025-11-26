@@ -1,0 +1,13 @@
+redshift: 3.0
+fnl: 100.0
+mode: bphi
+
+input: 
+  abacus_poles: /pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_base-B-dv/Abacus_pngbase_c302_ph000/z3.000/galaxies_rsd_dv/pypower_poles.npy
+  ezmock_poles: /pscratch/sd/s/siyizhao/EZmock/output/mocks/QSO-z6_c302/
+
+prior:
+  bphi:
+    limits: [0, 20.]
+  sigmas:
+    limits: [0, 20.]
