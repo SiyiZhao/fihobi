@@ -12,6 +12,8 @@ python prep_data.py > output/prep_data_QSO_v2.txt
 
 # ! change tracer to highz-QSO and version to v1.1
 python prep_data.py > output/prep_data_highz-QSO_v1.1.txt
+# ! change version to v2
+python prep_data.py > output/prep_data_highz-QSO_v2.txt
 
 # ! change tracer to LRG
 python prep_data.py > output/prep_data_LRG.txt

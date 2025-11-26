@@ -124,6 +124,35 @@ def pcforfit_wp(dir, fix, check=False):
         cov_std = np.sqrt(np.diag(cov))
         check_and_report(std_wp, cov_std, "std_wp", "cov_std")
 
+def pcforfit_poles_wp(dir, fix, check=False):
+    pycorr_out_path = dir + f'/smu/allcounts_{fix}.npy'
+
+    ## load the TwoPointCorrelationFunction result
+    result = TwoPointCorrelationFunction.load(pycorr_out_path)
+
+    sep, corr, cov = result.get_corr(mode='poles', return_sep=True, return_cov=True)
+    num = sep.shape[0]
+    xi0 = corr[0, :]
+    xi2 = corr[1, :]
+    cov00 = cov[:num, :num]
+    cov22 = cov[num:2*num, num:2*num]
+    cov02 = cov[:num, num:2*num]
+    cov20 = cov[num:2*num, :num]
+    
+    ## cut the nan part
+    mask = ~np.isnan(xi0)
+    sep_sel = sep[mask]
+    xi0_sel = xi0[mask]
+    xi2_sel = xi2[mask]
+    cov00_sel = cov00[mask][:, mask]
+    cov22_sel = cov22[mask][:, mask]  
+    cov02_sel = cov02[mask][:, mask]
+    cov20_sel = cov20[mask][:, mask]
+    cov0022 = np.block([[cov00_sel, cov02_sel],
+                        [cov20_sel, cov22_sel]])
+    
+    
+
 def main(dir, fix, mode, check):
     
     ## define s edges and log midpoints
@@ -134,8 +163,10 @@ def main(dir, fix, mode, check):
         pcforfit_poles(dir, fix, check)
     elif mode=='wp':
         pcforfit_wp(dir, fix, check)
+    elif mode=='wp+smu':
+        pcforfit_poles_wp(dir, fix, check)
     else:
-        raise ValueError("Unsupported mode. Use 'smu' or 'wp'.")
+        raise ValueError("Unsupported mode. Use 'smu' 'wp' or 'wp+smu'.")
 
 
 class ArgParseFormatter(
@@ -155,8 +186,8 @@ if __name__ == '__main__':
         '--fix', help='Fix string for the output files', default=DEFAULTS['fix']
     )
     parser.add_argument(
-        '--mode', choices=['smu', 'wp'], default=DEFAULTS['mode'],
-        help='Mode of the two-point correlation function: smu for multipoles, wp for projected correlation function.'
+        '--mode', choices=['smu', 'wp', 'wp+smu'], default=DEFAULTS['mode'],
+        help='Mode of the two-point correlation function: smu for multipoles, wp for projected correlation function, wp+smu for combining both.'
     )
     parser.add_argument(
         '--check', action='store_true',

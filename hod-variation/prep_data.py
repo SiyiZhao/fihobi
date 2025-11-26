@@ -139,13 +139,18 @@ def show_zeff(tracer, version='v1.1'):
 
 if __name__ == "__main__":
     # tracer='QSO'
-    # tracer='highz-QSO' # only available in v1.1 now
-    tracer='LRG'
+    tracer='highz-QSO' 
+    # tracer='LRG'
     
-    ## hanyu's meas
-    if version=='v1.1' and tracer=='highz-QSO':
-        y3rppidir='/pscratch/sd/h/hanyuz/measurements_smallscale/rppi/'
-        y3smudir='/pscratch/sd/h/hanyuz/measurements_smallscale/smu/'
+    if tracer=='highz-QSO':
+        ## hanyu's meas
+        if version=='v1.1':
+            y3rppidir='/pscratch/sd/h/hanyuz/measurements_smallscale/rppi/'
+            y3smudir='/pscratch/sd/h/hanyuz/measurements_smallscale/smu/'
+        ## my meas
+        elif version=='v2':
+            y3rppidir=f'/global/cfs/cdirs/desi/users/siyizhao/Y3/loa-v1/v2/PIP/rppi/'
+            y3smudir=f'/global/cfs/cdirs/desi/users/siyizhao/Y3/loa-v1/v2/PIP/smu/'
 
     ## save clustering data: wp, xi02, cov 
     save_data(tracer, y3rppidir=y3rppidir, y3smudir=y3smudir)
