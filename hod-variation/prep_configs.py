@@ -76,7 +76,7 @@ def generate_config_files(tracer):
         config_path = config_dir+f"{tag}_{hod_model}.yaml" #relative config file path
         tweaks = {
             "sim_params.sim_name": sim_name, 
-            "sim_params.output_dir": fitdir+f"mocks_{hod_model}/",
+            "sim_params.output_dir": fitdir+f"mocks_{hod_model}_v2/",
             "HOD_params.want_dv": want_dv,
             "clustering_params.bin_params.logmin": -1.0, # change binning
             "clustering_params.bin_params.nbins": 15,

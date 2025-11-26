@@ -30,25 +30,48 @@ if dirEZmocks is not None:
 # Data -------------------------------------------------------------------------
 z_mock = {'z1': 0.95, 'z2': 1.25, 'z3': 1.55, 'z4': 2.0, 'z5': 2.5, 'z6': 3.0}
 z = z_mock[tag]
-dir_c300_dv=f'/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks/Abacus_pngbase_c300_ph000/z{z:.3f}/galaxies_rsd_dv/'
-dir_c302=f'/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd/'
-dir_c302_dv=f'/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/'
-dir_c302_A_dv=f'/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_base-A-dv/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/'
-dir_c302_B_dv=f'/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_base-B-dv/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/'
-poles_c302 = PowerSpectrumMultipoles.load(dir_c302 + 'pypower_poles.npy')
-poles_c300_dv = PowerSpectrumMultipoles.load(dir_c300_dv + 'pypower_poles.npy')
-poles_c302_dv = PowerSpectrumMultipoles.load(dir_c302_dv + 'pypower_poles.npy')
-poles_c302_A_dv = PowerSpectrumMultipoles.load(dir_c302_A_dv + 'pypower_poles.npy')
-poles_c302_B_dv = PowerSpectrumMultipoles.load(dir_c302_B_dv + 'pypower_poles.npy')
-k, P0_c302 = poles_c302(ell=0, return_k=True, complex=False)
-k_tmp1, P0_c302_dv = poles_c302_dv(ell=0, return_k=True, complex=False)
-k_tmp2, P0_c300_dv = poles_c300_dv(ell=0, return_k=True, complex=False)
-k_tmp3, P0_c302_A_dv = poles_c302_A_dv(ell=0, return_k=True, complex=False)
-k_tmp4, P0_c302_B_dv = poles_c302_B_dv(ell=0, return_k=True, complex=False)
-# ignore NaNs when comparing k arrays
-if not (np.allclose(k_tmp1, k, equal_nan=True) and np.allclose(k_tmp2, k, equal_nan=True) and np.allclose(k_tmp3, k, equal_nan=True) and np.allclose(k_tmp4, k, equal_nan=True)):
-    raise ValueError("k arrays do not match!")
 
+pdir='/pscratch/sd/s/siyizhao/desi-dr2-hod/'
+data = {
+    'c300_dv': {'dir': pdir+f'mocks/Abacus_pngbase_c300_ph000/z{z:.3f}/galaxies_rsd_dv/', 
+                'label': 'fNL=30, dv', 'color': color[2], 'lstyle': ':'},
+    'c302': {'dir': pdir+f'mocks/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd/', 
+             'label': 'fNL=100', 'color': color[1], 'lstyle': '--'},
+    'c302_dv': {'dir': pdir+f'mocks/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/', 
+                'label': 'fNL=100, dv', 'color': color[0], 'lstyle': '--'},
+    'c302_A_dv': {'dir': pdir+f'mocks_base-A-dv/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/', 
+                  'label': 'fNL=100, dv, A', 'color': color[3], 'lstyle': '-.'},
+    'c302_B_dv': {'dir': pdir+f'mocks_base-B-dv/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/', 
+                  'label': 'fNL=100, dv, B', 'color': color[4], 'lstyle': '-.'},
+    'c302_v2': {'dir': pdir+f'mocks_base_v2/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd/', 
+                'label': 'fNL=100, v2', 'color': color[1], 'lstyle': '-'},
+    'c302_dv_v2': {'dir': pdir+f'mocks_base-dv_v2/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/',
+                   'label': 'fNL=100, dv, v2', 'color': color[0], 'lstyle': '-'}
+}
+
+### power spectra loading 
+for key in data.keys():
+    i = list(data.keys()).index(key)
+    d = data[key]['dir']
+    if not os.path.exists(d):
+        raise ValueError(f"Directory '{d}' not found!")
+    poles = PowerSpectrumMultipoles.load(d + 'pypower_poles.npy')  # test loading
+    k, p0 = poles(ell=0, return_k=True, complex=False)
+    if i==0:
+        k_1st = k
+    else:
+        if not np.allclose(k, k_1st, equal_nan=True):
+            raise ValueError("k arrays do not match!")
+    data[key]['p0'] = p0
+# data['k'] = k
+
+### define base
+if base in data.keys():
+    P0_base = data[base]['p0']
+else:
+    raise ValueError(f"Unknown base: {base}")
+
+### EZmocks loading
 if dirEZmocks is not None:
     files = glob.glob(dirEZmocks+f'/pypowerpoles_r*.npy')
     p0_ez = []
@@ -60,13 +83,6 @@ if dirEZmocks is not None:
     p0_err = np.std(p0_ez, axis=0)
     print(f"Loaded {len(files)} EZmock power spectra from {dirEZmocks}")
 
-# base
-if base == 'c302_dv':
-    P0_base = P0_c302_dv 
-elif base == 'c302_dv_A':
-    P0_base = P0_c302_A_dv
-else:
-    raise ValueError(f"Unknown base: {base}")
     
 # Plot -------------------------------------------------------------------------
 
@@ -84,39 +100,28 @@ if dirEZmocks is not None:
     axs[1].plot(k[1:], frac_ez[1:], color='black', lw=2)
     axs[1].fill_between(k[1:], - frac_err[1:], frac_err[1:], color='gray', alpha=0.5, label=r'EZmock $1\sigma$')    
 # top panel: original spectra
-axs[0].plot(k[1:], P0_c302_dv[1:], label='base: fNL=100, dv', color=color[0])
-axs[0].plot(k[1:], P0_c302[1:], '--', label='fNL=100', color=color[1])
-axs[0].plot(k[1:], P0_c300_dv[1:], ':', label='fNL=30, dv', color=color[2])
-axs[0].plot(k[1:], P0_c302_A_dv[1:], '-.', label='fNL=100, dv, A', color=color[3])
-axs[0].plot(k[1:], P0_c302_B_dv[1:], '-.', label='fNL=100, dv, B', color=color[4])
+for key in data.keys():
+    p0 = data[key]['p0']
+    axs[0].plot(k[1:], p0[1:], label=data[key]['label'], color=data[key]['color'], linestyle=data[key]['lstyle'])
 axs[0].set_xscale('log')
 axs[0].set_yscale('log')
 axs[0].set_ylabel(r'$P_0(k)$ [$(\mathrm{Mpc}/h)^{3}$]')
 axs[0].legend()
 
 # bottom panel: fractional errors (P_variant - P_base) / P_base
-frac_c302_dv = P0_c302_dv / P0_base - 1
-frac_c302 = P0_c302 / P0_base - 1
-frac_c300_dv = P0_c300_dv / P0_base - 1
-frac_c302_A_dv = P0_c302_A_dv / P0_base - 1
-frac_c302_B_dv = P0_c302_B_dv / P0_base - 1
-axs[1].axhline(0, color='gray', lw=0.8)
-axs[1].plot(k[1:], frac_c302_dv[1:], color=color[0])
-axs[1].plot(k[1:], frac_c302[1:], '--', color=color[1])
-axs[1].plot(k[1:], frac_c300_dv[1:], ':', color=color[2])
-axs[1].plot(k[1:], frac_c302_A_dv[1:], '-.', color=color[3])
-axs[1].plot(k[1:], frac_c302_B_dv[1:], '-.', color=color[4])
+for key in data.keys():
+    p0 = data[key]['p0']
+    frac = p0 / P0_base - 1
+    axs[1].plot(k[1:], frac[1:], color=data[key]['color'], linestyle=data[key]['lstyle'])
 axs[1].set_xscale('log')
 axs[1].set_xlabel(r'$k$ [$h/\mathrm{Mpc}$]')
 axs[1].set_ylabel(r'$P^{\rm xx}/P^{\rm base}-1$')
-# set sensible symmetric y-limits based on data
-m = np.nanmax(np.abs(np.hstack([frac_c302[1:]])))
 # axs[1].axhspan(-0.05, 0.05, color='gray', alpha=0.5, label="5% error")
 # axs[1].axhspan(-0.1, 0.1, color='gray', alpha=0.3)
-# ylim = max(0.01, m * 1.2)
 ylim=0.2
 axs[1].set_ylim(-ylim, ylim)
 axs[1].legend()
 plt.tight_layout()
-plt.savefig(f'out/ps_comparison{tag}_{base}.png', dpi=300)
-print(f'Saved figure to out/ps_comparison{tag}_{base}.png')
+fn=f'out/mock_ps{tag}_{base}.png'
+plt.savefig(fn, dpi=300)
+print(f'Saved figure to {fn}')
