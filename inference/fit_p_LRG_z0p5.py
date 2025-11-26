@@ -1,7 +1,4 @@
 import numpy as np
-
-from cosmoprimo.fiducial import DESI
-
 from desilike.theories.galaxy_clustering import FixedPowerSpectrumTemplate, PNGTracerPowerSpectrumMultipoles
 from desilike.observables.galaxy_clustering import TracerPowerSpectrumMultipolesObservable
 from desilike.likelihoods import ObservablesGaussianLikelihood
@@ -22,13 +19,22 @@ fn_ps = 'out/fit_p_LRG_z0p5_power_spectrum.png'
 z = 0.5
 fnl = 30.
 cosmology = 'DESI' 
+# ells = [0]
+ells = (0, 2)
 
 ## data (fake now)
 print('Loading data ...')
-data = np.load('test_data/Pk_mock_LRG_fNL30_z0p5.npy', allow_pickle=True)
-k_abacus = data.item()['k']
-data_abacus = data.item()['data']
-cov_ezmocks = data.item()['cov']
+tmp_data = np.load('test_data/Pk_mock_LRG_fNL30_z0p5_kmax0p1.npy', allow_pickle=True)
+k_abacus = tmp_data.item()['k']
+data = tmp_data.item()['data']
+print(data.shape)
+mocks = tmp_data.item()['cov']
+print(k_abacus)
+# import pickle
+
+# with open('test_data/poles_LRG_fNL20_z0p5.pkl', 'rb') as f:
+#     poles = pickle.load(f)
+# data, mocks = poles[0], poles[1:]
 
 ## PNG likelihood
 print('Setting up likelihood ...')
@@ -40,9 +46,12 @@ template = FixedPowerSpectrumTemplate(z=z, fiducial=cosmology)
 # Here we choose b-p parameterization
 theory = PNGTracerPowerSpectrumMultipoles(template=template, mode='b-p')
 theory.init.params['fnl_loc'].update(value=fnl, fixed=True) 
-theory.init.params['p'].update(fixed=False, prior={'min': -2., 'max': 4.})
-observable = TracerPowerSpectrumMultipolesObservable(data=data_abacus, covariance=cov_ezmocks, ells=(0, 2), k=k_abacus,
-        #klim={0: [0.005, 0.2]},
+theory.init.params['p'].update(fixed=False, prior={'limits': [0, 5.]})
+theory.init.params['sigmas'].update(fixed=False, prior={'limits': [0, 20.]})
+for key in theory.params:
+    print(key, theory.params[key].value, theory.params[key].fixed, theory.params[key].derived, theory.params[key].prior, theory.params[key].ref)
+observable = TracerPowerSpectrumMultipolesObservable(data=data, covariance=mocks, ells=ells, k=k_abacus,
+        # klim={0: [0.003, 0.1]},
         # klim={0: [0.005, 0.2, 0.005], 2: [0.005, 0.2, 0.005]}, # fit monopole and quadrupole, between 0.005 and 0.2 h/Mpc
         theory=theory)
 likelihood = ObservablesGaussianLikelihood(observables=[observable])

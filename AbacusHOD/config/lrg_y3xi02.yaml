@@ -97,3 +97,22 @@ dynesty_config_params:
     # bound: 'multi'
     method: 'rwalk' 
     maxcall: 500000
+
+# params to be fit for pmn
+# [mapping_index, mean, min, max, std, tr_type]
+pmn_fit_params:
+    logM_cut: [0, 13.3, 12, 13.8, 1.0, 'LRG']
+    logM1: [1, 14.0, 12.5, 15.5, 1.0, 'LRG']
+    sigma: [2, 0.5, 0.0, 3.0, 0.5, 'LRG']
+    alpha: [3, 1.0, 0.0, 2.0, 0.5, 'LRG']
+    kappa: [4, 0.5, 0.0, 10.0, 0.5, 'LRG']
+    # alpha_c: [5, 0.4, 0.4, 'LRG']
+    # alpha_s: [6, 0.8, 0.4, 'LRG']
+
+# configuration parameter for pmn
+pmn_config_params:
+    path2output: /pscratch/sd/s/siyizhao/fihobi/HOD_fit_y3xi02/pmn/
+    chainsPrefix: test
+    nlive: 500
+    tol: 0.5
+    plot: /pscratch/sd/s/siyizhao/fihobi/HOD_fit_y3xi02/pmn/plot.png

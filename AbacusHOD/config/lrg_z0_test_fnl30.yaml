@@ -72,9 +72,9 @@ clustering_params:
 # parameters that indicate where the observed data that you would like to fit live.
 data_params:
     tracer_density_mean:
-        LRG: 5.272e-4 # (Mpc/h)^-3
+        LRG: 5.276e-4 # (Mpc/h)^-3
     tracer_density_std:
-        LRG: 5.272e-5 # (Mpc/h)^-3
+        LRG: 5.276e-5 # (Mpc/h)^-3
     tracer_combos:
         LRG_LRG:
             path2data: '/global/homes/s/siyizhao/projects/fihobi/data/hodfit/lrg_data_cov_arocher.h5'
