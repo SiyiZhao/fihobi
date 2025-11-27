@@ -20,6 +20,6 @@ mkdir -p $outdir
 config=configs/QSO-fnl100/z6_base-B-dv.yaml
 cd /global/homes/s/siyizhao/projects/fihobi/hod-variation
 
-srun -n 4 -c 64 python -m abacusnbody.hod.prepare_sim_profiles --path2config $config
-srun -n 4 -c 64 python scripts/run_pmn.py --config $config > $outdir/run.log 2>&1
-srun -n 1 -c 64 python scripts/post.py --config $config > $outdir/post.log 2>&1
+# srun -n 1 -c 64 --cpu-bind=cores python -m abacusnbody.hod.prepare_sim_profiles --path2config $config
+srun -n 4 -c 64 --cpu-bind=cores python scripts/run_pmn.py --config $config > $outdir/run_v2.log 2>&1
+srun -n 1 -c 64 --cpu-bind=cores python scripts/post.py --config $config > $outdir/post_v2.log 2>&1
