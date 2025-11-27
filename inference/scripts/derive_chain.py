@@ -10,8 +10,8 @@ Usage
 $ python ./derive_chain.py -p ${path_to_chain}
 """
 import argparse
-import sys
-sys.path.insert(0, 'source')
+import os, sys
+sys.path.insert(0, os.path.abspath('../src'))
 from chain_helper import chain
 
 DEFAULT = {}
