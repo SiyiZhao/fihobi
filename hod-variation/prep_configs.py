@@ -63,11 +63,32 @@ z_mock_all = {
 }
 
 ### Functions ------------------------------------------------------------------
+def params_setting(tracer):
+    ''' return parameter settings for a given tracer.'''
+    params_labels = ["\log M_{\\text{cut}}","\log M_1","\sigma","\\alpha","\kappa", "\\alpha_{\\text{c}}","\\alpha_{\\text{s}}"]
+    params_dict = {"names": ["logM_cut","logM1","sigma","alpha","kappa", "alpha_c","alpha_s"], 
+                        "lo": [11, 10, 0.0001, -1.0, 0.0, 0.0, 0.0], 
+                        "hi": [15, 18, 3.0, 3.0, 6.0, 3.0, 15.0]}
+    if Assembly:
+        params_labels += ["A_{\\text{cent}}", "A_{\\text{sat}}"]
+        params_dict["names"] += ["Acent", "Asat"]
+        params_dict["lo"] += [-10.0, -15.0]
+        params_dict["hi"] += [10.0, 15.0]
+    if BiasENV:
+        params_labels += ["B_{\\text{cent}}", "B_{\\text{sat}}"]
+        params_dict["names"] += ["Bcent", "Bsat"]
+        params_dict["lo"] += [-20.0, -25.0]
+        params_dict["hi"] += [20.0, 25.0]
+    if tracer == 'QSO':
+        pass
+    return params_labels, params_dict
+
 def generate_config_files(tracer):
     ''' generate config files for all redshift bins of a given tracer.'''
     t_zbins = zbins[tracer]
     nbar = nbar_all[tracer]
     z_mock = z_mock_all[tracer]
+    params_labels, params_dict = params_setting(tracer)
     config_dir = f"configs/{tracer}-{sim_model}/"
     if not os.path.exists(config_dir):
         os.makedirs(config_dir)
@@ -82,7 +103,7 @@ def generate_config_files(tracer):
             "clustering_params.bin_params.nbins": 15,
             "chain_params.chain_prefix": f"{chain_prefix}", # change output chain name
             "chain_params.output_dir": fitdir+f"{tracer}-{sim_model}/{tag}_{hod_model}/",
-            "chain_params.labels": ["\log M_{\\text{cut}}","\log M_1","\sigma","\\alpha","\kappa", "\\alpha_{\\text{c}}","\\alpha_{\\text{s}}"],
+            "chain_params.labels": params_labels,
             f"data_params.tracer_combos.{tracer}_{tracer}.path2cov": clusdir+f"cov_{tracer}_{zmin}_{zmax}_cut.dat", # change data file
             f"data_params.tracer_combos.{tracer}_{tracer}.path2wp": clusdir+f"wp_{tracer}_{zmin}_{zmax}_cut.dat", # change data file
             f"data_params.tracer_combos.{tracer}_{tracer}.path2xi02": clusdir+f"xi02_{tracer}_{zmin}_{zmax}_cut.dat",
@@ -96,21 +117,7 @@ def generate_config_files(tracer):
         elif tracer == 'LRG':
             tweaks["HOD_params.dv_draw_L"] = f"/global/homes/s/siyizhao/projects/fihobi/data/dv_draws/LRG_z{zmin}-{zmax}_CDF.npz"
         ## priors specification
-        fitspec = {
-            tracer: {"names": ["logM_cut","logM1","sigma","alpha","kappa", "alpha_c","alpha_s"], 
-                    "lo": [11, 10, 0.0001, -1.0, 0.0, 0.0, 0.0], 
-                    "hi": [15, 18, 3.0, 3.0, 6.0, 3.0, 30.0]},
-        }
-        if Assembly:
-            tweaks["chain_params.labels"] += ["A_{\\text{cent}}", "A_{\\text{sat}}"]
-            fitspec[tracer]["names"] += ["Acent", "Asat"]
-            fitspec[tracer]["lo"] += [-10.0, -10.0]
-            fitspec[tracer]["hi"] += [10.0, 10.0]
-        if BiasENV:
-            tweaks["chain_params.labels"] += ["B_{\\text{cent}}", "B_{\\text{sat}}"]
-            fitspec[tracer]["names"] += ["Bcent", "Bsat"]
-            fitspec[tracer]["lo"] += [-20.0, -20.0]
-            fitspec[tracer]["hi"] += [20.0, 20.0]
+        fitspec = {tracer: params_dict,}
         fit_over = fit_params_overrides(fitspec)
         ## generate config
         overrides = merge_overrides(fit_over, tweaks) # combine fit_params and other tweaks
@@ -146,8 +153,7 @@ def generate_slurm_files(tracer):
         
 ### Usage Example --------------------------------------------------------------
 if __name__ == "__main__":
-    # tracer='QSO'
-    tracer='LRG'
+    tracer='QSO'
     
     if tracer not in ['QSO', 'LRG']:
         raise ValueError("tracer must be 'QSO' or 'LRG'")
@@ -157,3 +163,7 @@ if __name__ == "__main__":
     ############## slurm files ##############
     generate_slurm_files(tracer)
     
+    tracer='LRG'
+    generate_config_files(tracer)
+    generate_slurm_files(tracer)
+   
