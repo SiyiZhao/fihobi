@@ -1,25 +1,25 @@
 HOD_params:
+  LRG_params:
+    alpha: 1.02
+    alpha_c: 0.2
+    alpha_s: 0.88
+    ic: 1.0
+    kappa: 1.27
+    logM1: 13.81
+    logM_cut: 12.67
+    sigma: 0.02
+    profile_code: 1
   tracer_flags:
     ELG: false
-    LRG: false
-    QSO: true
+    LRG: true
+    QSO: false
   use_particles: false
   use_profiles: true
   want_AB: true
   want_rsd: true
   want_dv: false
+  dv_draw_L: /global/homes/s/siyizhao/projects/fihobi/data/dv_draws/LRG_z0.4-0.6_CDF.npz
   write_to_disk: false
-  QSO_params:
-    logM_cut: 12.03
-    logM1: 13.11
-    sigma: 0.08
-    alpha: 1.03
-    kappa: 0.39
-    alpha_c: 0.92
-    alpha_s: 2.7
-    ic: 1.0
-    profile_code: 1
-  dv_draw_Q: /global/homes/s/siyizhao/projects/fihobi/data/dv_draws/QSO_z2.8-3.5_CDF.npz
 clustering_params:
   bin_params:
     logmax: 1.5
@@ -28,30 +28,30 @@ clustering_params:
   clustering_type: all
   pi_bin_size: 40
   pimax: 40
+data_params:
+  tracer_combos:
+    LRG_LRG:
+      path2cov: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/cov_LRG_0.4_0.6_cut.dat
+      path2wp: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/wp_LRG_0.4_0.6_cut.dat
+      path2xi02: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/xi02_LRG_0.4_0.6_cut.dat
+  tracer_density_mean:
+    LRG: 0.0005241
+  tracer_density_std:
+    LRG: 5.241e-05
 nthread: 64
 prepare_sim:
   Nparallel_load: 18
 sim_params:
   cleaned_halos: true
-  output_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_base_v2/
+  output_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_base-B_v2/
   sim_dir: /global/cfs/projectdirs/desi/cosmosim/Abacus/
   sim_name: Abacus_pngbase_c302_ph000
   subsample_dir: /pscratch/sd/s/siyizhao/AbacusSummit/subsample_desidr2_profile_withAB/
-  z_mock: 3.0
+  z_mock: 0.5
   force_mt: true
-data_params:
-  tracer_combos:
-    QSO_QSO:
-      path2cov: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/cov_QSO_2.8_3.5_cut.dat
-      path2wp: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/wp_QSO_2.8_3.5_cut.dat
-      path2xi02: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/xi02_QSO_2.8_3.5_cut.dat
-  tracer_density_mean:
-    QSO: 5.181e-06
-  tracer_density_std:
-    QSO: 5.181000000000001e-07
 chain_params:
   chain_prefix: chain_v2_
-  output_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/QSO-fnl100/z6_base/
+  output_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/LRG-fnl100/z1_base-B/
   nlive: 500
   tol: 0.5
   labels:
@@ -62,8 +62,10 @@ chain_params:
   - \kappa
   - \alpha_{\text{c}}
   - \alpha_{\text{s}}
+  - B_{\text{cent}}
+  - B_{\text{sat}}
 fit_params:
-  QSO:
+  LRG:
     logM_cut:
     - 0
     - 11.0
@@ -92,3 +94,11 @@ fit_params:
     - 6
     - 0.0
     - 15.0
+    Bcent:
+    - 7
+    - -20.0
+    - 20.0
+    Bsat:
+    - 8
+    - -25.0
+    - 25.0
