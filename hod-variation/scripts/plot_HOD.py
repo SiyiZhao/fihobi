@@ -1,3 +1,5 @@
+# python scripts/plot_HOD.py 
+
 from getdist import loadMCSamples
 import sys
 sys.path.insert(0, "source")
