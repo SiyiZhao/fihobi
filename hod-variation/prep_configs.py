@@ -42,8 +42,9 @@ if BiasENV:
 if want_dv:
     hod_model += "-dv"
 
+version="v2_logsigma"  # slurm launcher version
 # chain_prefix = 'chain_'
-chain_prefix = 'chain_v2_' # p6s11, larger prior
+chain_prefix = f'chain_{version}_' # p6s11, larger prior
 clusdir="/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/"
 fitdir="/pscratch/sd/s/siyizhao/desi-dr2-hod/"
 
@@ -66,21 +67,44 @@ z_mock_all = {
 def params_setting(tracer):
     ''' return parameter settings for a given tracer.'''
     params_labels = ["\log M_{\\text{cut}}","\log M_1","\sigma","\\alpha","\kappa", "\\alpha_{\\text{c}}","\\alpha_{\\text{s}}"]
-    params_dict = {"names": ["logM_cut","logM1","sigma","alpha","kappa", "alpha_c","alpha_s"], 
-                        "lo": [11, 10, 0.0001, -1.0, 0.0, 0.0, 0.0], 
-                        "hi": [15, 18, 3.0, 3.0, 6.0, 3.0, 15.0]}
-    if Assembly:
-        params_labels += ["A_{\\text{cent}}", "A_{\\text{sat}}"]
-        params_dict["names"] += ["Acent", "Asat"]
-        params_dict["lo"] += [-10.0, -15.0]
-        params_dict["hi"] += [10.0, 15.0]
-    if BiasENV:
-        params_labels += ["B_{\\text{cent}}", "B_{\\text{sat}}"]
-        params_dict["names"] += ["Bcent", "Bsat"]
-        params_dict["lo"] += [-20.0, -25.0]
-        params_dict["hi"] += [20.0, 25.0]
-    if tracer == 'QSO':
-        pass
+    if tracer == 'LRG':
+        params_dict = {"names": ["logM_cut","logM1","sigma","alpha","kappa", "alpha_c","alpha_s"], 
+                            "lo": [11, 10, -4, -1.0, 0.0, 0.0, 0.0], 
+                            "hi": [15, 18, 0, 3.0, 6.0, 3.0, 3.0],
+                            "type": ["flat", "flat", "log", "flat", "flat", "flat", "flat"],
+                            }
+        if Assembly:
+            params_labels += ["A_{\\text{cent}}", "A_{\\text{sat}}"]
+            params_dict["names"] += ["Acent", "Asat"]
+            params_dict["lo"] += [-10.0, -15.0]
+            params_dict["hi"] += [10.0, 15.0]
+            params_dict["type"] += ["flat", "flat"]
+        if BiasENV:
+            params_labels += ["B_{\\text{cent}}", "B_{\\text{sat}}"]
+            params_dict["names"] += ["Bcent", "Bsat"]
+            params_dict["lo"] += [-20.0, -25.0]
+            params_dict["hi"] += [20.0, 25.0]
+            params_dict["type"] += ["flat", "flat"]
+    elif tracer == 'QSO':
+        params_dict = {"names": ["logM_cut","logM1","sigma","alpha","kappa", "alpha_c","alpha_s"], 
+                            "lo": [11, 10, -4, -1.0, 0.0, 0.0, 0.0], 
+                            "hi": [15, 18, 0, 3.0, 6.0, 3.0, 3.0],
+                            "type": ["flat", "flat", "log", "flat", "flat", "flat", "flat"],
+                            }
+        if Assembly:
+            params_labels += ["A_{\\text{cent}}", "A_{\\text{sat}}"]
+            params_dict["names"] += ["Acent", "Asat"]
+            params_dict["lo"] += [-10.0, -15.0]
+            params_dict["hi"] += [10.0, 15.0]
+            params_dict["type"] += ["flat", "flat"]
+        if BiasENV:
+            params_labels += ["B_{\\text{cent}}", "B_{\\text{sat}}"]
+            params_dict["names"] += ["Bcent", "Bsat"]
+            params_dict["lo"] += [-20.0, -25.0]
+            params_dict["hi"] += [20.0, 25.0]
+            params_dict["type"] += ["flat", "flat"]
+    else:
+        raise ValueError("tracer must be 'QSO' or 'LRG'.")
     return params_labels, params_dict
 
 def generate_config_files(tracer):
@@ -147,7 +171,7 @@ def generate_slurm_files(tracer):
                                 chain_path=chain_path,
                                 job_name=f"{tracer}-{sim_model}_{tag}_{hod_model}",  #job name
                                 output_path=launcher_path,
-                                version="v2")   
+                                version=version)   
         print(f'launcher generated in {launcher_path}.\n')
         
         

@@ -240,11 +240,12 @@ def fit_params_overrides(
         names = list(entry.get("names", []))
         lo = list(entry.get("lo", []))
         hi = list(entry.get("hi", []))
+        tp = list(entry.get("type", ["flat"] * len(names)))
 
-        if not (len(names) == len(lo) == len(hi)):
+        if not (len(names) == len(lo) == len(hi) == len(tp)):
             raise ValueError(
-                f"{tracer}: 'names', 'lo', and 'hi' must have equal length "
-                f"(got {len(names)}, {len(lo)}, {len(hi)})."
+                f"{tracer}: 'names', 'lo', 'hi', and 'type' must have equal length "
+                f"(got {len(names)}, {len(lo)}, {len(hi)}, {len(tp)})."
             )
         # guard duplicates within a tracer
         if len(set(names)) != len(names):
@@ -252,12 +253,13 @@ def fit_params_overrides(
             raise ValueError(f"{tracer}: duplicate parameter names: {dupes}")
 
         tdict: Dict[str, List[float]] = out.setdefault(tracer, {})
-        for n, l, h in zip(names, lo, hi):
+        for n, l, h, t in zip(names, lo, hi, tp):
             l = float(l)
             h = float(h)
+            t = str(t)
             if l > h:
                 raise ValueError(f"{tracer}.{n}: lower bound {l} > upper bound {h}.")
-            tdict[n] = [idx, l, h]
+            tdict[n] = [idx, l, h, t]
             idx += 1
 
     return {"fit_params": out}

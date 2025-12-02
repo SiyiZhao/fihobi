@@ -55,7 +55,7 @@ def main():
     print('data loaded') 
     
     # Generate the combined prior and parameter mapping.
-    prior, param_mapping = generate_prior(fit_params)
+    prior, param_mapping, prior_types = generate_prior(fit_params)
 
     # Define active tracers as the keys in fit_params.
     active_tracers = list(fit_params.keys())
@@ -67,7 +67,8 @@ def main():
         "clustering_params": clustering_params,
         "param_mapping": param_mapping,
         "fit_params": fit_params,
-        "tracers": active_tracers
+        "tracers": active_tracers,
+        "prior_types": prior_types
     }
     print(global_config)
     
