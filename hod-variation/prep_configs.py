@@ -42,7 +42,7 @@ if BiasENV:
 if want_dv:
     hod_model += "-dv"
 
-version="v2_logsigma"  # slurm launcher version
+version="v2_logp"  # slurm launcher version
 # chain_prefix = 'chain_'
 chain_prefix = f'chain_{version}_' # p6s11, larger prior
 clusdir="/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/"
@@ -66,8 +66,8 @@ z_mock_all = {
 ### Functions ------------------------------------------------------------------
 def params_setting(tracer):
     ''' return parameter settings for a given tracer.'''
-    params_labels = ["\log M_{\\text{cut}}","\log M_1","\sigma","\\alpha","\kappa", "\\alpha_{\\text{c}}","\\alpha_{\\text{s}}"]
     if tracer == 'LRG':
+        params_labels = ["\log M_{\\text{cut}}","\log M_1","\log \sigma","\\alpha","\kappa", "\\alpha_{\\text{c}}","\\alpha_{\\text{s}}"]
         params_dict = {"names": ["logM_cut","logM1","sigma","alpha","kappa", "alpha_c","alpha_s"], 
                             "lo": [11, 10, -4, -1.0, 0.0, 0.0, 0.0], 
                             "hi": [15, 18, 0, 3.0, 6.0, 3.0, 3.0],
@@ -86,10 +86,11 @@ def params_setting(tracer):
             params_dict["hi"] += [20.0, 25.0]
             params_dict["type"] += ["flat", "flat"]
     elif tracer == 'QSO':
+        params_labels = ["\log M_{\\text{cut}}","\log M_1","\sigma","\\alpha","\kappa", "\log \\alpha_{\\text{c}}","\log \\alpha_{\\text{s}}"]
         params_dict = {"names": ["logM_cut","logM1","sigma","alpha","kappa", "alpha_c","alpha_s"], 
-                            "lo": [11, 10, -4, -1.0, 0.0, 0.0, 0.0], 
-                            "hi": [15, 18, 0, 3.0, 6.0, 3.0, 3.0],
-                            "type": ["flat", "flat", "log", "flat", "flat", "flat", "flat"],
+                            "lo": [11, 10, 0.0001, -1.0, 0.0, 0.0, -2], 
+                            "hi": [15, 18, 3.0, 3.0, 6.0, 1.0, 2.0],
+                            "type": ["flat", "flat", "flat", "flat", "flat", "log", "log"],
                             }
         if Assembly:
             params_labels += ["A_{\\text{cent}}", "A_{\\text{sat}}"]

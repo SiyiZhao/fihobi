@@ -6,6 +6,8 @@
 #SBATCH --qos=regular
 #SBATCH --account=desi
 #SBATCH --time=8:00:00
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=2
 #SBATCH --ntasks=4
 #SBATCH --cpus-per-task=64
 #SBATCH -C cpu
@@ -21,5 +23,5 @@ config=configs/QSO-fnl100/z6_base.yaml
 cd /global/homes/s/siyizhao/projects/fihobi/hod-variation
 
 # srun -n 1 -c 64 --cpu-bind=cores python -m abacusnbody.hod.prepare_sim_profiles --path2config $config
-srun -n 4 -c 64 --cpu-bind=cores python scripts/run_pmn.py --config $config > $outdir/run_v2.log 2>&1
-srun -n 1 -c 64 --cpu-bind=cores python scripts/post.py --config $config > $outdir/post_v2.log 2>&1
+srun -N 2 -n 4 -c 64 --cpu-bind=cores python scripts/run_pmn.py --config $config > $outdir/run_v2_logp.log 2>&1
+srun -n 1 -c 64 --cpu-bind=cores python scripts/post.py --config $config > $outdir/post_v2_logp.log 2>&1

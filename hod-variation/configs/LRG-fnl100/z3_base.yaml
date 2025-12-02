@@ -50,14 +50,14 @@ sim_params:
   z_mock: 0.95
   force_mt: true
 chain_params:
-  chain_prefix: chain_v2_logsigma_
+  chain_prefix: chain_v2_logp_
   output_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/LRG-fnl100/z3_base/
   nlive: 500
   tol: 0.5
   labels:
   - \log M_{\text{cut}}
   - \log M_1
-  - \sigma
+  - \log \sigma
   - \alpha
   - \kappa
   - \alpha_{\text{c}}

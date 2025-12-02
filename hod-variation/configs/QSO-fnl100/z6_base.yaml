@@ -50,7 +50,7 @@ data_params:
   tracer_density_std:
     QSO: 5.181000000000001e-07
 chain_params:
-  chain_prefix: chain_v2_
+  chain_prefix: chain_v2_logp_
   output_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/QSO-fnl100/z6_base/
   nlive: 500
   tol: 0.5
@@ -60,35 +60,42 @@ chain_params:
   - \sigma
   - \alpha
   - \kappa
-  - \alpha_{\text{c}}
-  - \alpha_{\text{s}}
+  - \log \alpha_{\text{c}}
+  - \log \alpha_{\text{s}}
 fit_params:
   QSO:
     logM_cut:
     - 0
     - 11.0
     - 15.0
+    - flat
     logM1:
     - 1
     - 10.0
     - 18.0
+    - flat
     sigma:
     - 2
     - 0.0001
     - 3.0
+    - flat
     alpha:
     - 3
     - -1.0
     - 3.0
+    - flat
     kappa:
     - 4
     - 0.0
     - 6.0
+    - flat
     alpha_c:
     - 5
     - 0.0
-    - 3.0
+    - 1.0
+    - log
     alpha_s:
     - 6
-    - 0.0
-    - 15.0
+    - -2.0
+    - 2.0
+    - log

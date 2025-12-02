@@ -311,7 +311,9 @@ def generate_slurm_launcher(
         job_name = Path(config_path).stem
     if logs_dir is None:
         logs_dir = str(Path(workdir) / "logs")
-
+    ntasks_per_node = 128 // cpus_per_task
+    nodes = ntasks // ntasks_per_node + (1 if ntasks % ntasks_per_node > 0 else 0)
+    
     script = f"""#!/bin/bash
 
 #SBATCH --job-name={job_name}
@@ -320,6 +322,8 @@ def generate_slurm_launcher(
 #SBATCH --qos={qos}
 #SBATCH --account={account}
 #SBATCH --time={time_hms}
+#SBATCH --nodes={nodes}
+#SBATCH --ntasks-per-node={ntasks_per_node}
 #SBATCH --ntasks={ntasks}
 #SBATCH --cpus-per-task={cpus_per_task}
 #SBATCH -C {constraint}
@@ -335,7 +339,7 @@ config={config_path}
 cd {workdir}
 
 # srun -n 1 -c 64 --cpu-bind=cores python -m abacusnbody.hod.prepare_sim_profiles --path2config $config
-srun -n {ntasks} -c {cpus_per_task} --cpu-bind=cores python {entry} --config $config > $outdir/run_{version}.log 2>&1
+srun -N {nodes} -n {ntasks} -c {cpus_per_task} --cpu-bind=cores python {entry} --config $config > $outdir/run_{version}.log 2>&1
 srun -n 1 -c 64 --cpu-bind=cores python scripts/post.py --config $config > $outdir/post_{version}.log 2>&1
 """.lstrip()
 

@@ -25,7 +25,6 @@ def generate_prior(fit_params):
     all_params = {}
     param_mapping = {}
     prior = {}
-    prior_types = {}
     
     for tracer, params in fit_params.items():
         param_mapping[tracer] = {}
@@ -36,9 +35,8 @@ def generate_prior(fit_params):
             all_params[provided_index] = [lb, ub]
             param_mapping[tracer][param] = provided_index
             prior[param] = [lb, ub]
-            prior_types[param] = prior_type
     
-    return prior, param_mapping, prior_types
+    return prior, param_mapping
 
 def set_global_objects(data_obj, config, nthread, newBall):
     """
@@ -59,15 +57,6 @@ def set_global_objects(data_obj, config, nthread, newBall):
     GLOBAL_CONFIG = config
     GLOBAL_NTHREAD = nthread
     GLOBAL_BALL = newBall
-
-def samp2par(free_params, prior_types):
-    pars = []
-    for itype, ipar in zip(prior_types, free_params):
-        if itype == 'log':
-            pars.append(10**ipar)
-        else:
-            pars.append(ipar)
-    return pars
 
 def log_likelihood(free_params):
     """
@@ -93,15 +82,15 @@ def log_likelihood(free_params):
     config = GLOBAL_CONFIG
     nthread = GLOBAL_NTHREAD
     box_volume = ball.params['Lbox']**3
-    prior_types = config["prior_types"].items()
-    free_vals = samp2par(free_params, prior_types)
     for tracer in config["tracers"]:
         for param_name in config["param_mapping"][tracer]:
             mapping_idx = config["param_mapping"][tracer][param_name]
-            if free_vals[mapping_idx] > config["fit_params"][tracer][param_name][2] or free_vals[mapping_idx] < config["fit_params"][tracer][param_name][1]:
+            if free_params[mapping_idx] > config["fit_params"][tracer][param_name][2] or free_params[mapping_idx] < config["fit_params"][tracer][param_name][1]:
                 return -np.inf
-            ball.tracers[tracer][param_name] = free_vals[mapping_idx]#.item()
-
+            if config["fit_params"][tracer][param_name][3] == 'log':
+                ball.tracers[tracer][param_name] = 10**free_params[mapping_idx]#.item()
+            else:
+                ball.tracers[tracer][param_name] = free_params[mapping_idx]#.item()
     for tracer in config["tracers"]:
         if tracer == 'LRG' and 10**ball.tracers[tracer]["logM_cut"]*ball.tracers[tracer]["kappa"]<1e12:
             return -np.inf

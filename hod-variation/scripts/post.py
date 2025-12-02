@@ -58,7 +58,7 @@ def main(config):
 
     ## generate AbacusHOD object
     ball_profiles = AbacusHOD(sim_params, HOD_params, clustering_params)
-    _, param_mapping, tp = generate_prior(fit_params)
+    _, param_mapping = generate_prior(fit_params)
     density_bf = assign_hod(ball_profiles, param_mapping, bf, tracers, data_obj, nthread)
     mock_bf,clustering_bf=compute_all(ball_profiles, nthread=nthread, out=True, verbose=True)
     loglike_bf = data_obj.compute_loglike(clustering_bf, density_bf)
