@@ -1,6 +1,10 @@
-redshift: 3.0
 fnl: 100
-tracer: QSO
+galaxy:
+  redshift: 3.0
+  tracer: QSO
+  ztag: z6
+  zmin: 2.8
+  zmax: 3.5
 HOD:
   prefix: base
   want_dv: false
@@ -9,3 +13,6 @@ HOD:
   version: v2.1
   data_dir: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/
   fit_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/
+sampleHOD:
+  num: 10
+  cmap: viridis

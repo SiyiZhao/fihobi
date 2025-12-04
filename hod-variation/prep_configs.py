@@ -23,7 +23,7 @@ from config_helpers import generate_config, fit_params_overrides, merge_override
 src_dir = os.path.join(file_dir,"..","src")
 if src_dir not in sys.path:
     sys.path.insert(0, src_dir)
-from io_helper import load_config
+from io_def import load_config, prefix_HOD
 
 ### settings -------------------------------------------------------------------
 parser = argparse.ArgumentParser(description=__doc__)
@@ -45,16 +45,10 @@ match int(fnl):
     case _:
         raise ValueError(f"Unsupported fnl value: {fnl}. Expected 0, 30, or 100.")
 
-hod_model = HOD.get("prefix", "base")
-Assembly=HOD.get("Assembly", False)
+hod_model = prefix_HOD(HOD)
+Assembly = HOD.get("Assembly", False)
 BiasENV = HOD.get("BiasENV", False)
 want_dv = HOD.get("want_dv", False)
-if Assembly:
-    hod_model += "-A"
-if BiasENV:
-    hod_model += "-B"
-if want_dv:
-    hod_model += "-dv"
 
 version = HOD.get("version", "v2_logpr")
 chain_prefix = f'chain_{version}_' # p6s11, larger prior

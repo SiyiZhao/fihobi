@@ -13,7 +13,6 @@ __all__ = [
     'find_best_opt_sample',
     'extract_wp_xi',
     'save_clustering_ascii',
-    'write_catalogs',
 ]
 
 def ensure_dir(path: str) -> str:
@@ -141,90 +140,3 @@ def save_clustering_ascii(out_root: str, tracer: str, chain_params: dict, sim_pa
     np.savetxt(os.path.join(tdir, chain_params.get('chain_prefix', None) + "_wp_rsd.dat"), np.column_stack((rp_wp, wp_rsd)))
     np.savetxt(os.path.join(tdir, chain_params.get('chain_prefix', None) + "_xi02_rsd.dat"), np.column_stack((s_xi, xi0_rsd, xi2_rsd)))
 
-
-def write_catalogs(Ball, mock_real: dict, fit_params: dict, out_root=None, custom_prefix=None) -> None:
-
-
-    def z_to_tag(z):
-        return f"{float(z):.3f}".replace('.', 'p')
-
-    # Pull meta directly from Ball
-    sim_name = getattr(Ball, 'sim_name', None) or Ball.params.get('sim_name')
-    if sim_name is None:
-        raise KeyError("Ball.sim_name (or Ball.params['sim_name']) is required.")
-    zsnap = float(Ball.params.get('z', 0.0))
-    redshift_tag = z_to_tag(zsnap)
-
-    boxsize = float(Ball.params.get('Lbox'))
-    velz2kms = float(Ball.params.get('velz2kms'))
-
-    # Constants for pathing
-    mock_type = 'abacus_HF'
-    version = 'DR2_v2.0'
-
-    base_dir = os.path.join(out_root, mock_type, version, sim_name, 'Boxes')
-    ensure_dir(base_dir)
-
-    for tracer, cat in mock_real.items():
-        tracer_dir = ensure_dir(os.path.join(base_dir, tracer))
-
-        # Fetch required arrays
-        def fetch(name, default=None):
-            if isinstance(cat, dict):
-                return cat.get(name, default)
-            elif hasattr(cat, 'dtype') and cat.dtype.names and name in cat.dtype.names:
-                return cat[name]
-            return default
-
-        x  = fetch('x');  y  = fetch('y');  z  = fetch('z')
-        vx = fetch('vx'); vy = fetch('vy'); vz = fetch('vz')
-        if x is None or y is None or z is None:
-            raise KeyError(f"Catalog for tracer {tracer} missing position arrays.")
-
-        N = len(x)
-        mass = fetch('mass', fetch('halo_mass'))
-        if mass is None:
-            mass = np.zeros(N, dtype='f8')
-        gid  = fetch('id', fetch('halo_id'))
-        if gid is None:
-            gid = np.zeros(N, dtype='i8')
-        vsmear = fetch('vsmear', None)
-        if vsmear is None:
-            vsmear = np.zeros(N, dtype='f8')
-        Ncent = int(fetch('Ncent', 0) or 0)
-
-        iscentral = np.zeros(N, dtype='i8')  # force i8; 1 for centrals, 0 otherwise
-        if 0 <= Ncent <= N:
-            iscentral[:Ncent] = 1
-
-        # Enforce column dtypes explicitly
-        data = {
-            'X':         np.asarray(x,      dtype='f8'),
-            'Y':         np.asarray(y,      dtype='f8'),
-            'Z':         np.asarray(z,      dtype='f8'),
-            'VX':        np.asarray(vx,     dtype='f8'),
-            'VY':        np.asarray(vy,     dtype='f8'),
-            'VZ':        np.asarray(vz,     dtype='f8'),
-            'HALO_ID':   np.asarray(gid,    dtype='i8'),
-            'MASS':      np.asarray(mass,   dtype='f8'),
-            'VSMEAR':    np.asarray(vsmear, dtype='f8'),
-            'ISCENTRAL': np.asarray(iscentral, dtype='i8'),
-        }
-
-        # Header with varying HOD params for this tracer (floats -> f8)
-        varying = list(fit_params.get(tracer, {}).keys())
-        hod = getattr(Ball, 'tracers', {}).get(tracer, {})
-        hdr = {f"HOD_{k}": float(np.float64(hod[k])) for k in varying if k in hod}
-        hdr['BOXSIZE'] = float(np.float64(boxsize))
-        hdr['VELZ2KMS'] = float(np.float64(velz2kms))
-        hdr['ZSNAP'] = float(np.float64(zsnap))
-        hdr['REALIZATION'] = str(sim_name)  # not limited to 3 chars
-        hdr['TRACER_TYPE'] = str(tracer)[:3].ljust(3)  # s3: 'LRG','ELG','QSO'
-        if custom_prefix is None:
-            fname = f"{mock_type}_{tracer}_{redshift_tag}_{version}_{sim_name}_clustering.dat.h5"
-        else:
-            fname = f"{mock_type}_{tracer}_{redshift_tag}_{version}_{sim_name}_{custom_prefix}_clustering.dat.h5"
-        outpath = os.path.join(tracer_dir, fname)
-
-        Catalog(data=data).write(outpath, header=hdr)
-        print(f"[write] {tracer} -> {outpath}")

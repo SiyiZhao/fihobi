@@ -27,9 +27,9 @@ if source_dir not in sys.path:
     sys.path.insert(0, source_dir)
 from data_object import data_object
 from post_helpers import bestfit_params, compute_all, plot_all
-from io_helpers import build_param_mapping, assign_hod, reset_fic, theory_density, write_catalogs
+from io_helpers import build_param_mapping, assign_hod, reset_fic, theory_density
 sys.path.insert(0, '../src')
-from io_def import load_config, path_to_clustering
+from io_def import load_config, path_to_clustering, write_catalogs
 
 def main(config):
     ## load config
@@ -73,7 +73,7 @@ def main(config):
     plot_all(data_obj,tracer,clustering_bf,out=chain_dir+chain_prefix+'bestfit_'+tracer+'.png', idxwp=np.arange(6,21), idxxi=np.arange(11,21))
     # plot_all(data_obj,tracer,clustering_bf,out=chain_dir+chain_prefix+'bestfit_'+tracer+'.png')
     ## save bestfit clustering
-    path2cluster  = path_to_clustering(config, prefix=f'MAP')
+    path2cluster  = path_to_clustering(config, prefix='MAP')
     np.save(path2cluster, clustering_bf)
     print("Save bestfit clustering to:", path2cluster)
 
