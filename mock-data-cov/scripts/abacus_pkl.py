@@ -1,10 +1,7 @@
 import numpy as np
 import os, sys
-current_dir = os.getcwd()
-source_dir = os.path.join(current_dir, "source")
-if source_dir not in sys.path:
-    sys.path.insert(0, source_dir)
-from abacus_helpers import path_to_mock_dir
+sys.path.insert(0, '../src')
+from abacus_helper import path_to_mock_dir, read_AbacusHOD_cat
 from pypower_helpers import run_pypower_redshift
 
 config2Abacus = sys.argv[1]  # e.g. configs/QSO-fnl30/z4_base-dv.yaml
@@ -13,22 +10,6 @@ data_fn = path2mock / 'QSOs.dat'
 out_path = path2mock / 'pypower_poles.npy'
 out_for_EZmock = path2mock / 'pypower2powspec.txt'
 
-def read_AbacusHOD_cat(fname):
-    '''
-    Read AbacusHOD catalog file.
-    Return: x, y, z arrays in Mpc/h
-    '''
-    print(f"Loading mock from {fname}")
-    with open(fname, 'r') as f:
-        it = iter(f)
-        for line in it:
-            if not line.lstrip().startswith('#'):
-                break
-        data = np.loadtxt(it)
-    x = data[:, 0]
-    y = data[:, 1]
-    z = data[:, 2]
-    return x, y, z
 
 x, y, z = read_AbacusHOD_cat(data_fn)
 poles = run_pypower_redshift(x,y,z)

@@ -1,22 +1,6 @@
-import yaml
 from pathlib import Path
-
-def load_config(config_path):
-    """
-    Load and parse the YAML configuration file.
-
-    Parameters:
-        config_path (str): Path to the YAML configuration file.
-    
-    Returns:
-        dict: Configuration data parsed from YAML.
-    """
-    try:
-        with open(config_path, 'r') as f:
-            config = yaml.safe_load(f)
-        return config
-    except Exception as e:
-        raise RuntimeError(f"Error loading configuration file '{config_path}': {e}")
+import numpy as np
+from io_def import load_config
 
 def path_to_mock_dir(config):
     config_full=load_config(config)
@@ -36,3 +20,21 @@ def path_to_mock_dir(config):
         rsd_string = ''
     outdir = (mock_dir) / ('galaxies' + rsd_string)
     return outdir
+
+def read_AbacusHOD_cat(fname):
+    '''
+    Read AbacusHOD catalog file.
+    Return: x, y, z arrays in Mpc/h
+    '''
+    print(f"Loading mock from {fname}")
+    with open(fname, 'r') as f:
+        it = iter(f)
+        for line in it:
+            if not line.lstrip().startswith('#'):
+                break
+        data = np.loadtxt(it)
+    x = data[:, 0]
+    y = data[:, 1]
+    z = data[:, 2]
+    return x, y, z
+

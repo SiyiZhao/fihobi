@@ -26,8 +26,10 @@ source_dir = os.path.join(current_dir,"source")
 if source_dir not in sys.path:
     sys.path.insert(0, source_dir)
 from data_object import data_object
-from pmn_helpers import generate_prior
-from post_helpers import load_config, bestfit_params, assign_hod, compute_all, plot_all, plot_all_compare
+from post_helpers import bestfit_params, compute_all, plot_all
+from io_helpers import build_param_mapping, assign_hod, reset_fic, theory_density, write_catalogs
+sys.path.insert(0, '../src')
+from io_def import load_config, path_to_clustering
 
 def main(config):
     ## load config
@@ -58,22 +60,20 @@ def main(config):
 
     ## generate AbacusHOD object
     ball_profiles = AbacusHOD(sim_params, HOD_params, clustering_params)
-    _, param_mapping = generate_prior(fit_params)
-    density_bf = assign_hod(ball_profiles, param_mapping, bf, tracers, data_obj, nthread)
-    mock_bf,clustering_bf=compute_all(ball_profiles, nthread=nthread, out=True, verbose=True)
+    param_mapping = build_param_mapping(fit_params)
+    assign_hod(ball_profiles, param_mapping, bf)
+    reset_fic(ball_profiles, HOD_params, data_obj.density_mean, nthread=nthread)
+    density_bf = theory_density(ball_profiles, data_obj, tracers, nthread=nthread)
+    mock_bf,clustering_bf=compute_all(ball_profiles, nthread=nthread, out=False, verbose=True)
+    out_root = sim_params.get('output_dir')
+
+    write_catalogs(ball_profiles, mock_bf, fit_params, out_root=out_root, custom_prefix=f'MAP_{tracer}')
     loglike_bf = data_obj.compute_loglike(clustering_bf, density_bf)
     print("Best-fit loglike:", loglike_bf)
     plot_all(data_obj,tracer,clustering_bf,out=chain_dir+chain_prefix+'bestfit_'+tracer+'.png', idxwp=np.arange(6,21), idxxi=np.arange(11,21))
     # plot_all(data_obj,tracer,clustering_bf,out=chain_dir+chain_prefix+'bestfit_'+tracer+'.png')
     ## save bestfit clustering
-    if ball_profiles.want_rsd:
-        rsd_string = '_rsd'
-        if ball_profiles.want_dv:
-            rsd_string += '_dv'
-    else:
-        rsd_string = ''
-    outdir = (ball_profiles.mock_dir) / ('galaxies' + rsd_string)
-    path2cluster = (outdir) / (tracer + 's_clustering.npy')
+    path2cluster  = path_to_clustering(config, prefix=f'MAP')
     np.save(path2cluster, clustering_bf)
     print("Save bestfit clustering to:", path2cluster)
 

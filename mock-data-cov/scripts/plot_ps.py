@@ -8,7 +8,10 @@ import glob
 from pypower import PowerSpectrumMultipoles
 from matplotlib import pyplot as plt
 import matplotlib as mpl
-import os
+import os, sys
+# Add the source directory to the PYTHONPATH.
+sys.path.insert(0, '../src')
+from abacus_helper import path_to_catalog
 mpl.rc_file('../fig/matplotlibrc')
 color = ['#1f77b4', '#ff7f0e', '#9467bd', '#d62728', '#2ca02c', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 
@@ -17,11 +20,13 @@ def parse_args():
     parser.add_argument('--tag', type=str, required=True, help='Tag for the mock (e.g., z1, z2, etc.)')
     parser.add_argument('--dirEZmocks', type=str, help='Directory of EZmocks to plot. If empty, skip EZmocks plotting.')
     parser.add_argument('--base', type=str, help='Base directory for the mocks')
+    parser.add_argument('--config', type=str, help='Path to the configuration file for sampled mocks')
     return parser.parse_args()
 args = parse_args()
 tag = args.tag
 dirEZmocks = args.dirEZmocks if args.dirEZmocks else None
 base = args.base if args.base else 'c302_dv'
+config = args.config
 if dirEZmocks is not None:
     if not os.path.exists(dirEZmocks):
         print(f"Warning: dirEZmocks '{dirEZmocks}' not found; skipping EZmocks plotting")
@@ -33,20 +38,20 @@ z = z_mock[tag]
 
 pdir='/pscratch/sd/s/siyizhao/desi-dr2-hod/'
 data = {
-    'c300_dv': {'dir': pdir+f'mocks/Abacus_pngbase_c300_ph000/z{z:.3f}/galaxies_rsd_dv/', 
-                'label': 'fNL=30, dv', 'color': color[2], 'lstyle': ':'},
-    'c302': {'dir': pdir+f'mocks/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd/', 
-             'label': 'fNL=100', 'color': color[1], 'lstyle': '--'},
-    'c302_dv': {'dir': pdir+f'mocks/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/', 
-                'label': 'fNL=100, dv', 'color': color[0], 'lstyle': '--'},
-    'c302_A_dv': {'dir': pdir+f'mocks_base-A-dv/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/', 
-                  'label': 'fNL=100, dv, A', 'color': color[3], 'lstyle': '-.'},
-    'c302_B_dv': {'dir': pdir+f'mocks_base-B-dv/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/', 
-                  'label': 'fNL=100, dv, B', 'color': color[4], 'lstyle': '-.'},
+    # 'c300_dv': {'dir': pdir+f'mocks/Abacus_pngbase_c300_ph000/z{z:.3f}/galaxies_rsd_dv/', 
+    #             'label': 'fNL=30, dv', 'color': color[2], 'lstyle': ':'},
+    # 'c302': {'dir': pdir+f'mocks/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd/', 
+    #          'label': 'fNL=100', 'color': color[1], 'lstyle': '--'},
+    # 'c302_dv': {'dir': pdir+f'mocks/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/', 
+    #             'label': 'fNL=100, dv', 'color': color[0], 'lstyle': '--'},
+    # 'c302_A_dv': {'dir': pdir+f'mocks_base-A-dv/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/', 
+    #               'label': 'fNL=100, dv, A', 'color': color[3], 'lstyle': '-.'},
+    # 'c302_B_dv': {'dir': pdir+f'mocks_base-B-dv/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/', 
+    #               'label': 'fNL=100, dv, B', 'color': color[4], 'lstyle': '-.'},
     'c302_v2': {'dir': pdir+f'mocks_base_v2/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd/', 
                 'label': 'fNL=100, v2', 'color': color[1], 'lstyle': '-'},
-    'c302_dv_v2': {'dir': pdir+f'mocks_base-dv_v2/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/',
-                   'label': 'fNL=100, dv, v2', 'color': color[0], 'lstyle': '-'}
+    # 'c302_dv_v2': {'dir': pdir+f'mocks_base-dv_v2/Abacus_pngbase_c302_ph000/z{z:.3f}/galaxies_rsd_dv/',
+    #                'label': 'fNL=100, dv, v2', 'color': color[0], 'lstyle': '-'}
 }
 
 ### power spectra loading 
@@ -64,6 +69,26 @@ for key in data.keys():
             raise ValueError("k arrays do not match!")
     data[key]['p0'] = p0
 # data['k'] = k
+
+### sampled HOD mocks
+num = 10
+cmap = plt.get_cmap('viridis')
+for i in range(num):
+    key = f'base_{i}'
+    path_mock = path_to_catalog(config, tracer='QSO', custom_prefix=key)
+    path = os.path.dirname(path_mock) + f'/{key}_pypower_poles.npy'
+    if not os.path.exists(path):
+        raise ValueError(f"Sampled mock file '{path}' not found!")
+    poles = PowerSpectrumMultipoles.load(path)  # test loading
+    k, p0 = poles(ell=0, return_k=True, complex=False)
+    if not np.allclose(k, k_1st, equal_nan=True):
+        raise ValueError("k arrays do not match!")
+    data[key] = {
+        'p0': p0,
+        'color': cmap(i / num),
+        'lstyle': ':',
+        'label': ''
+    }
 
 ### define base
 if base in data.keys():

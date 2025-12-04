@@ -9,6 +9,8 @@ import os, sys
 sys.path.insert(0, 'source')
 from io_helpers import build_param_mapping, assign_hod, reset_fic, write_catalogs
 from post_helpers import load_config, compute_all
+sys.path.insert(0, '../src')
+from abacus_helper import path_to_catalog
 
 ## load config
 parser = argparse.ArgumentParser()
@@ -29,7 +31,7 @@ out_root = sim_params.get('output_dir')
 
 chain_dir=chain_params['output_dir']
 # chain_prefix=chain_params['chain_prefix']
-chain_prefix='chain_v2_'
+chain_prefix='chain_v2_logpr_'
 
 ### load chain samples and compute mean and covariance
 gdsamples = loadMCSamples(chain_dir+chain_prefix, settings={'ignore_rows':0.01})
@@ -53,7 +55,7 @@ g.triangle_plot([gdsamples, mgsamples], legend_labels=['Original', 'Multivariate
 # g.export(chain_dir+chain_prefix+'multivariate_gaussian.png')
 
 ### generate 10 samples to use in HOD modeling
-num = 5
+num = 10
 samples = sample_multivariate_gaussian(mean, cov, nsamples=num, seed=42)
 # g.triangle_plot(gdsamples, filled=False, title_limit=1)
 comap = 'viridis'
@@ -71,6 +73,8 @@ print(f"Generated {num} samples for HOD modeling, plot saved in {g_out}.")
 param_mapping = build_param_mapping(fit_params)
 Ball = AbacusHOD(sim_params, HOD_params, clustering_params)
 
+path2cat = path_to_catalog(config)
+path2dir = os.path.dirname(path2cat)
 for i, sample in enumerate(samples):
     print(f"Sampled parameters {i}:", sample)
     assign_hod(Ball, param_mapping, sample)
@@ -78,10 +82,8 @@ for i, sample in enumerate(samples):
     
     mock, clustering_rsd  = compute_all(Ball, nthread)
     write_catalogs(Ball, mock, fit_params, out_root=out_root, custom_prefix=f'base_{i}')
-    # ## save clustering ASCII
-    # tracers = list(getattr(Ball, 'tracers', {}).keys())
-    # for tracer in tracers:
-    #     save_clustering_ascii(out_root, tracer, chain_params, sim_params, clustering_real, clustering_rsd)
-    #     print(f"Saved clustering for tracer {tracer} under {os.path.join(out_root, 'clustering')}")
-    
-    
+    ## save clustering ASCII
+    path2cluster  = path2dir + f'/base_{i}_clustering.npy'
+    np.save(path2cluster, clustering_rsd)
+    print(f"[write] clustering for sample {i} to {path2cluster}")
+print("All done.")

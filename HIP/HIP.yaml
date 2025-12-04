@@ -1,0 +1,11 @@
+redshift: 3.0
+fnl: 100
+tracer: QSO
+HOD:
+  prefix: base
+  want_dv: false
+  Assembly: false
+  BiasENV: false
+  version: v2.1
+  data_dir: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/
+  fit_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/

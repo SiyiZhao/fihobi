@@ -13,28 +13,42 @@ Author: Siyi Zhao
 Refer to: https://github.com/ahnyu/hod-variation/blob/main/prep_configs.ipynb
 """
 
+import argparse
 import os, sys
-current_dir = os.getcwd()
-source_dir = os.path.join(current_dir,"source")
+file_dir = os.path.dirname(os.path.abspath(__file__))
+source_dir = os.path.join(file_dir,"source")
 if source_dir not in sys.path:
     sys.path.insert(0, source_dir)
 from config_helpers import generate_config, fit_params_overrides, merge_overrides, generate_slurm_launcher
+src_dir = os.path.join(file_dir,"..","src")
+if src_dir not in sys.path:
+    sys.path.insert(0, src_dir)
+from io_helper import load_config
 
 ### settings -------------------------------------------------------------------
-# sim_model = "Summit"
-# sim_name = "AbacusSummit_base_c000_ph000"
-# sim_model = "fnl30"
-# sim_name = "Abacus_pngbase_c300_ph000"
-sim_model = "fnl100"
-sim_name = "Abacus_pngbase_c302_ph000"
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("--config", type=str, default="HIP.yaml", help="Configuration YAML file")
+args = parser.parse_args()
+configs = load_config(args.config)
+fnl = configs.get("fnl", 100)
+HOD = configs.get("HOD", {})
+match int(fnl):
+    case 0:
+        sim_model = "Summit"
+        sim_name = "AbacusSummit_base_c000_ph000"
+    case 30:
+        sim_model = "fnl30"
+        sim_name = "Abacus_pngbase_c300_ph000"
+    case 100:
+        sim_model = "fnl100"
+        sim_name = "Abacus_pngbase_c302_ph000"
+    case _:
+        raise ValueError(f"Unsupported fnl value: {fnl}. Expected 0, 30, or 100.")
 
-hod_model = "base" 
-# Assembly=True
-Assembly=False 
-# BiasENV=True
-BiasENV=False
-# want_dv = True 
-want_dv = False
+hod_model = HOD.get("prefix", "base")
+Assembly=HOD.get("Assembly", False)
+BiasENV = HOD.get("BiasENV", False)
+want_dv = HOD.get("want_dv", False)
 if Assembly:
     hod_model += "-A"
 if BiasENV:
@@ -42,11 +56,10 @@ if BiasENV:
 if want_dv:
     hod_model += "-dv"
 
-version="v2_logp"  # slurm launcher version
-# chain_prefix = 'chain_'
+version = HOD.get("version", "v2_logpr")
 chain_prefix = f'chain_{version}_' # p6s11, larger prior
-clusdir="/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/"
-fitdir="/pscratch/sd/s/siyizhao/desi-dr2-hod/"
+clusdir=HOD.get("data_dir", "/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/")
+fitdir=HOD.get("fit_dir", "/pscratch/sd/s/siyizhao/desi-dr2-hod/")
 
 ### Info: different redshift bins ----------------------------------------------
 zbins = {
@@ -86,11 +99,11 @@ def params_setting(tracer):
             params_dict["hi"] += [20.0, 25.0]
             params_dict["type"] += ["flat", "flat"]
     elif tracer == 'QSO':
-        params_labels = ["\log M_{\\text{cut}}","\log M_1","\sigma","\\alpha","\kappa", "\log \\alpha_{\\text{c}}","\log \\alpha_{\\text{s}}"]
+        params_labels = ["\log M_{\\text{cut}}","\log M_1","\sigma","\\alpha","\kappa", "\\alpha_{\\text{c}}","\log \\alpha_{\\text{s}}"]
         params_dict = {"names": ["logM_cut","logM1","sigma","alpha","kappa", "alpha_c","alpha_s"], 
                             "lo": [11, 10, 0.0001, -1.0, 0.0, 0.0, -2], 
-                            "hi": [15, 18, 3.0, 3.0, 6.0, 1.0, 2.0],
-                            "type": ["flat", "flat", "flat", "flat", "flat", "log", "log"],
+                            "hi": [15, 18, 3.0, 3.0, 6.0, 3.0, 2.0],
+                            "type": ["flat", "flat", "flat", "flat", "flat", "flat", "log"],
                             }
         if Assembly:
             params_labels += ["A_{\\text{cent}}", "A_{\\text{sat}}"]

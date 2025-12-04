@@ -1,4 +1,4 @@
-# Credit: https://github.com/ahnyu/hod-variation/blob/main/source/io_helpers.py
+# Credit: https://github.com/ahnyu/hod-variation/blob/main/source/io_helpers.py, modified by Siyi Zhao
 
 import os
 import glob
@@ -60,6 +60,21 @@ def reset_fic(Ball, HOD_params: dict, density_mean: dict, nthread: int = 32) -> 
             ngal = ngal_dict[tracer]
             if ngal > 0.001 * box_volume:
                 Ball.tracers[tracer]['ic'] = 0.001 * box_volume / ngal
+
+def theory_density(Ball, data_obj, tracers, nthread=32):
+    box_volume = Ball.params['Lbox']**3
+    theory_density_dict = {}
+    ngal_dict, fsat_dict = Ball.compute_ngal(Nthread=nthread)
+    for tracer in tracers:
+        ngal = ngal_dict[tracer]
+        data_mean = data_obj.density_mean[tracer]
+        if data_mean < ngal / box_volume:
+            theory_density_dict[tracer] = data_mean
+            print(f"Set theoretical density of {tracer} to data mean: {data_mean}")
+        else:
+            theory_density_dict[tracer] = ngal / box_volume
+    return theory_density_dict
+
 
 def reset_hod(Ball, param_mapping) -> None:
     to_reset=['Acent','Asat','Bcent','Bsat']
