@@ -4,14 +4,38 @@ import numpy as np
 import os
 
 __all__ = [
-    "ensure_dir", "load_config", 
+    "ensure_dir", "write_script_to_file", "load_config", "write_config",
     "prefix_HOD", "path_to_HODconfigs", 
     "path_to_catalog", "path_to_clustering", "path_to_poles", 
     "write_catalogs", "read_catalog"]
 
+def z_to_tag(z):
+        return f"{float(z):.3f}".replace('.', 'p')
+
+def def_OBSample(tracer: str, zmin: float, zmax: float)->dict:
+    def tag_OBSample(tracer, zmin, zmax):
+        return f"{tracer}_z{z_to_tag(zmin)}_{z_to_tag(zmax)}"
+    obs = {
+        "tracer": tracer,
+        "zmin": zmin,
+        "zmax": zmax,
+        "tag": tag_OBSample(tracer, zmin, zmax)
+        }
+    return obs
+
 def ensure_dir(path: str) -> str:
     os.makedirs(path, exist_ok=True)
     return path
+
+def write_script_to_file(script, filename, make_executable=False):
+    if filename:
+        outp = Path(filename)
+        outp.parent.mkdir(parents=True, exist_ok=True)
+        outp.write_text(script, encoding="utf-8")
+        print(f"[write] -> {filename}")
+        if make_executable:
+            outp.chmod(outp.stat().st_mode | 0o111)
+    return script
 
 def load_config(config_path):
     """
@@ -29,6 +53,21 @@ def load_config(config_path):
         return config
     except Exception as e:
         raise RuntimeError(f"Error loading configuration file '{config_path}': {e}")
+
+def write_config(config, config_path):
+    """
+    Write the configuration dictionary to a YAML file.
+
+    Parameters:
+        config (dict): Configuration data to write.
+        config_path (str): Path to the output YAML file.
+    """
+    try:
+        with open(config_path, 'w') as f:
+            yaml.safe_dump(config, f)
+    except Exception as e:
+        raise RuntimeError(f"Error writing configuration file '{config_path}': {e}")
+
 
 def prefix_HOD(hod):
     hod_model = hod.get('prefix', 'base')
@@ -67,8 +106,7 @@ def path_to_catalog(sim_params=None, config=None, tracer='QSO', custom_prefix=No
     output_dir = Path(sim_params.get('output_dir', './'))
     sim_name = Path(sim_params['sim_name'])
     zsnap = float(sim_params.get('z_mock', 0.0))
-    def z_to_tag(z):
-        return f"{float(z):.3f}".replace('.', 'p')
+    
     redshift_tag = z_to_tag(zsnap)
     
     mock_type = 'abacus_HF'
