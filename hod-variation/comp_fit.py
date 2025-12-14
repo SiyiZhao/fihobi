@@ -6,17 +6,23 @@ Workspace: projects/fihobi/hod-variation/
 
 import numpy as np
 import os, sys
-current_dir = os.getcwd()
-source_dir = os.path.join(current_dir,"source")
+from pathlib import Path
+THIS_REPO = Path(__file__).parent.parent.parent 
+src_dir = THIS_REPO / 'src'
+if src_dir not in sys.path:
+    sys.path.insert(0, str(src_dir))
+from io_def import load_config
+
+source_dir = THIS_REPO / 'hod-variation' / 'source'
 if source_dir not in sys.path:
-    sys.path.insert(0, source_dir)
-from post_helpers import load_config, read_bf_clus, plot_all
+    sys.path.insert(0, str(source_dir))
+from post_helpers import read_bf_clus, plot_all
 from data_object import data_object
 from chain_helper import compare_chain
 
 
 def compare_clustering(configs, labels=None, colors=None, fn_out=None):
-    clus_list = [read_bf_clus(cfg) for cfg in configs]
+    clus_list = [read_bf_clus(load_config(cfg)) for cfg in configs]
     clus_baseline = clus_list[0]
     clus_others = clus_list[1:]
     tracer = 'QSO'
@@ -35,13 +41,13 @@ if __name__ == "__main__":
     # colors = ['black', "#1458C5", "#C44536"]
     # chains_out = 'output/comp_chains_z6.png'
     # clus_out = 'output/comp_clustering_z6.png'
-    tags = ['z1', 'z6']
-    # tags = ['z1', 'z5']
+    # tags = ['z1', 'z6']
+    tags = ['z5']
     # tags = ['z1', 'z2', 'z3', 'z4', 'z5', 'z6']
     for tag in tags:
-        configs = [f'configs/QSO-fnl100/{tag}_base-dv.yaml', f'configs/QSO-fnl100/{tag}_base.yaml', f'configs/QSO-fnl100/{tag}_base-A-dv.yaml', f'configs/QSO-fnl100/{tag}_base-B-dv.yaml']
-        labels = ['c302(fnl=100), w/ dv', 'c302(fnl=100), w/o dv', 'c302(fnl=100), w/ dv, c', 'c302(fnl=100), w/ dv, $\delta$']
-        colors = ['black', "#1458C5", "#C44536", "#28A745"]
+        configs = [f'configs/QSO-fnl100/{tag}_base-dv.yaml', f'configs/QSO-fnl100/{tag}_base.yaml', f'configs/QSO-fnl100/{tag}_base-A-dv.yaml']#, f'configs/QSO-fnl100/{tag}_base-B-dv.yaml']
+        labels = ['c302(fnl=100), w/ dv', 'c302(fnl=100), w/o dv', 'c302(fnl=100), w/ dv, c']#, 'c302(fnl=100), w/ dv, $\delta$']
+        colors = ['black', "#1458C5", "#C44536"]#, "#28A745"]
         chains_out = f'output/comp_chains_{tag}.png'
         clus_out = f'output/comp_clustering_{tag}.png'
         ## compare chains

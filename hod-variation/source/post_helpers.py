@@ -1,76 +1,10 @@
 # Credit: https://github.com/ahnyu/hod-variation/blob/main/source/post_helpers.py , modified for our use case
 
-import yaml
 import matplotlib.pyplot as plt
 import numpy as np
-from abacusnbody.hod.abacus_hod import AbacusHOD
 
 _DEEP_HEX = [
     "#3D5A80", "#C44536","#E0A458","#2A9D8F","#81B29A","#B56576"]
-
-def load_config(config_path):
-    """
-    Load and parse the YAML configuration file.
-
-    Parameters:
-        config_path (str): Path to the YAML configuration file.
-    
-    Returns:
-        dict: Configuration data parsed from YAML.
-    """
-    try:
-        with open(config_path, 'r') as f:
-            config = yaml.safe_load(f)
-        return config
-    except Exception as e:
-        raise RuntimeError(f"Error loading configuration file '{config_path}': {e}")
-
-
-    
-def bestfit_params(gdsamples):
-    ## max weight
-    samples, weights = gdsamples.samples, gdsamples.weights
-    max_weight_idx = np.argmax(weights)
-    max_logwt_sample = samples[max_weight_idx]
-    print('MAP:', max_logwt_sample)
-    return max_logwt_sample
-
-
-
-def assign_hod(Ball,param_mapping,params,tracers,data_obj,nthread):
-    for tracer in param_mapping.keys():
-        for param_name in param_mapping[tracer]:
-            mapping_idx = param_mapping[tracer][param_name]
-            Ball.tracers[tracer][param_name] = params[mapping_idx]
-            
-    # Reset 'ic' and compute theoretical number density.
-    for tracer in tracers:
-        Ball.tracers[tracer]['ic'] = 1
-    ngal_dict, fsat_dict = Ball.compute_ngal(Nthread=nthread)
-    # Update 'ic' for non-ELG tracers.
-    box_volume = Ball.params['Lbox']**3
-    for tracer in tracers:
-        if tracer == 'LRG':
-            ngal = ngal_dict[tracer]
-            if ngal > data_obj.density_mean[tracer] * box_volume:
-                Ball.tracers[tracer]['ic'] = data_obj.density_mean[tracer] * box_volume / ngal
-        else:
-            ngal = ngal_dict[tracer]
-            if ngal > 0.001 * box_volume:
-                Ball.tracers[tracer]['ic'] = 0.001 * box_volume / ngal
-                
-    # Compute theoretical density for each tracer.
-    theory_density_dict = {}
-    
-    for tracer in tracers:
-        ngal = ngal_dict[tracer]
-        data_mean = data_obj.density_mean[tracer]
-        if data_mean < ngal / box_volume:
-            theory_density_dict[tracer] = data_mean
-            print(f"Set theoretical density of {tracer} to data mean: {data_mean}")
-        else:
-            theory_density_dict[tracer] = ngal / box_volume
-    return theory_density_dict
     
 def compute_wp(Ball,nthread,out=False):
     mock_dict = Ball.run_hod(tracers=Ball.tracers, want_rsd=Ball.want_rsd, Nthread = nthread, verbose = False, write_to_disk=out)
@@ -98,9 +32,8 @@ def compute_all(Ball, nthread, out=False, want_rsd=None, want_dv=None, verbose =
     
     return mock_dict,clustering
 
-def read_bf_clus(config_path, tracer='QSO'):
+def read_bf_clus(config_full, tracer='QSO'):
     'read the best-fit clustering measured by post.py, input: config file'
-    config_full=load_config(config_path)
     sim_params = config_full['sim_params']
     hod_params = config_full['HOD_params']
     output_dir = sim_params['output_dir']

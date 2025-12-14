@@ -7,11 +7,11 @@ import matplotlib.pyplot as plt
 ############# class: my_pmn ##############
 class my_pmn:
     '''
-    only for flat prior.
+    To run pymultinest sampling.
     '''
     def __init__(self, prior, log_likelihood, outdir, filename='_', param_label=None, live_points=100, tol=0.5, verbose=True):
         '''
-        prior: dict, {param: Any, (low, high) for flat prior}.
+        prior: dict, {param: Any, (low, high)}, only set the bound, for other priors, add them in log_likelihood.
         log_likelihood: function, log_likelihood(param).
         outdir, filename: output directory & filename.
         param_label: LaTeX labels of param names.

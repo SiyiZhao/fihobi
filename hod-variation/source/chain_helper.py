@@ -26,7 +26,7 @@ def bestfit_params(gdsamples):
     max_weight_idx = np.argmax(weights)
     max_logwt_sample = samples[max_weight_idx]
     print('MAP:', max_logwt_sample)
-    return max_logwt_sample  
+    return max_logwt_sample
 
 def compare_chain(fn_all, labels=['chain1', 'chain2'], colors=['red', 'blue'], fn_out=None):
     samples_all = []

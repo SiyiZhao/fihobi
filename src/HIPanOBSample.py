@@ -1,8 +1,18 @@
+import numpy as np
+from pathlib import Path
 from io_def import (
+    ensure_dir,
     load_config, 
+    write_config,
     def_OBSample,
     write_script_to_file,
-    )
+    path_to_ObsClus,
+    path_to_AbacusSubsample,
+    path_to_HODchain,
+    path_to_mocks,
+)
+
+THIS_REPO = Path(__file__).parent.parent
 
 class HIPanOBSample:
     """
@@ -10,44 +20,227 @@ class HIPanOBSample:
     """
     def __init__(
         self, 
-        cfg_file: str=None,
-        tracer: str=None, 
-        zmin: float=None, 
-        zmax: float=None,
-        ) -> None:
+        cfg_file: str | None = None,
+        tracer: str | None = None, 
+        zmin: float | None = None, 
+        zmax: float | None = None,
+        work_dir: Path | None = None,
+    ) -> None:
         """
         Either provide a configuration file or specify tracer, zmin, and zmax directly.
         """
-        ## check tracer validity
-        if tracer not in ['QSO', 'LRG']:
-            raise ValueError("tracer must be 'QSO' or 'LRG'")
         ## define
+        self.OBSample = None
+        self.work_dir = None
+        self.cfg = None
+        self.ObsClus = None
+        self.HODfit = None
         if cfg_file is not None:
-            self.cfg_file = cfg_file
-            self.cfgs = load_config(cfg_file)
-        self.OBSample = def_OBSample(tracer, zmin, zmax)
-        self.cfg = {'OBSample': self.OBSample}
+            self.load_cfg(cfg_file)
+        else:
+            ## check tracer validity
+            if tracer not in ['QSO', 'LRG']:
+                raise ValueError("tracer must be 'QSO' or 'LRG'")
+
+            self.OBSample = def_OBSample(tracer, zmin, zmax)
+            if work_dir is None:
+                work_dir = Path(f'./{self.OBSample["tag"]}')
+            self.work_dir = work_dir
+            self.cfg = {'OBSample': self.OBSample, 'work_dir': str(self.work_dir)}
     
+    def load_cfg(self, path: Path) -> None:
+        self.cfgs = load_config(path)
+        self.OBSample = self.cfgs['OBSample']
+        self.work_dir = Path(self.cfgs['work_dir'])
+        self.ObsClus = self.cfgs.get('ObsClus', None)
+        self.HODfit = self.cfgs.get('HODfit', None)
+    
+    def save_cfg(self, path: Path=None) -> None:
+        if path is None:
+            path = self.work_dir / "config.yaml"
+        write_config(self.cfg, path)
     
     def measure_clustering(
         self,
         verspec: str='loa-v1',
-        version: str='v2/PIP',
+        version: str='v2',
         weight_type: str='pip_angular_bitwise',
         path_script: str=None
-        ) -> None:
+    ) -> None:
         from clustering import script_clustering
 
         tracer = self.OBSample['tracer']
         zmin = self.OBSample['zmin']
         zmax = self.OBSample['zmax']
         tag = self.OBSample['tag']
-        script = script_clustering(tracer, zmin, zmax, sample_name=tag, verspec=verspec, version=version, weight_type=weight_type)   
-        if path_script is not None:
-            write_script_to_file(script, path_script)
-        # [TBD] run the bash script
-        pass 
+        path2ObsClus = path_to_ObsClus(verspec=verspec, version=version)
+        script = script_clustering(tracer, zmin, zmax, path2ObsClus, sample_name=tag, weight_type=weight_type)   
+        if path_script is None:
+            path_script = self.work_dir / f"scripts/clustering_{tag}.sh"
+        write_script_to_file(script, path_script)
+        print("[guide] >>> Go run the script, it will take several hours.\n")
+        ## refresh info
+        self.ObsClus = {'verspec': verspec, 'version': version, 'weight_type': weight_type, 'path_script': str(path_script), 'path2ObsClus': str(path2ObsClus)}
+        self.cfg['ObsClus'] = self.ObsClus
+        
+        
+    def prepare_HOD_fitting(
+        self,
+        data_dir: Path | None = None,
+        data_HOD_dir: Path | None = None,
+        cat_dir: Path | None = None,
+    ) -> None:
+        """
+        Prepare data for HOD fitting.
+        """
+        from HOD_prepare import save_data_for_HODfitting, show_zeff, load_nz
+        
+        tracer = self.OBSample['tracer']
+        zmin = self.OBSample['zmin']
+        zmax = self.OBSample['zmax']
+        verspec = self.ObsClus['verspec']
+        version = self.ObsClus['version']
+        ## save clustering data: wp, xi02, cov
+        if data_dir is None:
+            data_dir = Path(self.ObsClus['path2ObsClus']) 
+        y3rppidir = data_dir / "rppi"
+        y3smudir = data_dir / "smu"
+        if data_HOD_dir is None:
+            data_HOD_dir = path_to_ObsClus(verspec=verspec, version=version, mode='forHOD')
+        ensure_dir(data_HOD_dir)
+        path2data = save_data_for_HODfitting(outdir=data_HOD_dir, y3rppidir=y3rppidir, y3smudir=y3smudir, tracer=tracer, zmin=zmin, zmax=zmax)
+        ## print zmin, zmax, zeff of the z-bins 
+        if cat_dir is None:
+            cat_dir = Path(f'/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/{verspec}/LSScats/{version}/PIP/')
+            print(f"Using default catalog directory: {cat_dir}")
+        zeff = show_zeff(tracer=tracer, zmin=zmin, zmax=zmax, catdir=cat_dir) 
+        ## load n(z) of the z-bins
+        nz = load_nz(tracer=tracer, zmin=zmin, zmax=zmax, nzdir=cat_dir)
+        print('nbar:', nz)
+        ## refresh info
+        self.HODfit = {'path2data4HOD': path2data}
+        self.OBSample['zeff'] = zeff
+        self.OBSample['nbar'] = nz
+        self.cfg['HODfit'] = self.HODfit
+        
     
-    def prepare_HOD_fitting(self) -> None:
+    def _hod_latex_labels(self, prior: dict[str, tuple[int, float, float, str]]) -> list[str]:
+
+        labels = []
+        latex_map = {
+            'logM_cut': {'flat': "\log M_{\\text{cut}}"},
+            'logM1': {'flat': "\log M_1"},
+            'sigma': {'flat': "\sigma", 'log': "\log \sigma"},
+            'alpha': {'flat': "\\alpha", 'log': "\log \\alpha"},
+            'kappa': {'flat': "\\kappa", 'log': "\log \\kappa"},
+            'alpha_c': {'flat': "\\alpha_{\\text{c}}", 'log': "\log \\alpha_{\\text{c}}"},
+            'alpha_s': {'flat': "\\alpha_{\\text{s}}", 'log': "\log \\alpha_{\\text{s}}"},
+            'Acent': {'flat': "A_{\\text{cent}}", 'log': "\log A_{\\text{cent}}"},
+            'Asat': {'flat': "A_{\\text{sat}}", 'log': "\log A_{\\text{sat}}"},
+        }
+        for p in prior:
+            labels.append(latex_map[p][prior[p][3]])
+        
+        return labels
+    
+    def config_HOD_fitting(
+        self,
+        prior: dict[str, tuple[int, float, float, str]],
+        chain_path: Path | None = None,
+        version: str='v1',
+        mock_dir: Path | None = None,
+        sim_name: str="Abacus_pngbase_c302_ph000",
+        subsample_dir: Path | None = None,
+    ) -> None: 
+        """
+        Generate and write the configuration file for HOD fitting.
+        
+        prior: dict of prior settings for each parameter, e.g., {'logM_cut': (0, 12.0, 14.0, 'flat'), 'logM1': (1, 13.0, 15.0, 'flat'), 'sigma': (2, 0.1, 1.0, 'log')}. If the string is 'log', it means log-uniform prior, and the low and high values are in log10 space.
+        """
+        from abacus_helper import find_zsnap, set_sim_params, set_HOD_tracer, set_HOD_params, set_clustering_params  
+        
+        tracer = self.OBSample['tracer']
+        clus_ver = self.ObsClus['version']
+        ## determine zsnap
+        zsnap = find_zsnap(self.OBSample['zeff']) 
+        print(f"[set] zsnap = {zsnap}")
+        ## generate config file
+        if mock_dir is None:
+            mock_dir = path_to_mocks(self.work_dir)
+        if subsample_dir is None:
+            subsample_dir = path_to_AbacusSubsample()
+        sim_params = set_sim_params(sim_name=sim_name, z_mock=zsnap, output_dir=mock_dir, subsample_dir=subsample_dir)
+        hod_QSO = set_HOD_tracer(logM_cut=13.0, logM1=14.0, sigma=0.5, alpha=1.0, kappa=0.0) # the default values are useless
+        tracers = {'QSO': hod_QSO}
+        HOD_params = set_HOD_params(tracers)
+        clustering_params = set_clustering_params()
+        data_params = {
+            'tracer_combos': {f'{tracer}_{tracer}': self.HODfit['path2data4HOD']},
+            'tracer_density_mean': {f'{tracer}': self.OBSample['nbar']},
+            'tracer_density_std': {f'{tracer}': 0.1 * self.OBSample['nbar']}
+        }
+        if chain_path is None:
+            chain_path = path_to_HODchain(self.work_dir)
+        chain_params = {
+            'chain_prefix': f'chain_{clus_ver}_HOD_{version}_',
+            'output_dir': str(chain_path)+'/',
+            'nlive': 500,
+            'tol': 0.5,
+            'labels': self._hod_latex_labels(prior)
+        }
+        fit_params = {tracer: prior}
+        cfgHOD = {
+            'sim_params': sim_params,
+            'HOD_params': HOD_params,
+            'clustering_params': clustering_params,
+            'data_params': data_params,
+            'chain_params': chain_params,
+            'fit_params': fit_params,
+            'nthread': 64,
+            'prepare_sim': {'Nparallel_load': 18}
+        }
+        path2cfgHOD = Path(self.work_dir) / "scripts" / "cfgHOD.yaml"
+        write_config(cfgHOD, path2cfgHOD)
+        ## refresh info
+        self.OBSample['zsnap'] = zsnap
+        self.HODfit['path2cfgHOD'] = str(path2cfgHOD)
+        self.HODfit['path2chain'] = str(chain_path)
+        self.HODfit['path2mock'] = str(mock_dir)
+        self.HODfit['version'] = version
+    
+    
+    def fit_HOD(
+        self,
+        time_hms: str='08:00:00',
+        ntasks: int=4,
+    ) -> None:
+        """
+        Generate and write the SLURM script for HOD fitting. Remind to prepare the data and configuration file as well.
+        """
+        from script_HOD import script_HOD
+        
+        tag = self.OBSample['tag']
+        script = script_HOD(
+            config_path=self.HODfit['path2cfgHOD'], 
+            chain_path=self.HODfit['path2chain'], 
+            workdir=self.work_dir,
+            job_name=f'HODfit_{tag}',
+            time_hms=time_hms,
+            ntasks=ntasks,
+        )
+        path_script = self.work_dir / f"scripts/HODfit_{tag}.sh"
+        write_script_to_file(script, path_script)
+        print("[guide] >>> Submit the script by `sbatch`, it will take several hours. If it's the first time to use this snapshot, remind to delet the `#` before `abacusnbody.hod.prepare_sim_profiles`.\n")
+
+    
+    def sample_HOD_params(self) -> np.ndarray:
+        """
+        Sampling the posterior of the HOD fitting, return the sampled parameter-sets.
+        """
+        samples = None
+        return samples
+    
+    def sample_HOD(self) -> None:   
+        params_list = self.sample_HOD_params()
+        self.sample_HOD_ps()
         pass
-    

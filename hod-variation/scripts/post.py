@@ -10,26 +10,31 @@ Usage
 $ python ./post.py --help
 '''
 
-import argparse
+import argparse, sys
 import numpy as np
 from getdist import loadMCSamples, plots
-from getdist import plots
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-mpl.rc_file('../fig/matplotlibrc')
 from abacusnbody.hod.abacus_hod import AbacusHOD
 # from abacusnbody.hod.utils import setup_logging
 # setup_logging()
-import os, sys
-current_dir = os.getcwd()
-source_dir = os.path.join(current_dir,"source")
+
+from pathlib import Path
+THIS_REPO = Path(__file__).parent.parent.parent
+
+src_dir = THIS_REPO / 'src'
+if src_dir not in sys.path:
+    sys.path.insert(0, str(src_dir))
+from io_def import load_config, plot_style, path_to_clustering, write_catalogs
+from abacus_helper import assign_hod, reset_fic, set_theory_density
+
+source_dir = THIS_REPO / 'hod-variation' / 'source'
 if source_dir not in sys.path:
-    sys.path.insert(0, source_dir)
+    sys.path.insert(0, str(source_dir))
 from data_object import data_object
-from post_helpers import bestfit_params, compute_all, plot_all
-from io_helpers import build_param_mapping, assign_hod, reset_fic, theory_density
-sys.path.insert(0, '../src')
-from io_def import load_config, path_to_clustering, write_catalogs
+from chain_helper import bestfit_params
+from post_helpers import compute_all, plot_all
+
+plot_style()
 
 def main(config):
     ## load config
@@ -60,18 +65,20 @@ def main(config):
 
     ## generate AbacusHOD object
     ball_profiles = AbacusHOD(sim_params, HOD_params, clustering_params)
-    param_mapping = build_param_mapping(fit_params)
-    assign_hod(ball_profiles, param_mapping, bf)
-    reset_fic(ball_profiles, HOD_params, data_obj.density_mean, nthread=nthread)
-    density_bf = theory_density(ball_profiles, data_obj, tracers, nthread=nthread)
+    assign_hod(ball_profiles, fit_params, bf)
+    ball_profiles, ngal_dict, fsat_dict = reset_fic(ball_profiles, HOD_params, data_obj.density_mean, nthread=nthread)
+    density_bf = set_theory_density(ngal_dict, ball_profiles.params['Lbox']**3, data_obj.density_mean, tracers, nthread=nthread)
+    
     mock_bf,clustering_bf=compute_all(ball_profiles, nthread=nthread, out=False, verbose=True)
     out_root = sim_params.get('output_dir')
 
     write_catalogs(ball_profiles, mock_bf, fit_params, out_root=out_root, custom_prefix=f'MAP_{tracer}')
+    
     loglike_bf = data_obj.compute_loglike(clustering_bf, density_bf)
     print("Best-fit loglike:", loglike_bf)
+    
     plot_all(data_obj,tracer,clustering_bf,out=chain_dir+chain_prefix+'bestfit_'+tracer+'.png', idxwp=np.arange(6,21), idxxi=np.arange(11,21))
-    # plot_all(data_obj,tracer,clustering_bf,out=chain_dir+chain_prefix+'bestfit_'+tracer+'.png')
+
     ## save bestfit clustering
     path2cluster  = path_to_clustering(config, prefix='MAP')
     np.save(path2cluster, clustering_bf)

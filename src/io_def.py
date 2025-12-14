@@ -1,10 +1,13 @@
 import yaml
 from pathlib import Path
+THIS_REPO = Path(__file__).parent.parent
 import numpy as np
 import os
 
-__all__ = [
+__all__ = ["z_to_tag", "def_OBSample",
     "ensure_dir", "write_script_to_file", "load_config", "write_config",
+    "plot_style",
+    "path_to_ObsClus", "path_to_AbacusSubsample", "path_to_HODchain", "path_to_mocks",
     "prefix_HOD", "path_to_HODconfigs", 
     "path_to_catalog", "path_to_clustering", "path_to_poles", 
     "write_catalogs", "read_catalog"]
@@ -65,9 +68,42 @@ def write_config(config, config_path):
     try:
         with open(config_path, 'w') as f:
             yaml.safe_dump(config, f)
+        print(f"[write] -> {config_path}")
     except Exception as e:
         raise RuntimeError(f"Error writing configuration file '{config_path}': {e}")
 
+def plot_style() -> None:
+    import matplotlib as mpl
+    mpl.rc_file(THIS_REPO / 'fig' / 'matplotlibrc')
+
+def path_to_ObsClus(verspec: str, version: str, mode: str='pycorr') -> Path:
+    if mode=='pycorr':
+        path = THIS_REPO / "data/clustering"
+    elif mode=='forHOD':
+        path = THIS_REPO / "data/HOD_fitting"
+    else:
+        raise ValueError(f"Unknown mode: {mode}")
+    realpath = os.path.realpath(path / verspec / version / "PIP")
+    return Path(realpath)
+
+def path_to_AbacusSubsample():
+    path = THIS_REPO / "data/AbacusSubsample"
+    realpath = os.path.realpath(path)
+    return Path(realpath)
+
+def path_to_HODchain(work_dir: Path=None) -> Path:
+    if work_dir is None:
+        work_dir = THIS_REPO / "HIP"
+        raise Warning("work_dir is not specified, using default 'HIP', recommended to specify to scratch.")
+    realpath = os.path.realpath(work_dir / "HOD_chains")
+    return Path(realpath)
+
+def path_to_mocks(work_dir: Path=None) -> Path:
+    if work_dir is None:
+        work_dir = THIS_REPO / "HIP"
+        raise Warning("work_dir is not specified, using default 'HIP', recommended to specify to scratch.")
+    realpath = os.path.realpath(work_dir / "mocks")
+    return Path(realpath)
 
 def prefix_HOD(hod):
     hod_model = hod.get('prefix', 'base')

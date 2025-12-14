@@ -2,15 +2,14 @@ import argparse
 import numpy as np
 from getdist import loadMCSamples, plots
 from getdist import MCSamples
-import matplotlib as mpl
-mpl.rc_file('../fig/matplotlibrc')
 from abacusnbody.hod.abacus_hod import AbacusHOD
 import os, sys
 sys.path.insert(0, 'source')
-from io_helpers import build_param_mapping, assign_hod, reset_fic
 from post_helpers import compute_all
 sys.path.insert(0, '../src')
-from io_def import load_config, path_to_HODconfigs, path_to_catalog, write_catalogs, path_to_clustering
+from io_def import load_config, plot_style, path_to_HODconfigs, path_to_catalog, write_catalogs, path_to_clustering
+from abacus_helper import build_param_mapping, assign_hod, reset_fic
+plot_style()
 
 ## load config
 parser = argparse.ArgumentParser()
@@ -25,6 +24,7 @@ if args.config is None:
     config = path_to_HODconfigs(cfgs4HIP)
 else:
     config = args.config
+    cfgs_sample = {}
 config_full=load_config(config)
 sim_params = config_full.get("sim_params", {})
 HOD_params = config_full.get("HOD_params", {})
@@ -70,7 +70,8 @@ nparam = len(pnames)
 for i in range(nparam):
     for j in range(i):
         ax = g.subplots[i][j]
-        ax.scatter(samples[:, j], samples[:, i], c=idx, cmap=comap, s=10, edgecolors='k')
+        ax.scatter(samples[:, j], samples[:, i], c=idx, cmap=comap, s=10, edgecolors='k', label=f'i{idx}')
+np.savetxt(chain_dir+chain_prefix+'multivariate_gaussian_samples.txt', samples, header=','.join(pnames))
 g_out = chain_dir+chain_prefix+'multivariate_gaussian_scatter.png'
 g.export(g_out)
 print(f"Generated {num} samples for HOD modeling, plot saved in {g_out}.")
@@ -82,14 +83,15 @@ Ball = AbacusHOD(sim_params, HOD_params, clustering_params)
 path2cat = path_to_catalog(config=config)
 path2dir = os.path.dirname(path2cat)
 for i, sample in enumerate(samples):
+    sample[6] = 10**sample[6]  # convert log alpha_s to alpha_s
     print(f"Sampled parameters {i}:", sample)
     assign_hod(Ball, param_mapping, sample)
     reset_fic(Ball, HOD_params, density_mean, nthread=nthread)
     mock, clustering_rsd  = compute_all(Ball, nthread)
     ## save mock h5
-    write_catalogs(Ball, mock, fit_params, out_root=out_root, custom_prefix=f'i{i}')
+    write_catalogs(Ball, mock, fit_params, out_root=out_root, custom_prefix=f'r{i}')
     ## save clustering ASCII
-    path2cluster = path_to_clustering(config, prefix=f'i{i}')
+    path2cluster = path_to_clustering(config, prefix=f'r{i}')
     np.save(path2cluster, clustering_rsd)
     print(f"[write] clustering for sample {i} to {path2cluster}")
 print("All done.")

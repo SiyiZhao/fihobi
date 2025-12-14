@@ -53,12 +53,18 @@ def load_theory(config, num=None, want_MAP=False, len_wp=15, len_xi0=10, len_xi2
         the = read_mock_clus(path, len_wp, len_xi0, len_xi2)
         return the
     elif num is not None:
+        cmap = plt.get_cmap('viridis')
         the_all = []
+        the_colors = []
+        the_labels = []
         for i in range(num):
-            path = path_to_clustering(config, prefix=f'i{i}')
+            path = path_to_clustering(config, prefix=f'r{i}')
             the = read_mock_clus(path, len_wp, len_xi0, len_xi2)
-            the_all.append(the)
-        return the_all
+            the_all.append(the) 
+            color = cmap(i / num)
+            the_colors.append(color)
+            the_labels.append(f'r{i}')
+        return the_all, the_colors, the_labels
     else:
         raise ValueError("Either num or want_MAP must be specified.")
 
@@ -90,7 +96,7 @@ if __name__ == "__main__":
     len_wp = obs_v2['wp'].shape[0]
     len_xi0 = obs_v2['xi0'].shape[0]
     len_xi2 = obs_v2['xi2'].shape[0]
-    the_all = load_theory(config, num=10)
+    the_all, the_colors, the_labels = load_theory(config, num=10)
     the_map = load_theory(config, want_MAP=True)
 
     ## Plotting
@@ -108,12 +114,12 @@ if __name__ == "__main__":
             # make the band hollow: no face fill, only an outline
             axs[1,i].fill_between(x, (-err[ctype]) / obs[ctype], (err[ctype]) / obs[ctype],
                 facecolor='none', edgecolor=color, linewidth=1.5, alpha=1.0)
-        axs[0,i].plot(x, x*the_map[ctype], ls='-', color='black', label='theory map')
+        axs[0,i].plot(x, x*the_map[ctype], ls='-', color='black', label='MAP of HOD')
         axs[1,i].plot(x, (the_map[ctype]-obs_v2[ctype])/obs_v2[ctype], ls='-', color='black')
-        for the in the_all:
-            axs[0,i].plot(x, x*the[ctype], ls='-', color='gray', alpha=0.5)
+        for the, color, label in zip(the_all, the_colors, the_labels):
+            axs[0,i].plot(x, x*the[ctype], ls='-', color=color, label=label, alpha=0.5)
             fractional_error = (the[ctype] - obs_v2[ctype]) / obs_v2[ctype]
-            axs[1,i].plot(x, fractional_error, ls='-', color='gray', alpha=0.5)
+            axs[1,i].plot(x, fractional_error, ls='-', color=color, alpha=0.5)
         axs[0,i].set_xscale('log')
         axs[1,i].set_xscale('log')
         axs[0,i].set_ylabel(y0labels[i],fontsize=20)
@@ -127,7 +133,7 @@ if __name__ == "__main__":
     # axs[1,1].set_ylim(-0.5,0.5)
     if max(abs(err_v1['xi2']/obs_v1['xi2']))>1 or max(abs(err_v2['xi2']/obs_v2['xi2']))>1:
         axs[1,2].set_ylim(-1,1)
-    axs[0,0].legend(frameon=False,fontsize=20,loc=4)
+    axs[0,0].legend(frameon=False,fontsize=20,loc='upper center', bbox_to_anchor=(0.5, 1.25), ncol=2)
     fout="sampleHOD_plot.png"
     plt.savefig(fout)
     print(f"[plot] -> {fout}")

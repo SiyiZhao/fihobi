@@ -11,7 +11,6 @@ Usage
 $ python ./run_pmn.py --help
 """
 
-import numpy as np
 import argparse
 import yaml
 import os, sys
@@ -20,10 +19,10 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 source_dir = os.path.join(current_dir, "..", "source")
 if source_dir not in sys.path:
     sys.path.insert(0, source_dir)
-
 from data_object import data_object
 from mypmn import my_pmn
-from pmn_helpers import set_global_objects, generate_prior, log_likelihood
+from fit_helpers import set_global_objects, generate_prior, log_likelihood
+
 from abacusnbody.hod.abacus_hod import AbacusHOD
 # from abacusnbody.hod.utils import setup_logging
 # setup_logging()
@@ -86,8 +85,6 @@ def main():
     nlive = chain_params['nlive']
     tol  = chain_params['tol']
     labels = chain_params.get('labels', None)
-    # labels = [r"\log M_{\text{cut}}", r"\log M_1", r"\sigma", r"\alpha", r"\kappa", r"\alpha_{\text{c}}", r"\alpha_{\text{s}}"]
-
 
     ## define the multinest class
     fit_ = my_pmn(prior, log_likelihood, output_dir, filename=chain_prefix, param_label=labels, live_points=nlive, tol=tol)
