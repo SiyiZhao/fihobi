@@ -1,5 +1,6 @@
 import numpy as np
 from pathlib import Path
+from getdist import loadMCSamples, MCSamples, plots
 from io_def import (
     ensure_dir,
     load_config, 
@@ -10,6 +11,9 @@ from io_def import (
     path_to_AbacusSubsample,
     path_to_HODchain,
     path_to_mocks,
+    write_catalogs,
+    path_to_clustering,
+    path_to_poles,
 )
 
 THIS_REPO = Path(__file__).parent.parent
@@ -35,6 +39,7 @@ class HIPanOBSample:
         self.cfg = None
         self.ObsClus = None
         self.HODfit = None
+        self.HODsample = None
         if cfg_file is not None:
             self.load_cfg(cfg_file)
         else:
@@ -49,11 +54,13 @@ class HIPanOBSample:
             self.cfg = {'OBSample': self.OBSample, 'work_dir': str(self.work_dir)}
     
     def load_cfg(self, path: Path) -> None:
-        self.cfgs = load_config(path)
-        self.OBSample = self.cfgs['OBSample']
-        self.work_dir = Path(self.cfgs['work_dir'])
-        self.ObsClus = self.cfgs.get('ObsClus', None)
-        self.HODfit = self.cfgs.get('HODfit', None)
+        self.cfg = load_config(path)
+        print(f"[load] configuration from {path}\n")
+        self.OBSample = self.cfg['OBSample']
+        self.work_dir = Path(self.cfg['work_dir'])
+        self.ObsClus = self.cfg.get('ObsClus', None)
+        self.HODfit = self.cfg.get('HODfit', None)
+        self.HODsample = self.cfg.get('HODsample', None)
     
     def save_cfg(self, path: Path=None) -> None:
         if path is None:
@@ -128,15 +135,15 @@ class HIPanOBSample:
 
         labels = []
         latex_map = {
-            'logM_cut': {'flat': "\log M_{\\text{cut}}"},
+            'logM_cut': {'flat': "\log M_{\\mathrm{cut}}"},
             'logM1': {'flat': "\log M_1"},
             'sigma': {'flat': "\sigma", 'log': "\log \sigma"},
             'alpha': {'flat': "\\alpha", 'log': "\log \\alpha"},
             'kappa': {'flat': "\\kappa", 'log': "\log \\kappa"},
-            'alpha_c': {'flat': "\\alpha_{\\text{c}}", 'log': "\log \\alpha_{\\text{c}}"},
-            'alpha_s': {'flat': "\\alpha_{\\text{s}}", 'log': "\log \\alpha_{\\text{s}}"},
-            'Acent': {'flat': "A_{\\text{cent}}", 'log': "\log A_{\\text{cent}}"},
-            'Asat': {'flat': "A_{\\text{sat}}", 'log': "\log A_{\\text{sat}}"},
+            'alpha_c': {'flat': "\\alpha_{\\mathrm{c}}", 'log': "\log \\alpha_{\\mathrm{c}}"},
+            'alpha_s': {'flat': "\\alpha_{\\mathrm{s}}", 'log': "\log \\alpha_{\\mathrm{s}}"},
+            'Acent': {'flat': "A_{\\mathrm{cent}}", 'log': "\log A_{\\mathrm{cent}}"},
+            'Asat': {'flat': "A_{\\mathrm{sat}}", 'log': "\log A_{\\mathrm{sat}}"},
         }
         for p in prior:
             labels.append(latex_map[p][prior[p][3]])
@@ -181,8 +188,9 @@ class HIPanOBSample:
         }
         if chain_path is None:
             chain_path = path_to_HODchain(self.work_dir)
+        chain_prefix = f'chain_{clus_ver}_HOD_{version}_'
         chain_params = {
-            'chain_prefix': f'chain_{clus_ver}_HOD_{version}_',
+            'chain_prefix': chain_prefix,
             'output_dir': str(chain_path)+'/',
             'nlive': 500,
             'tol': 0.5,
@@ -205,6 +213,7 @@ class HIPanOBSample:
         self.OBSample['zsnap'] = zsnap
         self.HODfit['path2cfgHOD'] = str(path2cfgHOD)
         self.HODfit['path2chain'] = str(chain_path)
+        self.HODfit['chain_prefix'] = chain_prefix
         self.HODfit['path2mock'] = str(mock_dir)
         self.HODfit['version'] = version
     
@@ -224,6 +233,7 @@ class HIPanOBSample:
             config_path=self.HODfit['path2cfgHOD'], 
             chain_path=self.HODfit['path2chain'], 
             workdir=self.work_dir,
+            version=self.HODfit['version'],
             job_name=f'HODfit_{tag}',
             time_hms=time_hms,
             ntasks=ntasks,
@@ -233,14 +243,98 @@ class HIPanOBSample:
         print("[guide] >>> Submit the script by `sbatch`, it will take several hours. If it's the first time to use this snapshot, remind to delet the `#` before `abacusnbody.hod.prepare_sim_profiles`.\n")
 
     
-    def sample_HOD_params(self) -> np.ndarray:
+    def sample_HOD_params(
+        self, 
+        chain_root: str | None = None,
+        num: int = 100, 
+        plot: bool = False,
+        cmap: str = 'hsv'
+    ) -> np.ndarray:
         """
         Sampling the posterior of the HOD fitting, return the sampled parameter-sets.
         """
-        samples = None
+        if chain_root is None:
+            chain_path=self.HODfit['path2chain']
+            chain_prefix=self.HODfit['chain_prefix']
+            chain_root = Path(chain_path) / chain_prefix
+        ew_sample = np.loadtxt(f"{chain_root}post_equal_weights.dat") # Contains the equally weighted posterior samples. Columns have parameter values followed by loglike value.
+        if ew_sample.shape[0] >= num:
+            random_indices = np.random.choice(ew_sample.shape[0], size=num, replace=False)
+            samples = ew_sample[random_indices][:,:-1]  # exclude the last column (weight)
+            print(f"sampled {num} HOD parameter-sets from {ew_sample.shape[0]} equal-weighted samples.")
+        else:
+            raise ValueError(f"Not enough samples ({ew_sample.shape[0]}) to draw {num} samples.")
+        ## refresh info
+        self.HODsample = {
+            'chain_root': str(chain_root),
+            'num_samples': num,
+        }
+        self.cfg['HODsample'] = self.HODsample
+        if plot:
+            gdsamples = loadMCSamples(chain_root)
+            pnames = gdsamples.getParamNames().list()
+            ewsamples = MCSamples(samples=ew_sample[:,:-1], names=pnames)
+            # mgsamples = MCSamples(samples=samples, names=pnames)
+            g = plots.get_subplot_plotter()
+            g.triangle_plot([gdsamples, ewsamples], legend_labels=['Original', 'Equal-weighted sample'], filled=False, title_limit=2)
+            ## scatter plot with colormap
+            idx = np.arange(num)
+            nparam = len(pnames)
+            for i in range(nparam):
+                for j in range(i):
+                    ax = g.subplots[i][j]
+                    ax.scatter(samples[:, j], samples[:, i], c=idx, cmap=cmap, s=10, edgecolors='k', label=f'i{idx}')
+            ## save figure
+            g_out = f'{chain_root}resample.png'
+            g.export(g_out)
+            print(f"resample figure saved to {g_out}")
+            
+            ## save samples
+            np.savetxt(f'{chain_root}resamples.txt', samples, header=','.join(pnames))
+            print(f"resampled HOD parameters saved to {chain_root}resamples.txt")
         return samples
     
-    def sample_HOD(self) -> None:   
-        params_list = self.sample_HOD_params()
-        self.sample_HOD_ps()
-        pass
+    def sample_HOD_mocks(
+        self, 
+        params_list: np.ndarray | None = None,
+        nthread: int = 64,
+        write_cat: bool = False,
+        want_2PCF: bool = False,
+        want_poles: bool = True,
+    ) -> None:   
+        from abacus_helper import AbacusHOD, assign_hod, reset_fic, get_enabled_tracers, compute_mock_and_multipole
+        if want_poles:
+            from pypower_helpers import run_pypower_redshift
+
+        cfgHOD = load_config(self.HODfit['path2cfgHOD'])
+        sim_params = cfgHOD['sim_params']
+        HOD_params = cfgHOD['HOD_params']
+        clustering_params = cfgHOD['clustering_params']
+        fit_params = cfgHOD['fit_params']
+        mock_dir = self.HODfit['path2mock']
+        ### generate AbacusHOD mocks for each sample
+        Ball = AbacusHOD(sim_params, HOD_params, clustering_params)
+
+        tracers = get_enabled_tracers(HOD_params)
+        tracer = tracers[0]
+        for i, sample in enumerate(params_list):
+            assign_hod(Ball, fit_params, sample)
+            reset_fic(Ball, tracers, nthread=nthread)
+            mock, clustering_rsd  = compute_mock_and_multipole(Ball, nthread=nthread)
+            if write_cat:
+                ## save mock h5
+                write_catalogs(Ball, mock, fit_params,out_root=mock_dir, custom_prefix=f'r{i}')
+            for tracer, cat in mock.items():
+                if want_2PCF:
+                    ## save clustering ASCII
+                    path2cluster = path_to_clustering(sim_params=sim_params, tracer=tracer, prefix=f'r{i}')
+                    np.save(path2cluster, clustering_rsd[f'{tracer}_{tracer}'])
+                    print(f"[write] clustering for sample {i} to {path2cluster}")
+                if want_poles:
+                    x = cat['x']
+                    y = cat['y']
+                    z = cat['z']
+                    poles = run_pypower_redshift(x,y,z)
+                    path2poles = path_to_poles(sim_params=sim_params, tracer=tracers[0], prefix=f'r{i}')
+                    poles.save(path2poles)
+                    print(f"[write] pypower poles for sample {i} to {path2poles}")

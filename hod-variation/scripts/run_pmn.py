@@ -16,7 +16,7 @@ import yaml
 import os, sys
 # Add the source directory to the PYTHONPATH.
 current_dir = os.path.dirname(os.path.abspath(__file__))
-source_dir = os.path.join(current_dir, "..", "source")
+source_dir = os.path.abspath(os.path.join(current_dir, "..", "source"))
 if source_dir not in sys.path:
     sys.path.insert(0, source_dir)
 from data_object import data_object
@@ -93,7 +93,8 @@ def main():
     fit_.write_prior_file()
 
     ## test
-    # test = log_likelihood(np.array([11.7209282, 11.1767657, 0.04491125, 0.90375827, 3.85540798, 1.81135532, 1.90593657]))  # example call
+    # import numpy as np
+    # test = log_likelihood(np.array([11.7209282, 11.1767657, 0.04491125, 0.90375827, 3.85540798, 1.81135532, 1.90593657, 0,0]))  # example call
     # print('lnL of this MAP:', test)
     # test2 = log_likelihood(np.array([12.07452977, 12.9662911, 0.13082451, 1.32434491, 0.53177675, 1.80176316, 2.7631462 ]))
     # print('lnL of the MAP on fNL=30:', test2)

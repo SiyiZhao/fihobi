@@ -1,4 +1,4 @@
-# source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+# source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main # for pycorr
 # ln -s /pscratch/sd/s/siyizhao/fihobi/HIP_test test
 
 import sys, os
@@ -10,11 +10,12 @@ print(f"Added {src_path} to sys.path\n")
 from HIPanOBSample import HIPanOBSample
 
 tracer = 'QSO'
-zmin = 0.8
-# zmin = 2.8
+# zmin = 0.8
+zmin = 2.8
 zmax = 3.5
 WORK_DIR = THIS_REPO / "HIP/test" / f"{tracer}_{zmin}_{zmax}"
 # WORK_DIR = THIS_REPO / "HIP/work" / f"{tracer}_{zmin}_{zmax}"
+nthread = 64
 
 # ========== define the sample ==========
 
@@ -43,6 +44,12 @@ prior = {
 hip.config_HOD_fitting(prior=prior, version='v1')
 
 hip.fit_HOD(time_hms='08:00:00', ntasks=8)
+
+# # ========== sample HOD parameters ==========
+
+# chain_root = '/pscratch/sd/s/siyizhao/desi-dr2-hod/QSO-fnl100/z6_base-A/chain_v2.1_'
+# samples = hip.sample_HOD_params(chain_root=chain_root, num=10, plot=True)
+# hip.sample_HOD_mocks(params_list=samples, nthread=nthread, write_cat=True, want_2PCF=True, want_poles=True)
 
 # ========== save configurations ==========
 

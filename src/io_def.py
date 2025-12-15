@@ -131,14 +131,7 @@ def path_to_HODconfigs(configs4HIP):
     print(f"Resolved HOD config path: {path}")
     return str(path)
 
-def path_to_catalog(sim_params=None, config=None, tracer='QSO', custom_prefix=None):
-    '''
-    sim_params: dict containing simulation parameters such as output_dir, sim_name, and z_mock.
-    config: Path to a configuration file to load simulation parameters from. Only used if sim_params is None.
-    '''
-    if sim_params is None and config is not None:
-        config_full=load_config(config)
-        sim_params = config_full.get("sim_params", {})
+def path_to_cat_dir(sim_params, tracer='QSO'):
     output_dir = Path(sim_params.get('output_dir', './'))
     sim_name = Path(sim_params['sim_name'])
     zsnap = float(sim_params.get('z_mock', 0.0))
@@ -149,8 +142,25 @@ def path_to_catalog(sim_params=None, config=None, tracer='QSO', custom_prefix=No
     version = 'DR2_v2.0'
 
     base_dir = os.path.join(output_dir, mock_type, version, sim_name, 'Boxes')
+    # base_dir = path_to_mocks()
     tracer_dir = os.path.join(base_dir, tracer, f'z{redshift_tag}')
     ensure_dir(tracer_dir)
+    return tracer_dir
+
+
+def path_to_catalog(sim_params=None, config=None, tracer='QSO', custom_prefix=None):
+    '''
+    sim_params: dict containing simulation parameters such as output_dir, sim_name, and z_mock.
+    config: Path to a configuration file to load simulation parameters from. Only used if sim_params is None.
+    '''
+    tracer_dir = path_to_cat_dir(sim_params, tracer=tracer)
+    sim_name = Path(sim_params['sim_name'])
+    zsnap = float(sim_params.get('z_mock', 0.0))
+    
+    redshift_tag = z_to_tag(zsnap)
+    
+    mock_type = 'abacus_HF'
+    version = 'DR2_v2.0'
     if custom_prefix is None:
         fname = f"{mock_type}_{tracer}_{redshift_tag}_{version}_{sim_name}_clustering.dat.h5"
     else:
@@ -158,16 +168,14 @@ def path_to_catalog(sim_params=None, config=None, tracer='QSO', custom_prefix=No
     outpath = os.path.join(tracer_dir, fname)
     return outpath
 
-def path_to_clustering(config, prefix=None):
-    path_to_cat = path_to_catalog(config=config) 
-    path_to_dir = os.path.dirname(path_to_cat)
+def path_to_clustering(sim_params, tracer='QSO', prefix=None):
+    path_to_dir = path_to_cat_dir(sim_params=sim_params, tracer=tracer) 
     fname = f"{prefix}_clustering.npy" if prefix else "clustering.npy"
     clustering_path = os.path.join(path_to_dir, fname)
     return clustering_path   
 
-def path_to_poles(config, prefix=None):
-    path_to_cat = path_to_catalog(config=config) 
-    path_to_dir = os.path.dirname(path_to_cat)
+def path_to_poles(sim_params, tracer='QSO', prefix=None):
+    path_to_dir = path_to_cat_dir(sim_params=sim_params, tracer=tracer) 
     fname = f"{prefix}_pypower_poles.npy" if prefix else "pypower_poles.npy"
     path = os.path.join(path_to_dir, fname)
     return path   

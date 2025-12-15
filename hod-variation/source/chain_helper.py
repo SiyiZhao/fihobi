@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Workspace: projects/fihobi/hod-variation/
+Workspace: projects/fihobi/
 """
 
 import yaml
@@ -8,7 +8,7 @@ import numpy as np
 from getdist import loadMCSamples, plots
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-mpl.rc_file('../fig/matplotlibrc')
+mpl.rc_file('fig/matplotlibrc')
 
 
 def load_chain_prefix(fn):

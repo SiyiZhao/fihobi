@@ -1,7 +1,7 @@
 from pathlib import Path
 import numpy as np
 import sys, os
-sys.path.insert(0, os.path.expanduser('~/lib/'))
+sys.path.insert(0, os.path.expanduser('~/lib/abacusutils'))
 from abacusnbody.hod.abacus_hod import AbacusHOD
 from io_def import load_config
 
@@ -165,16 +165,20 @@ def get_enabled_tracers(HOD_params: dict) -> list:
     return [t for t, f in flags.items() if bool(f)] if isinstance(flags, dict) else []
 
 def assign_hod(Ball, fit_params: dict, params: np.ndarray) -> None:
-    param_mapping = build_param_mapping(fit_params)
-    for tracer in param_mapping:
-        for pname, idx in param_mapping[tracer].items():
+    """For tracers in fit_params, assign fitted HOD parameters in Ball according to params vector."""
+    tracer_list = list(fit_params.keys())
+    for tracer in tracer_list:
+        for pname in fit_params[tracer].keys():
+            idx = fit_params[tracer][pname][0]
             if fit_params[tracer][pname][3] == 'log':
                 Ball.tracers[tracer][pname] = 10**float(params[idx])
             else:   
                 Ball.tracers[tracer][pname] = float(params[idx])
 
-def reset_fic(Ball, HOD_params: dict, density_mean: dict, nthread: int = 32) -> None:
-    tracers = get_enabled_tracers(HOD_params)
+def reset_fic(Ball, tracers: list, density_mean: dict | None = None, nthread: int = 32) -> None:
+    """
+    Reset 'ic' for each tracer. For LRG, set ic to match data mean density if theoretical density is higher.
+    """
     # Reset 'ic' and compute theoretical number density.
     for tracer in tracers:
         Ball.tracers[tracer]['ic'] = 1
@@ -190,7 +194,7 @@ def reset_fic(Ball, HOD_params: dict, density_mean: dict, nthread: int = 32) -> 
             ngal = ngal_dict[tracer]
             if ngal > 0.001 * box_volume:
                 Ball.tracers[tracer]['ic'] = 0.001 * box_volume / ngal
-    return Ball, ngal_dict, fsat_dict
+    return ngal_dict, fsat_dict
 
 def set_theory_density(ngal_dict, box_volume, density_mean, tracers, nthread=32):
     """
@@ -202,26 +206,31 @@ def set_theory_density(ngal_dict, box_volume, density_mean, tracers, nthread=32)
         data_mean = density_mean[tracer]
         if data_mean < ngal / box_volume:
             theory_density_dict[tracer] = data_mean
-            print(f"Set theoretical density of {tracer} to data mean: {data_mean}")
+            # print(f"Set theoretical density of {tracer} to data mean: {data_mean}")
         else:
             theory_density_dict[tracer] = ngal / box_volume
     return theory_density_dict
 
-# def generate_AbacusHOD_config():
-#     sim_params = set_sim_params(sim_name=sim_name, z_mock=z_mock, output_dir=output_dir, subsample_dir=subsample_dir)
-#     hod_QSO = set_HOD_tracer(logM_cut=13.0, logM1=14.0, sigma=0.5, alpha=1.0, kappa=0.0, alpha_c=0.0, alpha_s=0.0, ic=0.0)
-#     tracers = {'QSO': hod_QSO}
-#     HOD_params = set_HOD_params(tracers)
-#     config = {
-#         'sim_params': sim_params,
-#         'HOD_params': HOD_params
-#     }
-#     return config
 
-def generate_AbacusHOD_mock():
-    # Ball = AbacusHOD(sim_params, HOD_params, clustering_params)
-    # mock_dict = Ball.run_hod(tracers=Ball.tracers, Nthread=nthread, verbose=verbose)
-    return None
+def compute_mock_and_multipole(Ball, nthread=16, out=False, want_rsd=None, want_dv=None, verbose = False):
+    """
+    Generate the mock with new parameters, and compute both wp and multipoles.
+    """
+    if want_rsd is None:
+        want_rsd = Ball.want_rsd
+    if want_dv is not None:
+        print(f"Original want_dv: {Ball.want_dv}")
+        Ball.want_dv = want_dv
+        print(f"Set want_dv to {want_dv}")
+    else:
+        want_dv = Ball.want_dv
+    if want_rsd & want_dv:
+        mock_dict = Ball.run_hod(tracers=Ball.tracers, want_rsd=want_rsd, Nthread=nthread, verbose=verbose, write_to_disk=out, fn_ext='_dv')
+    else:
+        mock_dict = Ball.run_hod(tracers=Ball.tracers, want_rsd=want_rsd, Nthread=nthread, verbose=verbose, write_to_disk=out)
+    clustering = Ball.compute_multipole(mock_dict, rpbins=Ball.rpbins, pimax=Ball.pimax, sbins=Ball.rpbins[5:], nbins_mu=40, Nthread = nthread)
+    
+    return mock_dict,clustering
 
 def path_to_mock_dir(config):
     config_full=load_config(config)
