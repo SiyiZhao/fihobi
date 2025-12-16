@@ -11,10 +11,7 @@ call run_pypower_redshift from source/pypower_helpers.py and save the poles to
 import numpy as np
 from pathlib import Path
 import os, sys
-current_dir = os.getcwd()
-source_dir = os.path.join(current_dir, "source")
-if source_dir not in sys.path:
-    sys.path.insert(0, source_dir)
+sys.path.insert(0, os.path.expanduser('../src'))
 from pypower_helpers import run_pypower_redshift
 
 

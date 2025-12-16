@@ -10,7 +10,7 @@ num = 10
 for i in range(num):
     sample_id = f'base_{i}'
     print(f'[info] sample_id = {sample_id}')
-    path = path_to_catalog(config, tracer='QSO', custom_prefix=sample_id)
+    path = path_to_catalog(config=config, tracer='QSO', custom_prefix=sample_id)
     out_path = os.path.dirname(path) + f'/{sample_id}_pypower_poles.npy'
     pos = read_catalog(path)
     poles = run_pypower_redshift(pos[:,0], pos[:,1], pos[:,2])

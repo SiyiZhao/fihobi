@@ -5,13 +5,14 @@
 import argparse
 import numpy as np
 import glob
+from pathlib import Path
 from pypower import PowerSpectrumMultipoles
 from matplotlib import pyplot as plt
 import matplotlib as mpl
 import os, sys
 # Add the source directory to the PYTHONPATH.
 sys.path.insert(0, '../src')
-from abacus_helper import path_to_catalog
+from io_def import path_to_catalog
 mpl.rc_file('../fig/matplotlibrc')
 color = ['#1f77b4', '#ff7f0e', '#9467bd', '#d62728', '#2ca02c', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 
@@ -75,8 +76,10 @@ num = 10
 cmap = plt.get_cmap('viridis')
 for i in range(num):
     key = f'base_{i}'
-    path_mock = path_to_catalog(config, tracer='QSO', custom_prefix=key)
-    path = os.path.dirname(path_mock) + f'/{key}_pypower_poles.npy'
+    # key = f'i{i}'
+    path_mock = path_to_catalog(config=config, tracer='QSO', custom_prefix=key)
+    path = str(Path(path_mock).parent.parent / f'{key}_pypower_poles.npy')
+    # path = os.path.dirname(path_mock) + f'/{key}_pypower_poles.npy'
     if not os.path.exists(path):
         raise ValueError(f"Sampled mock file '{path}' not found!")
     poles = PowerSpectrumMultipoles.load(path)  # test loading
@@ -87,7 +90,7 @@ for i in range(num):
         'p0': p0,
         'color': cmap(i / num),
         'lstyle': ':',
-        'label': ''
+        'label': f'i{i}'
     }
 
 ### define base

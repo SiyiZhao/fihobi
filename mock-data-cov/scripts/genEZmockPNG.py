@@ -11,6 +11,7 @@ source_dir = os.path.join(current_dir, "source")
 if source_dir not in sys.path:
     sys.path.insert(0, source_dir)
 from disp2LPT_helper import run_disp_2lpt
+sys.path.insert(0, os.path.expanduser('../src'))
 from pypower_helpers import run_pypower
 # from pypower_helpers import run_pypower_redshift
 
