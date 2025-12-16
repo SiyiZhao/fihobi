@@ -4,11 +4,9 @@ from getdist import loadMCSamples, plots
 from getdist import MCSamples
 from abacusnbody.hod.abacus_hod import AbacusHOD
 import os, sys
-sys.path.insert(0, 'source')
-from post_helpers import compute_all
 sys.path.insert(0, '../src')
 from io_def import load_config, plot_style, path_to_HODconfigs, path_to_catalog, write_catalogs, path_to_clustering
-from abacus_helper import build_param_mapping, assign_hod, reset_fic
+from abacus_helper import compute_mock_and_multipole, assign_hod, reset_fic, get_enabled_tracers
 plot_style()
 
 ## load config
@@ -77,21 +75,21 @@ g.export(g_out)
 print(f"Generated {num} samples for HOD modeling, plot saved in {g_out}.")
 
 ### generate AbacusHOD mocks for each sample
-param_mapping = build_param_mapping(fit_params)
 Ball = AbacusHOD(sim_params, HOD_params, clustering_params)
 
 path2cat = path_to_catalog(config=config)
 path2dir = os.path.dirname(path2cat)
+tracers = get_enabled_tracers(HOD_params)
 for i, sample in enumerate(samples):
     sample[6] = 10**sample[6]  # convert log alpha_s to alpha_s
     print(f"Sampled parameters {i}:", sample)
-    assign_hod(Ball, param_mapping, sample)
-    reset_fic(Ball, HOD_params, density_mean, nthread=nthread)
-    mock, clustering_rsd  = compute_all(Ball, nthread)
+    assign_hod(Ball, fit_params, sample)
+    reset_fic(Ball, tracers, density_mean, nthread=nthread)
+    mock, clustering_rsd  = compute_mock_and_multipole(Ball, nthread)
     ## save mock h5
     write_catalogs(Ball, mock, fit_params, out_root=out_root, custom_prefix=f'r{i}')
     ## save clustering ASCII
-    path2cluster = path_to_clustering(config, prefix=f'r{i}')
+    path2cluster = path_to_clustering(sim_params, tracer=tracers[0], prefix=f'r{i}')
     np.save(path2cluster, clustering_rsd)
     print(f"[write] clustering for sample {i} to {path2cluster}")
 print("All done.")

@@ -105,6 +105,14 @@ def path_to_mocks(work_dir: Path=None) -> Path:
     realpath = os.path.realpath(work_dir / "mocks")
     return Path(realpath)
 
+def path_to_hip(work_dir: Path=None) -> Path:
+    if work_dir is None:
+        work_dir = THIS_REPO / "HIP"
+        raise Warning("work_dir is not specified, using default 'HIP', recommended to specify to scratch.")
+    realpath = os.path.realpath(work_dir)
+    ensure_dir(realpath)
+    return Path(realpath)
+
 def prefix_HOD(hod):
     hod_model = hod.get('prefix', 'base')
     want_dv = hod.get('want_dv', False)

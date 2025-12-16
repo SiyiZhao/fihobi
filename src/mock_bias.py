@@ -64,25 +64,25 @@ def load_Abacus_linear_power(IDIR):
     plin_z1 = data[:,1]
     return klin, plin_z1
 
-# ODE for D(a): y = [D, dD/da]
-def deriv(a, y):
-    D, dDda = y
-    Om, Ol = load_Abacus_cosmology_params(IDIR)
-    E2 = Om / a**3 + Ol
-    H = np.sqrt(E2)
-    # d ln H / da = (-3 Om)/(2 a (Om + Ol a^3))
-    dlnHda = -1.5 * Om / (a * (Om + Ol * a**3))
-    coef = (3.0 / a) + dlnHda
-    term = 1.5 * Om / (a**2 * (Om + Ol * a**3))
-    ddDda = -coef * dDda + term * D
-    return [dDda, ddDda]
 
-def grow_plin(z_out, plin_in, z_in=1.0):
+
+def grow_plin(z_out, plin_in, IDIR, z_in=1.0):
     from scipy.integrate import solve_ivp
 
     a_init = 1e-4
     y0 = [a_init, 1.0]  # D(a_init)=a_init, D'(a_init)=1 (因 D~a)
-
+    Om, Ol = load_Abacus_cosmology_params(IDIR)
+    # ODE for D(a): y = [D, dD/da]
+    def deriv(a, y):
+        D, dDda = y
+        E2 = Om / a**3 + Ol
+        H = np.sqrt(E2)
+        # d ln H / da = (-3 Om)/(2 a (Om + Ol a^3))
+        dlnHda = -1.5 * Om / (a * (Om + Ol * a**3))
+        coef = (3.0 / a) + dlnHda
+        term = 1.5 * Om / (a**2 * (Om + Ol * a**3))
+        ddDda = -coef * dDda + term * D
+        return [dDda, ddDda]
     sol = solve_ivp(deriv, (a_init, 1.0), y0, dense_output=True, rtol=1e-6, atol=1e-9)
 
     

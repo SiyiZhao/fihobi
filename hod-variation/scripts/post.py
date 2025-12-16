@@ -25,14 +25,14 @@ src_dir = THIS_REPO / 'src'
 if src_dir not in sys.path:
     sys.path.insert(0, str(src_dir))
 from io_def import load_config, plot_style, path_to_clustering, write_catalogs
-from abacus_helper import assign_hod, reset_fic, set_theory_density
+from abacus_helper import assign_hod, reset_fic, set_theory_density, compute_mock_and_multipole
 
 source_dir = THIS_REPO / 'hod-variation' / 'source'
 if source_dir not in sys.path:
     sys.path.insert(0, str(source_dir))
 from data_object import data_object
 from chain_helper import bestfit_params
-from post_helpers import compute_all, plot_all
+from post_helpers import plot_all
 
 plot_style()
 
@@ -66,10 +66,10 @@ def main(config):
     ## generate AbacusHOD object
     ball_profiles = AbacusHOD(sim_params, HOD_params, clustering_params)
     assign_hod(ball_profiles, fit_params, bf)
-    ball_profiles, ngal_dict, fsat_dict = reset_fic(ball_profiles, HOD_params, data_obj.density_mean, nthread=nthread)
+    ngal_dict, fsat_dict = reset_fic(ball_profiles, tracers, data_obj.density_mean, nthread=nthread)
     density_bf = set_theory_density(ngal_dict, ball_profiles.params['Lbox']**3, data_obj.density_mean, tracers, nthread=nthread)
     
-    mock_bf,clustering_bf=compute_all(ball_profiles, nthread=nthread, out=False, verbose=True)
+    mock_bf,clustering_bf=compute_mock_and_multipole(ball_profiles, nthread=nthread, out=False, verbose=True)
     out_root = sim_params.get('output_dir')
 
     write_catalogs(ball_profiles, mock_bf, fit_params, out_root=out_root, custom_prefix=f'MAP_{tracer}')
@@ -80,16 +80,16 @@ def main(config):
     plot_all(data_obj,tracer,clustering_bf,out=chain_dir+chain_prefix+'bestfit_'+tracer+'.png', idxwp=np.arange(6,21), idxxi=np.arange(11,21))
 
     ## save bestfit clustering
-    path2cluster  = path_to_clustering(config, prefix='MAP')
+    path2cluster  = path_to_clustering(sim_params, tracer=tracer, prefix='MAP')
     np.save(path2cluster, clustering_bf)
     print("Save bestfit clustering to:", path2cluster)
 
     
     # ## generate mock in real space
-    # mock_bf_r,clustering_bf_r=compute_all(ball_profiles, nthread=nthread, want_rsd=False, out=True, verbose=True)
+    # mock_bf_r,clustering_bf_r=compute_mock_and_multipole(ball_profiles, nthread=nthread, want_rsd=False, out=True, verbose=True)
     # if ball_profiles.want_dv==False:
     #     ## generate mock with dv
-    #     mock_bf_dv,clustering_bf_dv=compute_all(ball_profiles, nthread=nthread, want_rsd=True, want_dv=True, out=True, verbose=True)
+    #     mock_bf_dv,clustering_bf_dv=compute_mock_and_multipole(ball_profiles, nthread=nthread, want_rsd=True, want_dv=True, out=True, verbose=True)
     #     ## plot compare
     #     plot_all_compare(data_obj,tracer,clustering_bf, [clustering_bf_r, clustering_bf_dv], labels=['w/o rsd', 'w dv'], out=chain_dir+'bestfit_'+tracer+'_comp.png')
     # else:

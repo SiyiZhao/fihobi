@@ -1,5 +1,8 @@
 import numpy as np
+import pandas as pd
+import time, os, logging
 from pathlib import Path
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from getdist import loadMCSamples, MCSamples, plots
 from io_def import (
     ensure_dir,
@@ -12,8 +15,21 @@ from io_def import (
     path_to_HODchain,
     path_to_mocks,
     write_catalogs,
+    path_to_catalog,
     path_to_clustering,
     path_to_poles,
+    path_to_hip,
+)    
+from desilike_helper import prepare_theory_fix_fNL, bestfit_p_inference
+from thecov_helper import read_mock, power_spectrum, thecov_box
+
+logging.basicConfig(
+    level=logging.WARNING,
+    format='[%(process)d] %(asctime)s %(message)s',
+    datefmt='%H:%M:%S',
+    handlers=[
+        logging.StreamHandler()  # 可以改成 logging.FileHandler("log.txt") 写入文件
+    ]
 )
 
 THIS_REPO = Path(__file__).parent.parent
@@ -39,7 +55,8 @@ class HIPanOBSample:
         self.cfg = None
         self.ObsClus = None
         self.HODfit = None
-        self.HODsample = None
+        self.cfgHOD = None # store the loaded cfgHOD to avoid repeated loading
+        self.HIP = None
         if cfg_file is not None:
             self.load_cfg(cfg_file)
         else:
@@ -60,7 +77,11 @@ class HIPanOBSample:
         self.work_dir = Path(self.cfg['work_dir'])
         self.ObsClus = self.cfg.get('ObsClus', None)
         self.HODfit = self.cfg.get('HODfit', None)
-        self.HODsample = self.cfg.get('HODsample', None)
+        self.HIP = self.cfg.get('HIP', None)
+        ## load cfgHOD if exists
+        path2cfgHOD = self.HODfit.get('path2cfgHOD', None) if self.HODfit is not None else None
+        if path2cfgHOD is not None:
+            self.cfgHOD = load_config(path2cfgHOD)
     
     def save_cfg(self, path: Path=None) -> None:
         if path is None:
@@ -216,7 +237,7 @@ class HIPanOBSample:
         self.HODfit['chain_prefix'] = chain_prefix
         self.HODfit['path2mock'] = str(mock_dir)
         self.HODfit['version'] = version
-    
+        self.cfgHOD = cfgHOD
     
     def fit_HOD(
         self,
@@ -265,11 +286,11 @@ class HIPanOBSample:
         else:
             raise ValueError(f"Not enough samples ({ew_sample.shape[0]}) to draw {num} samples.")
         ## refresh info
-        self.HODsample = {
+        self.HIP = {
             'chain_root': str(chain_root),
             'num_samples': num,
         }
-        self.cfg['HODsample'] = self.HODsample
+        self.cfg['HIP'] = self.HIP
         if plot:
             gdsamples = loadMCSamples(chain_root)
             pnames = gdsamples.getParamNames().list()
@@ -305,8 +326,10 @@ class HIPanOBSample:
         from abacus_helper import AbacusHOD, assign_hod, reset_fic, get_enabled_tracers, compute_mock_and_multipole
         if want_poles:
             from pypower_helpers import run_pypower_redshift
-
-        cfgHOD = load_config(self.HODfit['path2cfgHOD'])
+        if self.cfgHOD is None:
+            cfgHOD = load_config(self.HODfit['path2cfgHOD'])
+        else:
+            cfgHOD = self.cfgHOD
         sim_params = cfgHOD['sim_params']
         HOD_params = cfgHOD['HOD_params']
         clustering_params = cfgHOD['clustering_params']
@@ -338,3 +361,94 @@ class HIPanOBSample:
                     path2poles = path_to_poles(sim_params=sim_params, tracer=tracers[0], prefix=f'r{i}')
                     poles.save(path2poles)
                     print(f"[write] pypower poles for sample {i} to {path2poles}")
+    
+    def _fit_p_from_mock_thecov(
+        self, 
+        i: int, 
+        boxV: float, 
+        theory_dict: dict, 
+        klim: dict,
+    ) -> dict:
+        """单个 mock 的计算，顶层方法，支持多进程"""
+        start = time.time()
+        pid = os.getpid()
+        logging.info(f"Mock {i+1} start (PID={pid})")
+
+        fname = path_to_catalog(sim_params=self.cfgHOD['sim_params'], tracer=self.OBSample['tracer'], custom_prefix=f'r{i}')
+
+        pos, nbar = read_mock(fname, boxV=boxV)
+        data = power_spectrum(pos)
+        cov = thecov_box(pk_theory=data, nbar=nbar, volume=boxV, has_shotnoise_set=False)
+        theory = prepare_theory_fix_fNL(z=theory_dict['zsnap'], cosmology=theory_dict['cosmology'], mode=theory_dict['mode'], fnl=theory_dict['fnl'], priors=theory_dict['priors'])
+        bestfit_dict = bestfit_p_inference(theory=theory, data=data['P_0'], cov=cov, k=data['k'], klim=klim)
+
+        end = time.time()
+        logging.info(f"Mock {i+1} done (PID={pid}), elapsed {end - start:.3f}s")
+        return i, bestfit_dict
+    
+    def fit_p_from_mocks(
+        self,
+        priors: dict[str, dict[str, tuple[float, float]]] = dict(),
+        cosmology: str = 'DESI',
+        fnl: float = 100,
+        mode: str = 'b-p',
+        klim: dict[int, list[float]] = {0: [0.003, 0.1]},
+        nproc: int = 64,
+        write_csv: bool = True,
+    ) -> pd.DataFrame:
+        """
+        Fit p from the HOD mocks, return the best-fit parameters for each mock.
+        
+        priors: dict of prior settings for each parameter, e.g., {'p': {'limits': (-1., 3.)}, 'sigmas': {'limits': (0., 20.)}}
+        fnl: fixed fnl value to the simulation value
+        """
+        
+        boxL = 2000.0  # Mpc/h
+        boxV = boxL**3  # (Mpc/h)^3
+        zsnap = self.OBSample['zsnap']
+        num = self.HIP['num_samples']
+        # if cosmology == 'DESI':
+        #     cosmo = cosmoprimo.fiducial.DESI()
+        # else:
+        #     raise NotImplementedError(f"cosmology {cosmology} not implemented.")
+        theory_dict = {
+            'zsnap': zsnap,
+            'cosmology': cosmology,
+            'mode': mode,
+            'fnl': fnl,
+            'priors': priors,
+        }
+        # klin, plin_z = linear_matter_power_spectrum(zeff=zsnap)
+        
+        ## loop over mocks
+        results = []
+        with ProcessPoolExecutor(max_workers=min(nproc, num)) as executor:
+            futures = {
+                executor.submit(self._fit_p_from_mock_thecov, i, boxV, theory_dict, klim): i
+                for i in range(num)
+            }
+            for future in as_completed(futures):
+                results.append(future.result())
+        # results = self._fit_p_from_mock_thecov(0, boxV, theory, klim)
+        # print('results:', results, flush=True)
+        ## to DataFrame
+        rows = []
+        for r in results:
+            i, bf = r
+            rows.append({'i': i, **bf})
+        df_bestfit = pd.DataFrame(rows).sort_values(by='i', ignore_index=True)
+        ## save to csv
+        if write_csv:
+            path_csv = path_to_hip(self.work_dir) / f'fitp_mocks_fnl{fnl}_{cosmology}_{mode}.csv'
+            df_bestfit.to_csv(path_csv, index=False)
+            print(f"[write] bestfit parameters from HOD mocks to {path_csv}", flush=True)
+            self.HIP['path2fitp_csv'] = str(path_csv)
+        ## refresh info
+        self.HIP['boxsize'] = boxL
+        self.HIP['fNL'] = fnl
+        self.HIP['cosmology'] = cosmology
+        self.HIP['mode'] = mode
+        self.HIP['klim'] = klim
+        self.HIP['priors'] = priors 
+        return df_bestfit
+        

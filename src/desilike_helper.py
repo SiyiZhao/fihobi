@@ -68,4 +68,4 @@ def bestfit_p_inference(
         # theory.init.params[key].update(value=bestfit_value)
         bestfit_dict[str(key)] = bestfit_value
     # best_p = bestfit_dict['p']
-    return bestfit_dict, likelihood, observable
+    return bestfit_dict

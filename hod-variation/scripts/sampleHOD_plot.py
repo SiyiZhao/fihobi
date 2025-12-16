@@ -46,8 +46,9 @@ def read_mock_clus(path, len_wp=15, len_xi0=10, len_xi2=10):
     return the
 
 def load_theory(config, num=None, want_MAP=False, len_wp=15, len_xi0=10, len_xi2=10):
+    sim_params = load_config(config).get("sim_params", {})
     if want_MAP:
-        path = path_to_clustering(config, prefix='MAP')
+        path = path_to_clustering(sim_params, tracer=tracer, prefix='MAP')
         # mock_dir = path_to_mock_dir(config)
         # path = os.path.join(mock_dir, 'QSOs_clustering.npy')
         the = read_mock_clus(path, len_wp, len_xi0, len_xi2)
@@ -58,7 +59,7 @@ def load_theory(config, num=None, want_MAP=False, len_wp=15, len_xi0=10, len_xi2
         the_colors = []
         the_labels = []
         for i in range(num):
-            path = path_to_clustering(config, prefix=f'r{i}')
+            path = path_to_clustering(sim_params, tracer=tracer, prefix=f'r{i}')
             the = read_mock_clus(path, len_wp, len_xi0, len_xi2)
             the_all.append(the) 
             color = cmap(i / num)

@@ -20,12 +20,12 @@ import cosmoprimo
 from pypower import PowerSpectrumMultipoles
 from pathlib import Path
 import numpy as np
-from mock_bias import load_Abacus_linear_power, grow_plin, measure_bias_k, average_bias, plot_bias
 from run_thecov_box import cal_thecov_box
 import sys, os
 sys.path.insert(0, os.path.expanduser('../src'))
 from io_def import read_catalog
 from pypower_helpers import run_pypower_redshift
+from mock_bias import load_Abacus_linear_power, grow_plin, measure_bias_k, average_bias, plot_bias
 from desilike_helper import prepare_theory_fix_fNL, bestfit_p_inference
 
 # kmax = 0.10053096491487339
