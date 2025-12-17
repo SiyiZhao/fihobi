@@ -3,6 +3,7 @@ import sys, yaml
 path2config=sys.argv[1]
 odir=sys.argv[2]
 z = 3.0
+abacus_poles = '/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_base-A_v2/abacus_HF/DR2_v2.0/Abacus_pngbase_c302_ph000/Boxes/QSO/z3p000/MAP_QSO_pypower_poles.npy'
 
 configs = {
     'odir': odir,
@@ -12,7 +13,7 @@ configs = {
     'n_EZmocks': 1000,
     
     'input': {
-        'abacus_poles': '/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_base_v2/Abacus_pngbase_c302_ph000/z3.000/galaxies_rsd/pypower_poles.npy',
+        'abacus_poles': abacus_poles,
         'ezmock_poles': '/pscratch/sd/s/siyizhao/EZmock/output/mocks/QSO-z6_c302/'
     },
     'prior': {
