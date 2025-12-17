@@ -1,5 +1,9 @@
-import yaml
-from desilike.theories.galaxy_clustering import FixedPowerSpectrumTemplate, PNGTracerPowerSpectrumMultipoles
+"""
+HIP.fit_fNL_with_HIPp_box: run desilike analysis to fit fNL using HIP of p for a box mock.
+Author: Siyi Zhao
+"""
+
+import yaml, os, sys
 from desilike.observables.galaxy_clustering import TracerPowerSpectrumMultipolesObservable
 from desilike.likelihoods import ObservablesGaussianLikelihood
 
@@ -7,34 +11,33 @@ from desilike.profilers import MinuitProfiler
 from desilike.samplers import ZeusSampler
 from desilike.samples import plotting
 
-import os, sys
 from pathlib import Path
 THIS_REPO = Path(__file__).parent.parent
 src_path = os.path.abspath(os.path.join(THIS_REPO, 'src'))
 if src_path not in sys.path:
     sys.path.insert(0, src_path)
-from desilike_helper import load_data, plot_observable
+from desilike_helper import load_data, plot_observable, prepare_theory
+from io_def import ensure_dir
 
 from desilike import setup_logging
 setup_logging()
 
 
 ## load config -----------------------------------------------------------------
-name = sys.argv[1] 
-odir = sys.argv[2]
-config_file = f'configs/{name}.yaml'
+config_file = sys.argv[1] 
 config = yaml.safe_load(open(config_file))
+odir = config.get('odir', 'output')
 mode = config.get('mode', 'b-p')  # parameterization mode for PNG bias
 klim0 = config.get('klim0', [0.003, 0.1])  # k range for monopole fitting
 
 ## define output ---------------------------------------------------------------
+ensure_dir(odir)
 fn_triangle = odir+'/triangle.png'
 fn_ps = odir+'/power_spectrum.png'
 chain_fn = odir + '/chain_zeus'
 
 ## define input ----------------------------------------------------------------
 z = config['redshift']  # redshift of the catalog
-fnl = config['fnl']
 cosmology = 'DESI'
 ells = [0]
 # ells = (0, 2)
@@ -43,26 +46,15 @@ data, cov = load_data(config)
 
 ## PNG likelihood
 print('Setting up likelihood ...')
-template = FixedPowerSpectrumTemplate(z=z, fiducial=cosmology)
-# fnl_loc is degenerate with PNG bias bphi. Parameterization is controlled by "mode".
-# - "b-p": bphi = 2 * 1.686 * (b1 - p), p as a parameter
-# - "bphi": bphi as a parameter
-# - "bfnl_loc": bfnl_loc = bphi * fnl_loc as a parameter'
-# Here we choose b-p parameterization
-theory = PNGTracerPowerSpectrumMultipoles(template=template, mode=mode)
-## fixed fNL
-theory.init.params['fnl_loc'].update(value=fnl, fixed=True) 
-## other parameters may need larger prior ranges
 priors = config.get('prior', {})
-for key in priors:
-    theory.init.params[key].update(fixed=False, prior=priors[key])
+
+theory = prepare_theory(z=z, mode=mode, priors=priors, fix_fNL=False)
+
 ## status of all parameters
 for key in theory.params:
     print(key, theory.params[key].value, theory.params[key].fixed, theory.params[key].derived, theory.params[key].prior, theory.params[key].ref)
-observable = TracerPowerSpectrumMultipolesObservable(data=data, covariance=cov, 
-        klim={0: klim0},
-        # klim={0: [0.005, 0.2, 0.005], 2: [0.005, 0.2, 0.005]}, # fit monopole and quadrupole, between 0.005 and 0.2 h/Mpc
-        theory=theory)
+
+observable = TracerPowerSpectrumMultipolesObservable(data=data, covariance=cov, ells=ells, klim={0: klim0}, theory=theory)
 
 likelihood = ObservablesGaussianLikelihood(observables=[observable])
 
@@ -94,18 +86,9 @@ for key in theory.all_params:
     bestfit_dict[str(key)] = bestfit_value
 
 ## plot triangle
-if mode == 'b-p':
-    plotting.plot_triangle(chain, markers={'p': bestfit_dict['p'], 'b1': bestfit_dict['b1'], 'sn0': bestfit_dict['sn0'], 'sigmas': bestfit_dict['sigmas']}, fn=fn_triangle)
-elif mode == 'bphi':
-    plotting.plot_triangle(chain, markers={'bphi': bestfit_dict['bphi'], 'b1': bestfit_dict['b1'], 'sn0': bestfit_dict['sn0'], 'sigmas': bestfit_dict['sigmas']}, fn=fn_triangle)
-else:
-    raise NotImplementedError(f"Mode {mode} not implemented for triangle plot.")
+plotting.plot_triangle(chain, markers={'fnl_loc': bestfit_dict['fnl_loc'], 'p': bestfit_dict['p'], 'b1': bestfit_dict['b1'], 'sn0': bestfit_dict['sn0'], 'sigmas': bestfit_dict['sigmas']}, fn=fn_triangle)
 
 ## plot power spectrum
-if mode == 'b-p':
-    prediction = theory(fnl_loc=bestfit_dict['fnl_loc'], p=bestfit_dict['p'], b1=bestfit_dict['b1'], sn0=bestfit_dict['sn0'], sigmas=bestfit_dict['sigmas'])
-elif mode == 'bphi':
-    prediction = theory(fnl_loc=bestfit_dict['fnl_loc'], bphi=bestfit_dict['bphi'], b1=bestfit_dict['b1'], sn0=bestfit_dict['sn0'], sigmas=bestfit_dict['sigmas'])
-else:
-    raise NotImplementedError(f"Mode {mode} not implemented for power spectrum plot.")
+prediction = theory(fnl_loc=bestfit_dict['fnl_loc'], p=bestfit_dict['p'], b1=bestfit_dict['b1'], sn0=bestfit_dict['sn0'], sigmas=bestfit_dict['sigmas'])
 plot_observable(observable, prediction, scaling='kpk', fn=fn_ps)
+

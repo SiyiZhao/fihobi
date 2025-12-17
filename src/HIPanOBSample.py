@@ -20,7 +20,7 @@ from io_def import (
     path_to_poles,
     path_to_hip,
 )    
-from desilike_helper import prepare_theory_fix_fNL, bestfit_p_inference
+from desilike_helper import prepare_theory, bestfit_p_inference
 from thecov_helper import read_mock, power_spectrum, thecov_box
 
 logging.basicConfig(
@@ -379,7 +379,7 @@ class HIPanOBSample:
         pos, nbar = read_mock(fname, boxV=boxV)
         data = power_spectrum(pos)
         cov = thecov_box(pk_theory=data, nbar=nbar, volume=boxV, has_shotnoise_set=False)
-        theory = prepare_theory_fix_fNL(z=theory_dict['zsnap'], cosmology=theory_dict['cosmology'], mode=theory_dict['mode'], fnl=theory_dict['fnl'], priors=theory_dict['priors'])
+        theory = prepare_theory(z=theory_dict['zsnap'], cosmology=theory_dict['cosmology'], mode=theory_dict['mode'], fnl=theory_dict['fnl'], priors=theory_dict['priors'], fix_fNL=True)
         bestfit_dict = bestfit_p_inference(theory=theory, data=data['P_0'], cov=cov, k=data['k'], klim=klim)
 
         end = time.time()

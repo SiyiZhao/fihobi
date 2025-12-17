@@ -26,7 +26,7 @@ sys.path.insert(0, os.path.expanduser('../src'))
 from io_def import read_catalog
 from pypower_helpers import run_pypower_redshift
 from mock_bias import load_Abacus_linear_power, grow_plin, measure_bias_k, average_bias, plot_bias
-from desilike_helper import prepare_theory_fix_fNL, bestfit_p_inference
+from desilike_helper import prepare_theory, bestfit_p_inference
 
 # kmax = 0.10053096491487339
 # # kedges = np.linspace(0, kmax, 32)
@@ -137,7 +137,7 @@ cov = read_cov(path2dir + f'{prefix}_thecov_sn_gaussian_t0.npy')
 ## PNG likelihood
 print('Setting up likelihood ...')
 priors = config.get('prior', {})
-theory = prepare_theory_fix_fNL(z=z, mode=mode, fnl=fnl, priors=priors)
+theory = prepare_theory(z=z, mode=mode, fnl=fnl, priors=priors)
 ## status of all parameters
 for key in theory.params:
     print(key, theory.params[key].value, theory.params[key].fixed, theory.params[key].derived, theory.params[key].prior, theory.params[key].ref)
