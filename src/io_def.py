@@ -109,7 +109,7 @@ def path_to_hip(work_dir: Path=None) -> Path:
     if work_dir is None:
         work_dir = THIS_REPO / "HIP"
         raise Warning("work_dir is not specified, using default 'HIP', recommended to specify to scratch.")
-    realpath = os.path.realpath(work_dir)
+    realpath = os.path.realpath(work_dir / "HIP")
     ensure_dir(realpath)
     return Path(realpath)
 

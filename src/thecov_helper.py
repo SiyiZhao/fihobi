@@ -15,8 +15,11 @@ def read_mock(fname: str, boxV: float) -> tuple[np.ndarray, float]:
     nbar = n_galaxies / boxV
     return pos, nbar
 
-def power_spectrum(pos: np.ndarray) -> dict:
+def power_spectrum(pos: np.ndarray, path2poles: str | None=None) -> dict:
     poles = run_pypower_redshift(pos[:,0], pos[:,1], pos[:,2])
+    if path2poles is not None:
+        poles.save(path2poles)
+    # extract data into a dict
     kbin = poles.edges[0]
     kmins, kmaxs = kbin[:-1], kbin[1:]
     k, p0 = poles(ell=0, return_k=True, complex=False)

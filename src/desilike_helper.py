@@ -1,5 +1,6 @@
 import numpy as np
 import os
+from pathlib import Path
 from pypower import PowerSpectrumMultipoles
 from matplotlib import pyplot as plt
 
@@ -7,6 +8,12 @@ from desilike.theories.galaxy_clustering import FixedPowerSpectrumTemplate, PNGT
 from desilike.observables.galaxy_clustering import TracerPowerSpectrumMultipolesObservable
 from desilike.likelihoods import ObservablesGaussianLikelihood
 from desilike.profilers import MinuitProfiler
+from desilike.samplers import ZeusSampler
+
+from io_def import ensure_dir
+
+from desilike import setup_logging
+setup_logging()
 
 
 def load_data(config):
@@ -162,3 +169,38 @@ def bestfit_p_inference(
         bestfit_dict[str(key)] = bestfit_value
     # best_p = bestfit_dict['p']
     return bestfit_dict
+
+def sampler_inference(
+    theory: PNGTracerPowerSpectrumMultipoles,
+    data,
+    cov,
+    ells: list[int] =[0],
+    k: np.ndarray | list[np.ndarray] | None = None,
+    klim: dict = {0: [0.005, 0.2, 0.005]},
+    odir: Path = Path('.'),
+) -> str:
+    """
+    Use Zeus Sampler to generate a chain.
+    Data: monopole power spectrum from mocks.
+    Covariance: provided covariance matrix.
+    k: if one only provided simple arrays for data and covariance, one can provide the corresponding (list of) k wavenumbers as a (list of) array k.
+    """
+    observable = TracerPowerSpectrumMultipolesObservable(data=data, covariance=cov, ells=ells, k=k, klim=klim, theory=theory)
+    
+    likelihood = ObservablesGaussianLikelihood(observables=[observable])
+
+    likelihood()  # just to initialize
+
+    ## sampling
+    chain_fn = odir / 'chain_zeus'
+    ensure_dir(odir)
+
+    print('Zeus Sampler...', flush=True)
+    sampler = ZeusSampler(likelihood, seed=42)
+    sampler.run(check={'max_eigen_gr': 0.04})
+    chain = sampler.chains[0].remove_burnin(0.5)
+    chain.write_getdist(chain_fn)
+    print(chain.to_stats(tablefmt='pretty'))
+    print(f'Saved chain to {chain_fn}')
+
+    return str(chain_fn)

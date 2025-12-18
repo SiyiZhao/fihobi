@@ -35,7 +35,8 @@ priors = {
     'p': {'limits': (-1., 3.)},
     'sigmas': {'limits': (0., 20.)},
 }
-bestfit = hip.fit_p_from_mocks(priors=priors, nproc=20)
+num = 1
+bestfit = hip.fit_p_from_mocks(num=num, inference='chain', priors=priors, nproc=20)
 
 # ========== save configurations ==========
 

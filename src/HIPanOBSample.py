@@ -20,11 +20,11 @@ from io_def import (
     path_to_poles,
     path_to_hip,
 )    
-from desilike_helper import prepare_theory, bestfit_p_inference
+from desilike_helper import prepare_theory, bestfit_p_inference, sampler_inference
 from thecov_helper import read_mock, power_spectrum, thecov_box
 
 logging.basicConfig(
-    level=logging.WARNING,
+    level=logging.INFO,
     format='[%(process)d] %(asctime)s %(message)s',
     datefmt='%H:%M:%S',
     handlers=[
@@ -323,6 +323,10 @@ class HIPanOBSample:
         want_2PCF: bool = False,
         want_poles: bool = True,
     ) -> None:   
+        '''
+        The default seeting is only to write the pypower poles. 
+        However, currently pypower and AbacusHOD works in different environments, so we recommend to write_cat=True and want_poles=False.
+        '''
         from abacus_helper import AbacusHOD, assign_hod, reset_fic, get_enabled_tracers, compute_mock_and_multipole
         if want_poles:
             from pypower_helpers import run_pypower_redshift
@@ -354,12 +358,9 @@ class HIPanOBSample:
                     np.save(path2cluster, clustering_rsd[f'{tracer}_{tracer}'])
                     print(f"[write] clustering for sample {i} to {path2cluster}")
                 if want_poles:
-                    x = cat['x']
-                    y = cat['y']
-                    z = cat['z']
-                    poles = run_pypower_redshift(x,y,z)
+                    pos = np.stack((cat['x'], cat['y'], cat['z']), axis=-1)
                     path2poles = path_to_poles(sim_params=sim_params, tracer=tracers[0], prefix=f'r{i}')
-                    poles.save(path2poles)
+                    power_spectrum(pos, path2poles=path2poles)
                     print(f"[write] pypower poles for sample {i} to {path2poles}")
     
     def _fit_p_from_mock_thecov(
@@ -368,11 +369,15 @@ class HIPanOBSample:
         boxV: float, 
         theory_dict: dict, 
         klim: dict,
+        inference: str,
     ) -> dict:
-        """单个 mock 的计算，顶层方法，支持多进程"""
+        """Fit p for a single mock, used in parallel processing.
+        The covariance is estimated by thecov.
+        inference: 'bestfit' or 'chain'.
+        """
         start = time.time()
         pid = os.getpid()
-        logging.info(f"Mock {i+1} start (PID={pid})")
+        logging.info(f"Mock {i} start (PID={pid})")
 
         fname = path_to_catalog(sim_params=self.cfgHOD['sim_params'], tracer=self.OBSample['tracer'], custom_prefix=f'r{i}')
 
@@ -380,33 +385,45 @@ class HIPanOBSample:
         data = power_spectrum(pos)
         cov = thecov_box(pk_theory=data, nbar=nbar, volume=boxV, has_shotnoise_set=False)
         theory = prepare_theory(z=theory_dict['zsnap'], cosmology=theory_dict['cosmology'], mode=theory_dict['mode'], fnl=theory_dict['fnl'], priors=theory_dict['priors'], fix_fNL=True)
-        bestfit_dict = bestfit_p_inference(theory=theory, data=data['P_0'], cov=cov, k=data['k'], klim=klim)
-
+        if inference == 'bestfit':
+            result_dict = bestfit_p_inference(theory=theory, data=data['P_0'], cov=cov, k=data['k'], klim=klim)
+        elif inference == 'chain':
+            chain_fn = sampler_inference(theory=theory, data=data['P_0'], cov=cov, k=data['k'], klim=klim, odir=self.path2HIP / f'mock_{i}')
+            result_dict = {'chain_fn': chain_fn}
+        else:
+            raise ValueError(f"inference method {inference} not recognized.")
         end = time.time()
-        logging.info(f"Mock {i+1} done (PID={pid}), elapsed {end - start:.3f}s")
-        return i, bestfit_dict
+        logging.info(f"Mock {i} done (PID={pid}), elapsed {end - start:.3f}s")
+        return i, result_dict
     
     def fit_p_from_mocks(
         self,
+        num: int | None = None,
         priors: dict[str, dict[str, tuple[float, float]]] = dict(),
         cosmology: str = 'DESI',
         fnl: float = 100,
         mode: str = 'b-p',
         klim: dict[int, list[float]] = {0: [0.003, 0.1]},
         nproc: int = 64,
+        inference: str = 'bestfit',
         write_csv: bool = True,
     ) -> pd.DataFrame:
         """
         Fit p from the HOD mocks, return the best-fit parameters for each mock.
         
         priors: dict of prior settings for each parameter, e.g., {'p': {'limits': (-1., 3.)}, 'sigmas': {'limits': (0., 20.)}}
-        fnl: fixed fnl value to the simulation value
+        fnl: fixed fnl value to the simulation value.
+        inference: 'bestfit' to use Minuit Profiler to find bestfit parameters; 'chain' to use Zeus Sampler to generate chains.
+        write_csv: whether to write the results to a csv file.
         """
         
         boxL = 2000.0  # Mpc/h
         boxV = boxL**3  # (Mpc/h)^3
         zsnap = self.OBSample['zsnap']
-        num = self.HIP['num_samples']
+        if num is None:
+            num = self.HIP['num_samples']
+        else:
+            self.HIP['num_samples'] = num
         # if cosmology == 'DESI':
         #     cosmo = cosmoprimo.fiducial.DESI()
         # else:
@@ -419,36 +436,46 @@ class HIPanOBSample:
             'priors': priors,
         }
         # klin, plin_z = linear_matter_power_spectrum(zeff=zsnap)
-        
+        path2HIP = path_to_hip(self.work_dir)
+        self.path2HIP = path2HIP
         ## loop over mocks
         results = []
         with ProcessPoolExecutor(max_workers=min(nproc, num)) as executor:
             futures = {
-                executor.submit(self._fit_p_from_mock_thecov, i, boxV, theory_dict, klim): i
+                executor.submit(self._fit_p_from_mock_thecov, i, boxV, theory_dict, klim, inference): i
                 for i in range(num)
             }
             for future in as_completed(futures):
                 results.append(future.result())
-        # results = self._fit_p_from_mock_thecov(0, boxV, theory, klim)
-        # print('results:', results, flush=True)
-        ## to DataFrame
-        rows = []
-        for r in results:
-            i, bf = r
-            rows.append({'i': i, **bf})
-        df_bestfit = pd.DataFrame(rows).sort_values(by='i', ignore_index=True)
+        # results = self._fit_p_from_mock_thecov(0, boxV, theory_dict, klim, inference)  # for test
+        print('results:', results, flush=True)
+        if inference == 'bestfit':
+            ## to DataFrame
+            rows = []
+            for r in results:
+                i, bf = r
+                rows.append({'i': i, **bf})
+            df_fitp = pd.DataFrame(rows).sort_values(by='i', ignore_index=True)
+        elif inference == 'chain':
+            rows = []
+            for r in results:
+                i, res = r
+                rows.append({'i': i, 'chain_fn': res['chain_fn']})
+            df_fitp = pd.DataFrame(rows).sort_values(by='i', ignore_index=True)
+        else:
+            raise ValueError(f"inference method {inference} not recognized.")
         ## save to csv
         if write_csv:
-            path_csv = path_to_hip(self.work_dir) / f'fitp_mocks_fnl{fnl}_{cosmology}_{mode}.csv'
-            df_bestfit.to_csv(path_csv, index=False)
+            path_csv = path2HIP / f'fitp_mocks_fnl{fnl}_{cosmology}_{mode}_{inference}.csv'
+            df_fitp.to_csv(path_csv, index=False)
             print(f"[write] bestfit parameters from HOD mocks to {path_csv}", flush=True)
-            self.HIP['path2fitp_csv'] = str(path_csv)
         ## refresh info
+        self.HIP['path2hip'] = str(path2HIP)
         self.HIP['boxsize'] = boxL
         self.HIP['fNL'] = fnl
         self.HIP['cosmology'] = cosmology
         self.HIP['mode'] = mode
         self.HIP['klim'] = klim
         self.HIP['priors'] = priors 
-        return df_bestfit
+        return df_fitp
         

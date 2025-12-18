@@ -18,4 +18,6 @@ WORK_DIR=${THIS_REPO}/HIP/test/${tracer}_${zmin}_${zmax}
 
 ### power spectrum of the sampled HOD mocks and p-inference
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main # for pypower
-python HIP/hip_anOBS_mocks.py --tracer ${tracer} --zmin ${zmin} --zmax ${zmax} --work_dir ${WORK_DIR} > ${WORK_DIR}/logs/hip_anOBS_mocks.log 2>&1 # 20s for each mock, parallelized over 100 mocks = 100 threads ~ 20s
+srun -n 1 -c 64 -C gpu -t 04:00:00 --gpus 4 --qos interactive --account desi_g python HIP/hip_anOBS_mocks.py --tracer ${tracer} --zmin ${zmin} --zmax ${zmax} --work_dir ${WORK_DIR} > ${WORK_DIR}/logs/hip_anOBS_mocks_chain1.log 2>&1 
+# if inference='bestfit', 20s for each mock, parallelized over 100 mocks = 100 threads ~ 20s
+# if inference='chain', 8 mins for each mock
