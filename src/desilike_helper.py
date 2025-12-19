@@ -177,7 +177,7 @@ def sampler_inference(
     ells: list[int] =[0],
     k: np.ndarray | list[np.ndarray] | None = None,
     klim: dict = {0: [0.005, 0.2, 0.005]},
-    odir: Path = Path('.'),
+    odir: str = '.',
 ) -> str:
     """
     Use Zeus Sampler to generate a chain.
@@ -192,7 +192,7 @@ def sampler_inference(
     likelihood()  # just to initialize
 
     ## sampling
-    chain_fn = odir / 'chain_zeus'
+    chain_fn = odir + '/chain_zeus'
     ensure_dir(odir)
 
     print('Zeus Sampler...', flush=True)
@@ -203,4 +203,4 @@ def sampler_inference(
     print(chain.to_stats(tablefmt='pretty'))
     print(f'Saved chain to {chain_fn}')
 
-    return str(chain_fn)
+    return chain_fn

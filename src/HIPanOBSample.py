@@ -1,6 +1,13 @@
+import os
+# 必须放在 import numpy 之前！
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
 import numpy as np
 import pandas as pd
-import time, os, logging
+import time, logging
 from pathlib import Path
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from getdist import loadMCSamples, MCSamples, plots
@@ -363,38 +370,6 @@ class HIPanOBSample:
                     power_spectrum(pos, path2poles=path2poles)
                     print(f"[write] pypower poles for sample {i} to {path2poles}")
     
-    def _fit_p_from_mock_thecov(
-        self, 
-        i: int, 
-        boxV: float, 
-        theory_dict: dict, 
-        klim: dict,
-        inference: str,
-    ) -> dict:
-        """Fit p for a single mock, used in parallel processing.
-        The covariance is estimated by thecov.
-        inference: 'bestfit' or 'chain'.
-        """
-        start = time.time()
-        pid = os.getpid()
-        logging.info(f"Mock {i} start (PID={pid})")
-
-        fname = path_to_catalog(sim_params=self.cfgHOD['sim_params'], tracer=self.OBSample['tracer'], custom_prefix=f'r{i}')
-
-        pos, nbar = read_mock(fname, boxV=boxV)
-        data = power_spectrum(pos)
-        cov = thecov_box(pk_theory=data, nbar=nbar, volume=boxV, has_shotnoise_set=False)
-        theory = prepare_theory(z=theory_dict['zsnap'], cosmology=theory_dict['cosmology'], mode=theory_dict['mode'], fnl=theory_dict['fnl'], priors=theory_dict['priors'], fix_fNL=True)
-        if inference == 'bestfit':
-            result_dict = bestfit_p_inference(theory=theory, data=data['P_0'], cov=cov, k=data['k'], klim=klim)
-        elif inference == 'chain':
-            chain_fn = sampler_inference(theory=theory, data=data['P_0'], cov=cov, k=data['k'], klim=klim, odir=self.path2HIP / f'mock_{i}')
-            result_dict = {'chain_fn': chain_fn}
-        else:
-            raise ValueError(f"inference method {inference} not recognized.")
-        end = time.time()
-        logging.info(f"Mock {i} done (PID={pid}), elapsed {end - start:.3f}s")
-        return i, result_dict
     
     def fit_p_from_mocks(
         self,
@@ -437,17 +412,27 @@ class HIPanOBSample:
         }
         # klin, plin_z = linear_matter_power_spectrum(zeff=zsnap)
         path2HIP = path_to_hip(self.work_dir)
-        self.path2HIP = path2HIP
+        sim_params=self.cfgHOD['sim_params']
+        tracer=self.OBSample['tracer']
         ## loop over mocks
+        fixed_kwargs = {
+            'sim_params': sim_params,
+            'tracer': tracer,
+            'boxV': boxV,
+            'theory_dict': theory_dict,
+            'klim': klim,
+            'inference': inference,
+            'path2HIP': str(path2HIP),
+        }
         results = []
         with ProcessPoolExecutor(max_workers=min(nproc, num)) as executor:
             futures = {
-                executor.submit(self._fit_p_from_mock_thecov, i, boxV, theory_dict, klim, inference): i
+                executor.submit(_fit_p_from_mock_thecov, i, **fixed_kwargs): i
                 for i in range(num)
             }
             for future in as_completed(futures):
                 results.append(future.result())
-        # results = self._fit_p_from_mock_thecov(0, boxV, theory_dict, klim, inference)  # for test
+        # results = _fit_p_from_mock_thecov(0, **fixed_kwargs)  # for test
         print('results:', results, flush=True)
         if inference == 'bestfit':
             ## to DataFrame
@@ -479,3 +464,37 @@ class HIPanOBSample:
         self.HIP['priors'] = priors 
         return df_fitp
         
+def _fit_p_from_mock_thecov(
+    i: int, 
+    sim_params: dict,
+    tracer: str,
+    boxV: float, 
+    theory_dict: dict, 
+    klim: dict,
+    inference: str,
+    path2HIP: str | None = None,
+) -> dict:
+    """Fit p for a single mock, used in parallel processing.
+    The covariance is estimated by thecov.
+    inference: 'bestfit' or 'chain'.
+    """
+    start = time.time()
+    pid = os.getpid()
+    logging.info(f"Mock {i} start (PID={pid})")
+
+    fname = path_to_catalog(sim_params=sim_params, tracer=tracer, custom_prefix=f'r{i}')
+
+    pos, nbar = read_mock(fname, boxV=boxV)
+    data = power_spectrum(pos)
+    cov = thecov_box(pk_theory=data, nbar=nbar, volume=boxV, has_shotnoise_set=False)
+    theory = prepare_theory(z=theory_dict['zsnap'], cosmology=theory_dict['cosmology'], mode=theory_dict['mode'], fnl=theory_dict['fnl'], priors=theory_dict['priors'], fix_fNL=True)
+    if inference == 'bestfit':
+        result_dict = bestfit_p_inference(theory=theory, data=data['P_0'], cov=cov, k=data['k'], klim=klim)
+    elif inference == 'chain':
+        chain_fn = sampler_inference(theory=theory, data=data['P_0'], cov=cov, k=data['k'], klim=klim, odir=path2HIP + f'/mock_{i}')
+        result_dict = {'chain_fn': chain_fn}
+    else:
+        raise ValueError(f"inference method {inference} not recognized.")
+    end = time.time()
+    logging.info(f"Mock {i} done (PID={pid}), elapsed {end - start:.3f}s")
+    return i, result_dict
