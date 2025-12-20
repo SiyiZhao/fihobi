@@ -346,7 +346,7 @@ class HIPanOBSample:
             mock, clustering_rsd  = compute_mock_and_multipole(Ball, nthread=nthread)
             if write_cat:
                 ## save mock h5
-                write_catalogs(Ball, mock, fit_params,out_root=mock_dir, custom_prefix=f'r{i}')
+                write_catalogs(Ball, mock, fit_params,out_root=mock_dir, prefix=f'r{i}')
             for tracer, cat in mock.items():
                 if want_2PCF:
                     ## save clustering ASCII
@@ -374,7 +374,7 @@ class HIPanOBSample:
         pid = os.getpid()
         logging.info(f"Mock {i+1} start (PID={pid})")
 
-        fname = path_to_catalog(sim_params=self.cfgHOD['sim_params'], tracer=self.OBSample['tracer'], custom_prefix=f'r{i}')
+        fname = path_to_catalog(sim_params=self.cfgHOD['sim_params'], tracer=self.OBSample['tracer'], prefix=f'r{i}')
 
         pos, nbar = read_mock(fname, boxV=boxV)
         data = power_spectrum(pos)

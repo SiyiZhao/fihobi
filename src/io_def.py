@@ -156,7 +156,7 @@ def path_to_cat_dir(sim_params, tracer='QSO'):
     return tracer_dir
 
 
-def path_to_catalog(sim_params=None, config=None, tracer='QSO', custom_prefix=None):
+def path_to_catalog(sim_params=None, config=None, tracer='QSO', prefix=None):
     '''
     sim_params: dict containing simulation parameters such as output_dir, sim_name, and z_mock.
     config: Path to a configuration file to load simulation parameters from. Only used if sim_params is None.
@@ -169,10 +169,10 @@ def path_to_catalog(sim_params=None, config=None, tracer='QSO', custom_prefix=No
     
     mock_type = 'abacus_HF'
     version = 'DR2_v2.0'
-    if custom_prefix is None:
+    if prefix is None:
         fname = f"{mock_type}_{tracer}_{redshift_tag}_{version}_{sim_name}_clustering.dat.h5"
     else:
-        fname = f"{mock_type}_{tracer}_{redshift_tag}_{version}_{sim_name}_{custom_prefix}_clustering.dat.h5"
+        fname = f"{mock_type}_{tracer}_{redshift_tag}_{version}_{sim_name}_{prefix}_clustering.dat.h5"
     outpath = os.path.join(tracer_dir, fname)
     return outpath
 
@@ -189,7 +189,7 @@ def path_to_poles(sim_params, tracer='QSO', prefix=None):
     return path   
 
 
-def write_catalogs(Ball, mock_real: dict, fit_params: dict, out_root=None, custom_prefix=None) -> None:
+def write_catalogs(Ball, mock_real: dict, fit_params: dict, out_root=None, prefix=None) -> None:
     from mpytools.catalog import Catalog
 
     # Pull meta directly from Ball
@@ -258,7 +258,7 @@ def write_catalogs(Ball, mock_real: dict, fit_params: dict, out_root=None, custo
 
         # outpath = os.path.join(tracer_dir, fname)
         sim_params = {'output_dir': out_root, 'sim_name': sim_name, 'z_mock': zsnap}
-        outpath = path_to_catalog(sim_params=sim_params, tracer=tracer, custom_prefix=custom_prefix)
+        outpath = path_to_catalog(sim_params=sim_params, tracer=tracer, prefix=prefix)
 
         Catalog(data=data).write(outpath, header=hdr)
         print(f"[write] {tracer} -> {outpath}")
