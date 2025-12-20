@@ -1,6 +1,8 @@
 #!/bin/bash
 
 cd /global/homes/s/siyizhao/projects/fihobi/HIP
+export THIS_REPO=$HOME/projects/fihobi/
+# cd ${THIS_REPO}
 
 # ###=== Prepare HIP configuration
 # python3 prep_config.py --Assembly True --version v2.1
@@ -31,9 +33,19 @@ source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 # ###=== fit p with mock power spectrum + thecov covariance matrix
 # # python fit_p_thecov.py
 
-name=QSO-z6_fNL100_base_1
-# odir=out/test_kbin/${name}
-# odir=out/fit_PNG_bias_v2/${name}
-odir=works/${name}
-mkdir -p ${odir}
-srun -n 1 -c 64 -C gpu -t 04:00:00 --gpus 4 --qos interactive --account desi_g python fit_p_thecov.py ${name} ${odir}  "r1"> ${odir}/std.txt 2>&1
+### Define the Sample, prepare the clustering, and HOD fitting.
+tracer="QSO"
+zmin=2.8
+zmax=3.5
+WORK_DIR=${THIS_REPO}/HIP/test/${tracer}_${zmin}_${zmax}
+
+# name=QSO-z6_fNL100_base_1
+# # odir=out/test_kbin/${name}
+# # odir=out/fit_PNG_bias_v2/${name}
+# odir=works/${name}
+for i in {0..99}; do
+    odir=${WORK_DIR}/HIP/mock_$i
+    mkdir -p ${odir}
+    srun -N 1 -n 1 -c 1 --cpu-bind=cores python fit_p_thecov.py $WORK_DIR $i > ${odir}/std.txt 2>&1 &
+done 
+wait
