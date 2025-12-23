@@ -22,7 +22,6 @@ export THIS_REPO=$HOME/projects/fihobi/
 # export PYTHONPATH=$PYTHONPATH:$HOME/lib
 
 # srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi -n 1 -c 64 python scripts/sampleHOD.py --cfgs4HIP ../HIP/HIP.yaml 
-# python scripts/sampleHOD_plot.py --cfgs4HIP ../HIP/HIP.yaml 
 
 # ###=== measure mock power spectrum, bias, nbar -> thecov covariance matrix
 # cd ../HIP/
@@ -49,3 +48,7 @@ for i in {0..99}; do
     srun -N 1 -n 1 -c 1 --cpu-bind=cores python fit_p_thecov.py $WORK_DIR $i > ${odir}/std.txt 2>&1 &
 done 
 wait
+
+### Plot the sampled power spectra & 2PCFs
+python plot_sample_ps.py --WORKDIR test/QSO_2.8_3.5
+python plot_sample_2PCF.py --WORKDIR test/QSO_2.8_3.5

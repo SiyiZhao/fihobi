@@ -1,4 +1,5 @@
-# python plot_sample_2PCF.py --cfgs4HIP test/QSO_2.8_3.5/config.yaml
+# source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main # for pypower
+# python plot_sample_2PCF.py --WORKDIR test/QSO_2.8_3.5
 import argparse
 import numpy as np
 from matplotlib import pyplot as plt
@@ -6,7 +7,8 @@ import matplotlib as mpl
 mpl.rc_file('../fig/matplotlibrc')
 import os, sys
 sys.path.insert(0, '../src')
-from io_def import path_to_clustering, load_config, path_to_HODconfigs
+from io_def import path_to_clustering, load_config
+from HIPanOBSample import HIPanOBSample
 
 
 colors = ["#1b1b1b", "#0072B2", "#D55E00", "#009E73", "#CC79A7", "#E69F00", "#56B4E9", "#F0E442", "#000000"]
@@ -47,7 +49,7 @@ def read_mock_clus(path, len_wp=15, len_xi0=10, len_xi2=10):
     the = {'wp': dvec[0:len_wp], 'xi0': dvec[len_wp:len_wp+len_xi0], 'xi2': dvec[len_wp+len_xi0:len_wp+len_xi0+len_xi2]}
     return the
 
-def load_theory(config, num=None, want_MAP=False, len_wp=15, len_xi0=10, len_xi2=10):
+def load_theory(config, num=None, cmap='hsv', want_MAP=False, len_wp=15, len_xi0=10, len_xi2=10):
     sim_params = load_config(config).get("sim_params", {})
     if want_MAP:
         path = path_to_clustering(sim_params, tracer=tracer, prefix='MAP')
@@ -56,7 +58,7 @@ def load_theory(config, num=None, want_MAP=False, len_wp=15, len_xi0=10, len_xi2
         the = read_mock_clus(path, len_wp, len_xi0, len_xi2)
         return the
     elif num is not None:
-        cmap = plt.get_cmap('viridis')
+        cmap = plt.get_cmap(cmap)
         the_all = []
         the_colors = []
         the_labels = []
@@ -66,7 +68,8 @@ def load_theory(config, num=None, want_MAP=False, len_wp=15, len_xi0=10, len_xi2
             the_all.append(the) 
             color = cmap(i / num)
             the_colors.append(color)
-            the_labels.append(f'r{i}')
+            # the_labels.append(f'r{i}')
+            the_labels.append(None)
         return the_all, the_colors, the_labels
     else:
         raise ValueError("Either num or want_MAP must be specified.")
@@ -74,20 +77,18 @@ def load_theory(config, num=None, want_MAP=False, len_wp=15, len_xi0=10, len_xi2
 if __name__ == "__main__":
     ## load config
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cfgs4HIP', type=str, default='HIP.yaml', help='Path to the HIP config file, do not provide --config.')
+    parser.add_argument('--WORKDIR', type=str, required=True, help='Path to the working directory, should contain config.yaml.')
     args = parser.parse_args()
-    cfgs4HIP = args.cfgs4HIP
-    cfgs_HIP = load_config(cfgs4HIP)
-    cfgs_sample = cfgs_HIP.get('sampleHOD', {})
-    cfgs_galaxy = cfgs_HIP.get('galaxy', {})
-    tracer = cfgs_galaxy.get('tracer', 'QSO')
-    zmin = cfgs_galaxy.get('zmin', 2.8)
-    zmax = cfgs_galaxy.get('zmax', 3.5)
-    # config = path_to_HODconfigs(cfgs4HIP)
-    path2cfgHOD = cfgs_HIP['HODfit']['path2cfgHOD']
-    # tracer, zmin, zmax = 'QSO', 2.8, 3.5
-    # config = 'configs/QSO-fnl100/z6_base.yaml'
-
+    WORK_DIR = args.WORKDIR
+    hip = HIPanOBSample(cfg_file=WORK_DIR + "/config.yaml")
+    tracer = hip.OBSample['tracer']
+    zmin = hip.OBSample['zmin']
+    zmax = hip.OBSample['zmax']
+    path2cfgHOD = hip.cfg['HODfit']['path2cfgHOD']
+    num = hip.HIP['num_samples']
+    cmap = hip.HIP['cmap']
+    print(f"Number of samples to plot: {num}\n")
+    
     ## Load data
     obs_v1, err_v1 = load_data(tracer, zmin, zmax, version='v1.1')
     obs_v2, err_v2 = load_data(tracer, zmin, zmax, version='v2')
@@ -100,7 +101,7 @@ if __name__ == "__main__":
     len_wp = obs_v2['wp'].shape[0]
     len_xi0 = obs_v2['xi0'].shape[0]
     len_xi2 = obs_v2['xi2'].shape[0]
-    the_all, the_colors, the_labels = load_theory(path2cfgHOD, num=10)
+    the_all, the_colors, the_labels = load_theory(path2cfgHOD, num=num, cmap=cmap)
     the_map = load_theory(path2cfgHOD, want_MAP=True)
 
     ## Plotting
@@ -118,12 +119,13 @@ if __name__ == "__main__":
             # make the band hollow: no face fill, only an outline
             axs[1,i].fill_between(x, (-err[ctype]) / obs[ctype], (err[ctype]) / obs[ctype],
                 facecolor='none', edgecolor=color, linewidth=1.5, alpha=1.0)
-        axs[0,i].plot(x, x*the_map[ctype], ls='-', color='black', label='MAP of HOD')
-        axs[1,i].plot(x, (the_map[ctype]-obs_v2[ctype])/obs_v2[ctype], ls='-', color='black')
         for the, color, label in zip(the_all, the_colors, the_labels):
-            axs[0,i].plot(x, x*the[ctype], ls='-', color=color, label=label, alpha=0.5)
+            axs[0,i].plot(x, x*the[ctype], ls=':', color=color, label=label, alpha=0.5)
             fractional_error = (the[ctype] - obs_v2[ctype]) / obs_v2[ctype]
-            axs[1,i].plot(x, fractional_error, ls='-', color=color, alpha=0.5)
+            axs[1,i].plot(x, fractional_error, ls=':', color=color, alpha=0.5)
+        ### the MAP
+        axs[0,i].plot(x, x*the_map[ctype], ls='-', color='black', lw=2, label='MAP of HOD')
+        axs[1,i].plot(x, (the_map[ctype]-obs_v2[ctype])/obs_v2[ctype], ls='-', color='black', lw=2)
         axs[0,i].set_xscale('log')
         axs[1,i].set_xscale('log')
         axs[0,i].set_ylabel(y0labels[i],fontsize=20)
@@ -137,7 +139,7 @@ if __name__ == "__main__":
     # axs[1,1].set_ylim(-0.5,0.5)
     if max(abs(err_v1['xi2']/obs_v1['xi2']))>1 or max(abs(err_v2['xi2']/obs_v2['xi2']))>1:
         axs[1,2].set_ylim(-1,1)
-    axs[0,0].legend(frameon=False,fontsize=20,loc='upper center', bbox_to_anchor=(0.5, 1.25), ncol=2)
-    fout="sampleHOD_plot.png"
+    axs[0,0].legend(frameon=False,fontsize=20)
+    fout = WORK_DIR + "/mock_2PCF.png"
     plt.savefig(fout)
     print(f"[plot] -> {fout}")

@@ -1,5 +1,7 @@
 # %%
-# !source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main # for pypower
+# source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main # for pypower
+# python plot_sample_2PCF.py --WORKDIR test/QSO_2.8_3.5
+import argparse
 import numpy as np
 from pypower import PowerSpectrumMultipoles
 import glob
@@ -15,20 +17,17 @@ from HIPanOBSample import HIPanOBSample
 from io_def import path_to_poles
 
 # %%
-tracer="QSO"
-zmin=2.8
-zmax=3.5
-WORK_DIR=THIS_REPO / "HIP/test" / f"{tracer}_{zmin}_{zmax}"
-print(f"Working directory: {WORK_DIR}\n")
-hip = HIPanOBSample(cfg_file=WORK_DIR / "config.yaml")
-
-# %%
-hip.HIP['num_samples'] = 100 # the original number is 10 for test, omit this line for real runs
+parser = argparse.ArgumentParser()
+parser.add_argument('--WORKDIR', type=str, required=True, help='Path to the working directory, should contain config.yaml.')
+args = parser.parse_args()
+WORK_DIR = args.WORKDIR
+hip = HIPanOBSample(cfg_file=WORK_DIR + "/config.yaml")
+tracer = hip.OBSample['tracer']
+zmin = hip.OBSample['zmin']
+zmax = hip.OBSample['zmax']
+path2cfgHOD = hip.cfg['HODfit']['path2cfgHOD']
 num = hip.HIP['num_samples']
 print(f"Number of samples to plot: {num}\n")
-
-# %%
-hip.HIP['cmap'] = 'hsv' # omit this line to use the prepared colormap
 
 # %% [markdown]
 # ## plot power spectrum
@@ -40,7 +39,7 @@ data = {
     'c302_v2': {
         'path': '/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_base-A_v2/abacus_HF/DR2_v2.0/Abacus_pngbase_c302_ph000/Boxes/QSO/z3p000/MAP_QSO_pypower_poles.npy', 
         'label': 'fNL=100, base-A, v2', 
-        'color': 'red', 
+        'color': 'black', 
         'lstyle': '-',
         'alpha': 1,
     },
@@ -63,7 +62,7 @@ for i, key in enumerate(data.keys()):
 cmap = plt.get_cmap(hip.HIP['cmap'])
 for i in range(num):
     key = f'r{i}'
-    path2poles = path_to_poles(sim_params=hip.cfgHOD['sim_params'], tracer=hip.OBSample['tracer'], prefix=f'r{i}')
+    path2poles = path_to_poles(sim_params=hip.cfgHOD['sim_params'], tracer=tracer, prefix=f'r{i}')
     poles = PowerSpectrumMultipoles.load(path2poles)
     k, p0 = poles(ell=0, return_k=True, complex=False)
     if not np.allclose(k, k_1st, equal_nan=True):
@@ -107,11 +106,11 @@ if dirEZmocks is not None:
     axs[0].plot(k_ez[1:], p[1:], color='gray', alpha=0.3, label='EZmock')
     for p in p0_ez[1:]:
         axs[0].plot(k_ez[1:], p[1:], color='gray', alpha=0.3)
-    axs[0].plot(k_ez[1:], p0_ez_avg[1:], color='black', lw=2, label='EZmock average')
+    axs[0].plot(k_ez[1:], p0_ez_avg[1:], color='gray', lw=2, label='EZmock average')
     # bottom panel: EZmocks fractional errors
     frac_ez = p0_ez_avg / P0_base - 1
     frac_err = p0_err / P0_base 
-    axs[1].plot(k[1:], frac_ez[1:], color='black', lw=2)
+    axs[1].plot(k[1:], frac_ez[1:], color='gray', lw=2)
     axs[1].fill_between(k[1:], - frac_err[1:], frac_err[1:], color='gray', alpha=0.5, label=r'EZmock $1\sigma$')    
 # top panel: original spectra
 for key in data.keys():
@@ -133,6 +132,6 @@ ylim=0.3
 axs[1].set_ylim(-ylim, ylim)
 axs[1].legend()
 plt.tight_layout()
-fn = WORK_DIR / f'mock_ps.png'
+fn = WORK_DIR + f'/mock_ps.png'
 plt.savefig(fn, dpi=300)
 print(f'Saved figure to {fn}')
