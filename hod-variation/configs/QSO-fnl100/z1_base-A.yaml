@@ -1,0 +1,113 @@
+HOD_params:
+  tracer_flags:
+    ELG: false
+    LRG: false
+    QSO: true
+  use_particles: false
+  use_profiles: true
+  want_AB: true
+  want_rsd: true
+  want_dv: false
+  write_to_disk: false
+  QSO_params:
+    logM_cut: 12.03
+    logM1: 13.11
+    sigma: 0.08
+    alpha: 1.03
+    kappa: 0.39
+    alpha_c: 0.92
+    alpha_s: 2.7
+    ic: 1.0
+    profile_code: 1
+  dv_draw_Q: /global/homes/s/siyizhao/projects/fihobi/data/dv_draws/QSO_z0.8-1.1_CDF.npz
+clustering_params:
+  bin_params:
+    logmax: 1.5
+    logmin: -1.0
+    nbins: 15
+  clustering_type: all
+  pi_bin_size: 40
+  pimax: 40
+nthread: 64
+prepare_sim:
+  Nparallel_load: 18
+sim_params:
+  cleaned_halos: true
+  output_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_base-A_v2/
+  sim_dir: /global/cfs/projectdirs/desi/cosmosim/Abacus/
+  sim_name: Abacus_pngbase_c302_ph000
+  subsample_dir: /pscratch/sd/s/siyizhao/AbacusSummit/subsample_desidr2_profile_withAB/
+  z_mock: 0.95
+  force_mt: true
+data_params:
+  tracer_combos:
+    QSO_QSO:
+      path2cov: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/cov_QSO_0.8_1.1_cut.dat
+      path2wp: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/wp_QSO_0.8_1.1_cut.dat
+      path2xi02: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/xi02_QSO_0.8_1.1_cut.dat
+  tracer_density_mean:
+    QSO: 3.052e-05
+  tracer_density_std:
+    QSO: 3.052e-06
+chain_params:
+  chain_prefix: chain_v2.1_
+  output_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/QSO-fnl100/z1_base-A/
+  nlive: 500
+  tol: 0.5
+  labels:
+  - \log M_{\text{cut}}
+  - \log M_1
+  - \sigma
+  - \alpha
+  - \kappa
+  - \alpha_{\text{c}}
+  - \log \alpha_{\text{s}}
+  - A_{\text{cent}}
+  - A_{\text{sat}}
+fit_params:
+  QSO:
+    logM_cut:
+    - 0
+    - 11.0
+    - 15.0
+    - flat
+    logM1:
+    - 1
+    - 10.0
+    - 18.0
+    - flat
+    sigma:
+    - 2
+    - 0.0001
+    - 3.0
+    - flat
+    alpha:
+    - 3
+    - -1.0
+    - 3.0
+    - flat
+    kappa:
+    - 4
+    - 0.0
+    - 10.0
+    - flat
+    alpha_c:
+    - 5
+    - 0.0
+    - 3.0
+    - flat
+    alpha_s:
+    - 6
+    - -4.0
+    - 2.0
+    - log
+    Acent:
+    - 7
+    - -10.0
+    - 10.0
+    - flat
+    Asat:
+    - 8
+    - -15.0
+    - 15.0
+    - flat
