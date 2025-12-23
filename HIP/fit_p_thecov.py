@@ -34,8 +34,7 @@ priors = {
 
 fname = path_to_catalog(sim_params=hip.cfgHOD['sim_params'], tracer=hip.OBSample['tracer'], prefix=f'r{i}')
 path2poles = path_to_poles(sim_params=hip.cfgHOD['sim_params'], tracer=hip.OBSample['tracer'], prefix=f'r{i}')
-ODIR = WORK_DIR / "HIP" / f"mock_{i}"
-# ODIR = WORK_DIR / "HIP" / "mocks" / f"r{i}"
+ODIR = WORK_DIR / "HIP" / "mocks" / f"r{i}"
 ensure_dir(ODIR)
 fn_chain = ODIR / "chain_zeus"
 fn_ps = ODIR / "power_spectrum.png"
