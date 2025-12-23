@@ -77,7 +77,7 @@ cmap = plt.get_cmap('viridis')
 for i in range(num):
     key = f'base_{i}'
     # key = f'i{i}'
-    path_mock = path_to_catalog(config=config, tracer='QSO', custom_prefix=key)
+    path_mock = path_to_catalog(config=config, tracer='QSO', prefix=key)
     path = str(Path(path_mock).parent.parent / f'{key}_pypower_poles.npy')
     # path = os.path.dirname(path_mock) + f'/{key}_pypower_poles.npy'
     if not os.path.exists(path):

@@ -1,3 +1,4 @@
+# python plot_sample_2PCF.py --cfgs4HIP test/QSO_2.8_3.5/config.yaml
 import argparse
 import numpy as np
 from matplotlib import pyplot as plt
@@ -38,8 +39,9 @@ def load_data(tracer, zmin, zmax, version='v1.1'):
     return obs, err
 
 def read_mock_clus(path, len_wp=15, len_xi0=10, len_xi2=10):
-    data = np.load(path, allow_pickle=True).item()
-    dvec = data['QSO_QSO']
+    data = np.load(path, allow_pickle=True)#.item()
+    # dvec = data['QSO_QSO']
+    dvec = data
     if len_wp+len_xi0+len_xi2 != dvec.shape[0]:
         print(f"Length mismatch: expected {len_wp+len_xi0+len_xi2}, got {dvec.shape[0]}")
     the = {'wp': dvec[0:len_wp], 'xi0': dvec[len_wp:len_wp+len_xi0], 'xi2': dvec[len_wp+len_xi0:len_wp+len_xi0+len_xi2]}
@@ -81,7 +83,8 @@ if __name__ == "__main__":
     tracer = cfgs_galaxy.get('tracer', 'QSO')
     zmin = cfgs_galaxy.get('zmin', 2.8)
     zmax = cfgs_galaxy.get('zmax', 3.5)
-    config = path_to_HODconfigs(cfgs4HIP)
+    # config = path_to_HODconfigs(cfgs4HIP)
+    path2cfgHOD = cfgs_HIP['HODfit']['path2cfgHOD']
     # tracer, zmin, zmax = 'QSO', 2.8, 3.5
     # config = 'configs/QSO-fnl100/z6_base.yaml'
 
@@ -97,8 +100,8 @@ if __name__ == "__main__":
     len_wp = obs_v2['wp'].shape[0]
     len_xi0 = obs_v2['xi0'].shape[0]
     len_xi2 = obs_v2['xi2'].shape[0]
-    the_all, the_colors, the_labels = load_theory(config, num=10)
-    the_map = load_theory(config, want_MAP=True)
+    the_all, the_colors, the_labels = load_theory(path2cfgHOD, num=10)
+    the_map = load_theory(path2cfgHOD, want_MAP=True)
 
     ## Plotting
     fig, axs = plt.subplots(2,3,constrained_layout=True,sharex='col',figsize=(24,8),gridspec_kw={'height_ratios': [3, 1]})

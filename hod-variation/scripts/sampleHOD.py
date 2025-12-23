@@ -87,7 +87,7 @@ for i, sample in enumerate(samples):
     reset_fic(Ball, tracers, density_mean, nthread=nthread)
     mock, clustering_rsd  = compute_mock_and_multipole(Ball, nthread)
     ## save mock h5
-    write_catalogs(Ball, mock, fit_params, out_root=out_root, custom_prefix=f'r{i}')
+    write_catalogs(Ball, mock, fit_params, out_root=out_root, prefix=f'r{i}')
     ## save clustering ASCII
     path2cluster = path_to_clustering(sim_params, tracer=tracers[0], prefix=f'r{i}')
     np.save(path2cluster, clustering_rsd)

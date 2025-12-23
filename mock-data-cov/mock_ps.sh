@@ -27,4 +27,4 @@ srun -N 1 -C gpu -t 04:00:00 --qos interactive --account desi_g python scripts/a
 # srun -N 1 -C gpu -t 04:00:00 --qos interactive --account desi_g python scripts/abacus_pkl.py $config2Abacus
 
 mkdir -p out
-python scripts/plot_ps.py --tag $tag --dirEZmocks $dirEZ #--base c302_dv_A
+python scripts/plot_ps.py --tag $tag --dirEZmocks $dirEZ --base c302_v2

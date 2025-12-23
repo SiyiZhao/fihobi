@@ -289,6 +289,7 @@ class HIPanOBSample:
         self.HIP = {
             'chain_root': str(chain_root),
             'num_samples': num,
+            'cmap': cmap,
         }
         self.cfg['HIP'] = self.HIP
         if plot:
