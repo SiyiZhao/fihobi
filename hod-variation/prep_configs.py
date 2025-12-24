@@ -26,12 +26,26 @@ if src_dir not in sys.path:
 from io_def import load_config, prefix_HOD
 
 ### settings -------------------------------------------------------------------
+_DEFAULT_FNL = 30
+_DEFAULT_HOD = {
+    "prefix": 'base',
+    "want_dv": False,
+    "Assembly": True,
+    "BiasENV": False,
+    "version": 'v2'
+}
+
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument("--config", type=str, default="HIP.yaml", help="Configuration YAML file")
+parser.add_argument("--config", type=str, default=None, help="Configuration YAML file")
 args = parser.parse_args()
-configs = load_config(args.config)
-fnl = configs.get("fnl", 100)
-HOD = configs.get("HOD", {})
+if args.config is not None:
+    print(f"Loading configuration from {args.config}...")
+    configs = load_config(args.config)
+else:
+    print("No configuration file provided. Using default settings...")
+    configs = {}
+fnl = configs.get("fnl", _DEFAULT_FNL)
+HOD = configs.get("HOD", _DEFAULT_HOD)
 match int(fnl):
     case 0:
         sim_model = "Summit"

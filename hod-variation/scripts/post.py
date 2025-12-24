@@ -72,7 +72,7 @@ def main(config):
     mock_bf,clustering_bf=compute_mock_and_multipole(ball_profiles, nthread=nthread, out=False, verbose=True)
     out_root = sim_params.get('output_dir')
 
-    write_catalogs(ball_profiles, mock_bf, fit_params, out_root=out_root, prefix=f'MAP_{tracer}')
+    write_catalogs(ball_profiles, mock_bf, fit_params, out_root=out_root, prefix=f'MAP')
     
     loglike_bf = data_obj.compute_loglike(clustering_bf, density_bf)
     print("Best-fit loglike:", loglike_bf)
