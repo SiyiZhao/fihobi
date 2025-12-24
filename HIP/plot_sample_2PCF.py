@@ -143,3 +143,34 @@ if __name__ == "__main__":
     fout = WORK_DIR + "/mock_2PCF.png"
     plt.savefig(fout)
     print(f"[plot] -> {fout}")
+    
+    # ## Plot histograms of the differences
+    # fig, axes = plt.subplots(2, 5, figsize=(15, 8), constrained_layout=True)
+    # axes = axes.flatten()
+
+    # for idx_s in range(10):
+    #     map_s = the_map['xi0'][idx_s]
+    #     sample_s = [the_all[i]['xi0'][idx_s] for i in range(num)]
+        
+    #     axes[idx_s].hist(sample_s - map_s, bins=10, color='steelblue', alpha=0.7)
+    #     axes[idx_s].set_yscale('log')
+    #     axes[idx_s].set_xlabel(r'$\xi_0$ difference')
+    #     axes[idx_s].set_ylabel('Number of samples')
+    #     axes[idx_s].set_title(f'idx_s={idx_s}')
+
+    # plt.savefig(WORK_DIR + '/hist_sample_xi0_difference.png')
+    
+    # fig, axes = plt.subplots(2, 5, figsize=(15, 8), constrained_layout=True)
+    # axes = axes.flatten()
+
+    # for idx_s in range(10):
+    #     map_s = the_map['xi2'][idx_s]
+    #     sample_s = [the_all[i]['xi2'][idx_s] for i in range(num)]
+        
+    #     axes[idx_s].hist(sample_s - map_s, bins=10, color='steelblue', alpha=0.7)
+    #     axes[idx_s].set_yscale('log')
+    #     axes[idx_s].set_xlabel(r'$\xi_2$ difference')
+    #     axes[idx_s].set_ylabel('Number of samples')
+    #     axes[idx_s].set_title(f'idx_s={idx_s}')
+
+    # plt.savefig(WORK_DIR + '/hist_sample_xi2_difference.png')
