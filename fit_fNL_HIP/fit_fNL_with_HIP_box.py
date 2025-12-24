@@ -30,6 +30,10 @@ odir = config.get('odir', 'output')
 mode = config.get('mode', 'b-p')  # parameterization mode for PNG bias
 klim0 = config.get('klim0', [0.003, 0.1])  # k range for monopole fitting
 
+### also enable fixing p, default to False
+fix_p = config.get('fix_p', False)
+p_fixed_value = config.get('p_fixed_value', 1.0)
+
 ## define output ---------------------------------------------------------------
 ensure_dir(odir)
 fn_triangle = odir+'/triangle.png'
@@ -47,8 +51,7 @@ data, cov = load_data(config)
 ## PNG likelihood
 print('Setting up likelihood ...')
 priors = config.get('prior', {})
-
-theory = prepare_theory(z=z, mode=mode, priors=priors, fix_fNL=False)
+theory = prepare_theory(z=z, mode=mode, priors=priors, fix_fNL=False, fix_p=fix_p, p=p_fixed_value)
 
 ## status of all parameters
 for key in theory.params:

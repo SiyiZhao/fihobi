@@ -102,6 +102,8 @@ def prepare_theory(
     fnl: float=0,
     priors: dict[str, list]=dict(),
     fix_fNL: bool=True,
+    fix_p: bool=False,
+    p: float=1.0,
 ) -> PNGTracerPowerSpectrumMultipoles:
     """
     fnl: fNL value to fix, if fix_fNL is True.
@@ -117,7 +119,10 @@ def prepare_theory(
     ## fixed fNL
     if fix_fNL:
         theory.init.params['fnl_loc'].update(value=fnl, fixed=True) 
-
+    ## fixed p
+    if fix_p:
+        theory.init.params['p'].update(value=p, fixed=True)
+    
     ## other parameters may need larger prior ranges
     for key in priors:
         theory.init.params[key].update(fixed=False, prior=priors[key])

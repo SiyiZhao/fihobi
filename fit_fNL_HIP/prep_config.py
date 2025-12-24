@@ -6,6 +6,8 @@ z = 3.0
 ## prior
 p_mean = 1.83
 p_sigma = 0.34
+fix_p = True
+p_fixed_value = 1.4
 ## data
 abacus_poles = '/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_base-A_v2/abacus_HF/DR2_v2.0/Abacus_pngbase_c302_ph000/Boxes/QSO/z3p000/MAP_QSO_pypower_poles.npy'
 ezmock_poles = '/pscratch/sd/s/siyizhao/EZmock/output/mocks/QSO-z6_c302_fnl300/'
@@ -22,17 +24,23 @@ configs = {
         'ezmock_poles': ezmock_poles,
     },
     'prior': {
-        'p': {
-            'dist': 'norm',
-            'loc': p_mean,
-            'scale': p_sigma,
-            'limits': [0, 4]
-        },
         'sigmas': {
             'limits': [0, 20.]
         }
     }
 }
+if fix_p:
+    print(f"Preparing config with fixed p = {p_fixed_value}") 
+    configs['fix_p'] = fix_p
+    configs['p_fixed_value'] = p_fixed_value
+else:
+    configs['prior']['p'] = {
+        'dist': 'norm',
+        'loc': p_mean,
+        'scale': p_sigma,
+        'limits': [0, 4]
+    }
+
 with open(path2config, 'w', encoding='utf-8') as f:
     yaml.safe_dump(configs, f, sort_keys=False, allow_unicode=True)
 print(f"Configuration written to {path2config}")
