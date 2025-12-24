@@ -1,13 +1,6 @@
 # Credit: https://github.com/ahnyu/hod-variation/blob/main/source/pocomc_helpers.py , modified for our use case
 
 import numpy as np
-import sys
-from pathlib import Path
-THIS_REPO = Path(__file__).parent.parent.parent
-src_dir = THIS_REPO / 'src'
-if src_dir not in sys.path:
-    sys.path.insert(0, str(src_dir))
-from abacus_helper import assign_hod, reset_fic, set_theory_density
 
 # Global variables to be set once per MPI process.
 GLOBAL_BALL = None           
@@ -94,8 +87,11 @@ def log_likelihood(free_params):
             mapping_idx = config["param_mapping"][tracer][param_name]
             if free_params[mapping_idx] > config["fit_params"][tracer][param_name][2] or free_params[mapping_idx] < config["fit_params"][tracer][param_name][1]:
                 return -np.inf
-            
-            assign_hod(ball, config["fit_params"], free_params)
+            if config["fit_params"][tracer][param_name][3] == 'log':
+                ball.tracers[tracer][param_name] = 10**free_params[mapping_idx]#.item()
+            else:
+                ball.tracers[tracer][param_name] = free_params[mapping_idx]#.item()
+    # assign_hod(ball, config["fit_params"], free_params)
                 
     for tracer in config["tracers"]:
         if tracer == 'LRG' and 10**ball.tracers[tracer]["logM_cut"]*ball.tracers[tracer]["kappa"]<1e12:
@@ -105,12 +101,23 @@ def log_likelihood(free_params):
             
     
     # Reset 'ic' and compute theoretical number density.
-    ball, ngal_dict, fsat_dict = reset_fic(ball, config["HOD_params"], GLOBAL_DATA_OBJ.density_mean, nthread=nthread)
+    for tracer in config["tracers"]:
+        ball.tracers[tracer]['ic'] = 1
+    ngal_dict, fsat_dict = ball.compute_ngal(Nthread=nthread)
+    # ngal_dict, fsat_dict = reset_fic(ball, config["tracers"], GLOBAL_DATA_OBJ.density_mean, nthread=nthread)
 
-    # Control the satellite fraction.
+    # Update 'ic' for non-ELG tracers.
     for tracer in config["tracers"]:
         if fsat_dict[tracer] > 0.6:
             return -np.inf
+        if tracer == 'LRG':
+            ngal = ngal_dict[tracer]
+            if ngal > GLOBAL_DATA_OBJ.density_mean[tracer] * box_volume:
+                ball.tracers[tracer]['ic'] = GLOBAL_DATA_OBJ.density_mean[tracer] * box_volume / ngal
+        else:
+            ngal = ngal_dict[tracer]
+            if ngal > 0.001 * box_volume:
+                ball.tracers[tracer]['ic'] = 0.001 * box_volume / ngal
             
     # Generate mock galaxy catalog.
     mock_dict = ball.run_hod(ball.tracers, ball.want_rsd, Nthread=nthread, verbose=False)
@@ -133,8 +140,16 @@ def log_likelihood(free_params):
 
     
     # Compute theoretical density for each tracer.
-    box_volume = ball.params['Lbox']**3
-    theory_density_dict = set_theory_density(ngal_dict, box_volume, GLOBAL_DATA_OBJ.density_mean, config["tracers"], nthread=nthread)
+    theory_density_dict = {}
+    
+    for tracer in config["tracers"]:
+        ngal = ngal_dict[tracer]
+        data_mean = GLOBAL_DATA_OBJ.density_mean[tracer]
+        if data_mean < ngal / box_volume:
+            theory_density_dict[tracer] = data_mean
+        else:
+            theory_density_dict[tracer] = ngal / box_volume
+    # theory_density_dict = set_theory_density(ngal_dict, box_volume, GLOBAL_DATA_OBJ.density_mean, config["tracers"], nthread=nthread)
 
     # Return total log-likelihood.
     return data_obj.compute_loglike(theory_clustering_dict, theory_density_dict)

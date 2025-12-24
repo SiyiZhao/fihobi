@@ -41,6 +41,7 @@ source /global/common/software/desi/desi_environment.sh
 export PYTHONPATH=$HOME/lib:$PYTHONPATH
 export LD_LIBRARY_PATH=$HOME/lib/MultiNest/lib:$LD_LIBRARY_PATH
 export OMP_NUM_THREADS={omp_num_threads}
+export MKL_NUM_THREADS={omp_num_threads}
 
 export THIS_REPO=$HOME/projects/fihobi/
 cd ${{THIS_REPO}}

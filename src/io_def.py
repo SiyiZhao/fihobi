@@ -67,7 +67,7 @@ def write_config(config, config_path):
     """
     try:
         with open(config_path, 'w') as f:
-            yaml.safe_dump(config, f)
+            yaml.safe_dump(config, f, sort_keys=False)
         print(f"[write] -> {config_path}")
     except Exception as e:
         raise RuntimeError(f"Error writing configuration file '{config_path}': {e}")

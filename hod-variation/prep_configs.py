@@ -95,8 +95,8 @@ def params_setting(tracer):
     elif tracer == 'QSO':
         params_labels = ["\log M_{\\text{cut}}","\log M_1","\sigma","\\alpha","\kappa", "\\alpha_{\\text{c}}","\log \\alpha_{\\text{s}}"]
         params_dict = {"names": ["logM_cut","logM1","sigma","alpha","kappa", "alpha_c","alpha_s"], 
-                            "lo": [11, 10, 0.0001, -1.0, 0.0, 0.0, -2], 
-                            "hi": [15, 18, 3.0, 3.0, 6.0, 3.0, 2.0],
+                            "lo": [11, 10, 0.0001, -1.0, 0.0, 0.0, -4], 
+                            "hi": [15, 18, 3.0, 3.0, 10.0, 3.0, 2.0],
                             "type": ["flat", "flat", "flat", "flat", "flat", "flat", "log"],
                             }
         if Assembly:
