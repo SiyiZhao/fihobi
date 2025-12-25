@@ -7,7 +7,7 @@ z = 3.0
 p_mean = 1.83
 p_sigma = 0.34
 fix_p = True
-p_fixed_value = 1.4
+p_fixed_value = 1.6
 ## data
 abacus_poles = '/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_base-A_v2/abacus_HF/DR2_v2.0/Abacus_pngbase_c302_ph000/Boxes/QSO/z3p000/MAP_QSO_pypower_poles.npy'
 ezmock_poles = '/pscratch/sd/s/siyizhao/EZmock/output/mocks/QSO-z6_c302_fnl300/'
