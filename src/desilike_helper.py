@@ -1,13 +1,24 @@
 import numpy as np
 import os
-from pypower import PowerSpectrumMultipoles
 from matplotlib import pyplot as plt
+import time, os, logging
 
 from desilike.theories.galaxy_clustering import FixedPowerSpectrumTemplate, PNGTracerPowerSpectrumMultipoles
 from desilike.observables.galaxy_clustering import TracerPowerSpectrumMultipolesObservable
 from desilike.likelihoods import ObservablesGaussianLikelihood
 from desilike.profilers import MinuitProfiler
 
+from io_def import path_to_catalog
+from thecov_helper import read_mock, power_spectrum, thecov_box
+
+logging.basicConfig(
+    level=logging.WARNING,
+    format='[%(process)d] %(asctime)s %(message)s',
+    datefmt='%H:%M:%S',
+    handlers=[
+        logging.StreamHandler()  # 可以改成 logging.FileHandler("log.txt") 写入文件
+    ]
+)
 
 def load_data(config):
     '''
@@ -25,6 +36,8 @@ def load_data(config):
     cov : list of pypower.PowerSpectrumMultipoles or paths to such files
         Covariance matrix estimated from EZmocks.
     '''
+    from pypower import PowerSpectrumMultipoles
+
     n_EZmocks = config.get('n_EZmocks', None)
     config_input = config['input']
     abacus_poles = config_input['abacus_poles']  # path to the power spectrum multipoles from AbacusHOD mock
@@ -167,3 +180,28 @@ def bestfit_p_inference(
         bestfit_dict[str(key)] = bestfit_value
     # best_p = bestfit_dict['p']
     return bestfit_dict
+
+def fit_p_from_mock_thecov(
+    i: int, 
+    boxV: float, 
+    theory_dict: dict, 
+    klim: dict,
+    sim_params: dict = None,
+    tracer: str = None,
+) -> dict:
+    """单个 mock 的计算，顶层方法，支持多进程"""
+    start = time.time()
+    pid = os.getpid()
+    logging.info(f"Mock {i+1} start (PID={pid})")
+
+    fname = path_to_catalog(sim_params=sim_params, tracer=tracer, prefix=f'r{i}')
+
+    pos, nbar = read_mock(fname, boxV=boxV)
+    data = power_spectrum(pos)
+    cov = thecov_box(pk_theory=data, nbar=nbar, volume=boxV, has_shotnoise_set=False)
+    theory = prepare_theory(z=theory_dict['zsnap'], cosmology=theory_dict['cosmology'], mode=theory_dict['mode'], fnl=theory_dict['fnl'], priors=theory_dict['priors'], fix_fNL=True)
+    bestfit_dict = bestfit_p_inference(theory=theory, data=data['P_0'], cov=cov, k=data['k'], klim=klim)
+
+    end = time.time()
+    logging.info(f"Mock {i+1} done (PID={pid}), elapsed {end - start:.3f}s")
+    return i, bestfit_dict

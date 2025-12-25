@@ -1,13 +1,15 @@
 import numpy as np
 import pandas as pd
-import time, os, logging
+import os
 from pathlib import Path
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from getdist import loadMCSamples, MCSamples, plots
+from matplotlib import pyplot as plt
 from io_def import (
     ensure_dir,
     load_config, 
     write_config,
+    plot_style,
     def_OBSample,
     write_script_to_file,
     path_to_ObsClus,
@@ -20,19 +22,9 @@ from io_def import (
     path_to_poles,
     path_to_hip,
 )    
-from desilike_helper import prepare_theory, bestfit_p_inference
-from thecov_helper import read_mock, power_spectrum, thecov_box
-
-logging.basicConfig(
-    level=logging.WARNING,
-    format='[%(process)d] %(asctime)s %(message)s',
-    datefmt='%H:%M:%S',
-    handlers=[
-        logging.StreamHandler()  # 可以改成 logging.FileHandler("log.txt") 写入文件
-    ]
-)
 
 THIS_REPO = Path(__file__).parent.parent
+plot_style()
 
 class HIPanOBSample:
     """
@@ -88,6 +80,7 @@ class HIPanOBSample:
             path = self.work_dir / "config.yaml"
         write_config(self.cfg, path)
     
+    ##### ----- observed 2PCF ----- #####
     def measure_clustering(
         self,
         verspec: str='loa-v1',
@@ -111,7 +104,8 @@ class HIPanOBSample:
         self.ObsClus = {'verspec': verspec, 'version': version, 'weight_type': weight_type, 'path_script': str(path_script), 'path2ObsClus': str(path2ObsClus)}
         self.cfg['ObsClus'] = self.ObsClus
         
-        
+
+    ##### ----- HOD fitting ----- #####    
     def prepare_HOD_fitting(
         self,
         data_dir: Path | None = None,
@@ -264,6 +258,7 @@ class HIPanOBSample:
         print("[guide] >>> Submit the script by `sbatch`, it will take several hours. If it's the first time to use this snapshot, remind to delet the `#` before `abacusnbody.hod.prepare_sim_profiles`.\n")
 
     
+    ##### ----- sample HOD parameters ----- #####
     def sample_HOD_params(
         self, 
         chain_root: str | None = None,
@@ -363,30 +358,109 @@ class HIPanOBSample:
                     poles.save(path2poles)
                     print(f"[write] pypower poles for sample {i} to {path2poles}")
     
-    def _fit_p_from_mock_thecov(
-        self, 
-        i: int, 
-        boxV: float, 
-        theory_dict: dict, 
-        klim: dict,
-    ) -> dict:
-        """单个 mock 的计算，顶层方法，支持多进程"""
-        start = time.time()
-        pid = os.getpid()
-        logging.info(f"Mock {i+1} start (PID={pid})")
-
-        fname = path_to_catalog(sim_params=self.cfgHOD['sim_params'], tracer=self.OBSample['tracer'], prefix=f'r{i}')
-
-        pos, nbar = read_mock(fname, boxV=boxV)
-        data = power_spectrum(pos)
-        cov = thecov_box(pk_theory=data, nbar=nbar, volume=boxV, has_shotnoise_set=False)
-        theory = prepare_theory(z=theory_dict['zsnap'], cosmology=theory_dict['cosmology'], mode=theory_dict['mode'], fnl=theory_dict['fnl'], priors=theory_dict['priors'], fix_fNL=True)
-        bestfit_dict = bestfit_p_inference(theory=theory, data=data['P_0'], cov=cov, k=data['k'], klim=klim)
-
-        end = time.time()
-        logging.info(f"Mock {i+1} done (PID={pid}), elapsed {end - start:.3f}s")
-        return i, bestfit_dict
     
+    def sample_HOD_measure_ps(
+        self,
+        MAP_only: bool = True,
+    ) -> None:
+        from thecov_helper import read_mock, power_spectrum
+        
+        tracer = self.OBSample['tracer']
+        sim_params = self.cfgHOD['sim_params']
+        boxL = 2000.0  # Mpc/h
+        boxV = boxL**3  # (Mpc/h)^3
+        fname = path_to_catalog(sim_params=sim_params, tracer=tracer, prefix='MAP')
+        path2poles = path_to_poles(sim_params=sim_params, tracer=tracer, prefix='MAP')
+        pos, nbar = read_mock(fname, boxV=boxV)
+        power_spectrum(pos, path2poles=path2poles)
+        print(f"[write] pypower poles for sample MAP to {path2poles}")
+        ### sampled HOD mocks
+        if not MAP_only:
+            num = self.HIP['num_samples']
+            for i in range(num):
+                fname = path_to_catalog(sim_params=sim_params, tracer=tracer, prefix=f'r{i}')
+                path2poles = path_to_poles(sim_params=sim_params, tracer=tracer, prefix=f'r{i}')
+                pos, nbar = read_mock(fname, boxV=boxV)
+                power_spectrum(pos, path2poles=path2poles)
+                print(f"[write] pypower poles for sample {i} to {path2poles}")
+        
+    def sample_HOD_plot_ps(
+        self,
+        dirEZmocks: Path | None = None,
+    ) -> None:
+        from load_poles import load_poles_data, load_sampled_HOD_mocks, load_EZmocks
+
+        tracer = self.OBSample['tracer']
+        num = self.HIP['num_samples']
+        print(f"Number of samples to plot: {num}\n")
+        base = 'MAP'
+        sim_params = self.cfgHOD['sim_params']
+        ### MAP
+        data = {
+            'MAP': {
+                'path': path_to_poles(sim_params=sim_params, tracer=tracer, prefix='MAP'),
+                'label': 'MAP', 
+                'color': 'black', 
+                'lstyle': '-',
+                'alpha': 1,
+            },
+        }
+        data, k_1st = load_poles_data(data)
+        ### sampled HOD mocks
+        data = load_sampled_HOD_mocks(data, k_1st=k_1st, num=num, sim_params=sim_params, tracer=tracer, cmap=self.HIP['cmap'])
+        ### EZmocks loading
+        if dirEZmocks is not None:
+            p0_ez, p0_ez_avg, p0_err = load_EZmocks(dirEZmocks, k_1st=k_1st)
+        
+        ### define base
+        if base in data.keys():
+            P0_base = data[base]['p0']
+        else:
+            raise ValueError(f"Unknown base: {base}")
+        
+        ### plot
+        fig, axs = plt.subplots(2,1,constrained_layout=True,sharex='col',figsize=(8,8),gridspec_kw={'height_ratios': [3, 1]})
+        # P0_base = p0_ez_avg if dirEZmocks is not None else P0_base # for test
+        if dirEZmocks is not None:
+            # top panel: EZmocks
+            p = p0_ez[0]
+            axs[0].plot(k_1st[1:], p[1:], color='gray', alpha=0.3, label='EZmock')
+            for p in p0_ez[1:]:
+                axs[0].plot(k_1st[1:], p[1:], color='gray', alpha=0.3)
+            axs[0].plot(k_1st[1:], p0_ez_avg[1:], color='gray', lw=2, label='EZmock average')
+            # bottom panel: EZmocks fractional errors
+            frac_ez = p0_ez_avg / P0_base - 1
+            frac_err = p0_err / P0_base 
+            axs[1].plot(k_1st[1:], frac_ez[1:], color='gray', lw=2)
+            axs[1].fill_between(k_1st[1:], - frac_err[1:], frac_err[1:], color='gray', alpha=0.5, label=r'EZmock $1\sigma$')    
+        # top panel: original spectra
+        for key in data.keys():
+            p0 = data[key]['p0']
+            axs[0].plot(k_1st[1:], p0[1:], label=data[key]['label'], color=data[key]['color'], linestyle=data[key]['lstyle'], alpha=data[key]['alpha'])
+        axs[0].set_xscale('log')
+        axs[0].set_yscale('log')
+        axs[0].set_ylabel(r'$P_0(k)$ [$(\mathrm{Mpc}/h)^{3}$]')
+        axs[0].legend()
+        # bottom panel: fractional errors (P_variant - P_base) / P_base
+        for key in data.keys():
+            p0 = data[key]['p0']
+            frac = p0 / P0_base - 1
+            axs[1].plot(k_1st[1:], frac[1:], color=data[key]['color'], linestyle=data[key]['lstyle'], alpha=data[key]['alpha'])
+        axs[1].set_xscale('log')
+        axs[1].set_xlabel(r'$k$ [$h/\mathrm{Mpc}$]')
+        axs[1].set_ylabel(r'$P^{\rm xx}/P^{\rm base}-1$')
+        ylim=0.3
+        axs[1].set_ylim(-ylim, ylim)
+        axs[1].legend()
+        plt.tight_layout()
+        fn = self.work_dir / f'mock_ps.png'
+        plt.savefig(fn, dpi=300)
+        print(f'[plot] -> {fn}')
+        ## refresh info
+        self.HIP['dirEZmocks'] = str(dirEZmocks)
+
+        
+    ##### ----- inference of p ----- #####
     def fit_p_from_mocks(
         self,
         priors: dict[str, dict[str, tuple[float, float]]] = dict(),
@@ -403,6 +477,7 @@ class HIPanOBSample:
         priors: dict of prior settings for each parameter, e.g., {'p': {'limits': (-1., 3.)}, 'sigmas': {'limits': (0., 20.)}}
         fnl: fixed fnl value to the simulation value
         """
+        from desilike_helper import fit_p_from_mock_thecov
         
         boxL = 2000.0  # Mpc/h
         boxV = boxL**3  # (Mpc/h)^3
@@ -425,12 +500,12 @@ class HIPanOBSample:
         results = []
         with ProcessPoolExecutor(max_workers=min(nproc, num)) as executor:
             futures = {
-                executor.submit(self._fit_p_from_mock_thecov, i, boxV, theory_dict, klim): i
+                executor.submit(fit_p_from_mock_thecov, i, boxV, theory_dict, klim, self.cfgHOD['sim_params'], self.OBSample['tracer']): i
                 for i in range(num)
             }
             for future in as_completed(futures):
                 results.append(future.result())
-        # results = self._fit_p_from_mock_thecov(0, boxV, theory, klim)
+        # results = fit_p_from_mock_thecov(0, boxV, theory_dict, klim, self.cfgHOD['sim_params'], self.OBSample['tracer'])  # test single
         # print('results:', results, flush=True)
         ## to DataFrame
         rows = []
@@ -453,3 +528,91 @@ class HIPanOBSample:
         self.HIP['priors'] = priors 
         return df_bestfit
         
+    def fit_p_chain(self) -> None:
+        """
+        Write a bash script to fit p from the HOD mocks.
+        """
+        from script_HIP import script_HIP
+        
+        tag = self.OBSample['tag']
+        script = script_HIP(num=self.HIP['num_samples'], WORK_DIR=self.work_dir)
+        path_script = self.work_dir / f"scripts/run_HIP_chain_{tag}.sh"
+        write_script_to_file(script, path_script)
+        print("[guide] >>> Run the script on an interactive node, it will take ~ half hours.\n")
+
+    def combine_chains(
+        self,
+        plot: bool = True,
+    ) -> dict:
+        """
+        Combine the individual fit p chains into one.
+        """
+        num = self.HIP['num_samples']
+        resample_number = 10000
+        ### path to chains
+        rows = []
+        for i in range(100):
+            ODIR = self.work_dir / "HIP" / "mocks" / f"r{i}"
+            fn_chain = os.path.realpath(ODIR / "chain_zeus")
+            rows.append({'i': i, 'fn_chain': str(fn_chain)})
+        data = pd.DataFrame(rows)
+        ### load and resample each chain
+        chain_all = []
+        for i in range(num):
+            chain = loadMCSamples(data['fn_chain'][i])
+            if i==0:
+                names = chain.getParamNames().names
+                labels = [p.label for p in chain.getParamNames().names]
+            weights = chain.weights
+            chain_length = len(weights)
+            if chain_length != np.sum(weights):
+                print(i, "Sum of weights != chain length")
+            ### resampling
+            if chain_length < resample_number:
+                print("Warning: chain length < ", resample_number, ", consider lower resample number!")
+            prob = weights / np.sum(weights)
+            counts = np.random.multinomial(resample_number, prob)
+            resampled_samples = np.repeat(chain.samples, counts, axis=0)
+            new_chain = MCSamples(samples=resampled_samples, names=[p.name for p in names])
+            chain_all.append(new_chain)
+        ### combine all chains 
+        samples_list = [c.samples for c in chain_all]
+        weights_list = [c.weights if c.weights is not None else np.ones(len(c.samples)) for c in chain_all]
+        samples_combined = np.vstack(samples_list)
+        weights_combined = np.hstack(weights_list)
+        gds_all = MCSamples(samples=samples_combined, names=[p.name for p in names], labels=labels, weights=weights_combined)
+        means = gds_all.getMeans()
+        cov = gds_all.getCovMat().matrix
+        errors = np.sqrt(np.diag(cov))
+        ### output
+        p_mean = means[0]
+        p_error = errors[0]
+        p_prior = {'loc': p_mean, 'scale': p_error}
+        if plot:
+            import matplotlib.colors as mcolors
+            
+            cmap = plt.get_cmap('hsv')
+            norm = mcolors.Normalize()
+            idx = np.arange(num)
+            colors = cmap(norm(idx))
+            g = plots.get_subplot_plotter()
+            g.settings.linewidth_contour = 2.0
+            g.settings.linewidth = 2.0
+            plot_num = 10
+            all_samples = chain_all[:plot_num] + [gds_all]
+            line_args_list = [{'color':colors[i], 'ls': '-', 'lw':1.0} for i in range(plot_num)] + [{'color':'black', 'ls': '-', 'lw':2.0}]
+            legend_labels = [f'Run {i}' for i in range(plot_num)] + ['Combined 100 chains (in equal weights)']
+            g = plots.get_subplot_plotter()
+            g.triangle_plot(all_samples,
+                            params=['p', 'b1', 'sn0', 'sigmas'],
+                            filled=False,
+                            legend_labels=legend_labels,
+                            legend_loc='upper right',
+                            contour_args=line_args_list.copy(),
+                            line_args=line_args_list.copy(),
+                            title_limit=1
+                        )
+            fn = str(self.work_dir / f'HIP_combined.png')
+            g.export(fn)
+            print(f"[plot] -> {fn}")
+        return p_prior

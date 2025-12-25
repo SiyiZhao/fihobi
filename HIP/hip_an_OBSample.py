@@ -1,7 +1,7 @@
 # source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main # for pycorr
 # ln -s /pscratch/sd/s/siyizhao/fihobi/HIP_test test
 
-import sys, os
+import sys, os, argparse
 from pathlib import Path
 THIS_REPO = Path(__file__).parent.parent
 src_path = os.path.abspath(os.path.join(THIS_REPO, 'src'))
@@ -9,13 +9,21 @@ sys.path.insert(0, src_path)
 print(f"Added {src_path} to sys.path\n")
 from HIPanOBSample import HIPanOBSample
 
-tracer = 'QSO'
-zmin = 0.8
-# zmin = 2.8
-zmax = 3.5
-WORK_DIR = THIS_REPO / "HIP/test" / f"{tracer}_{zmin}_{zmax}"
-# WORK_DIR = THIS_REPO / "HIP/work" / f"{tracer}_{zmin}_{zmax}"
-nthread = 64
+argparser = argparse.ArgumentParser(description="Analyze the HOD sampled mocks in the HIP framework.")
+argparser.add_argument('--tracer', type=str, default='QSO', help='Tracer type, e.g., QSO')
+argparser.add_argument('--zmin', type=float, default=2.8, help='Minimum redshift of the sample')
+argparser.add_argument('--zmax', type=float, default=3.5, help='Maximum redshift of the sample')
+argparser.add_argument('--work_dir', type=str, default=None, help='Working directory for the analysis')
+args = argparser.parse_args()
+
+tracer = args.tracer
+zmin = args.zmin
+zmax = args.zmax
+if args.work_dir is not None:
+    WORK_DIR = Path(args.work_dir)
+else:
+    WORK_DIR = THIS_REPO / "HIP/test" / f"{tracer}_{zmin}_{zmax}"
+print(f"Working directory: {WORK_DIR}\n")
 
 # ========== define the sample ==========
 
@@ -54,3 +62,4 @@ hip.fit_HOD(time_hms='08:00:00', ntasks=4)
 # ========== save configurations ==========
 
 hip.save_cfg()
+print("Done. Configuration saved.\n")

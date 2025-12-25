@@ -1,5 +1,4 @@
-# source /global/common/software/desi/desi_environment.sh 
-# for the numba version compatibility for AbacusHOD
+# source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main # for pycorr
 
 import sys, os, argparse
 from pathlib import Path
@@ -26,22 +25,24 @@ if args.work_dir is not None:
 else:
     WORK_DIR = THIS_REPO / "HIP/test" / f"{tracer}_{zmin}_{zmax}"
 print(f"Working directory: {WORK_DIR}\n")
-nthread = 64
 
 # ========== define the sample ==========
 
 # hip = HIPanOBSample(tracer=tracer, zmin=zmin, zmax=zmax, work_dir=WORK_DIR)
 hip = HIPanOBSample(cfg_file=WORK_DIR / "config.yaml")
 
-# ========== sample HOD parameters ==========
+# ========== plot sampled clusterings ==========
 
-if chain_root is None:
-    chain_root = hip.HODfit['path2chain'] + '/' + hip.HODfit['chain_prefix']
-print(f"Sampling HOD parameters from chain root: {chain_root}\n")
-samples = hip.sample_HOD_params(chain_root=chain_root, num=100, plot=True)
-hip.sample_HOD_mocks(params_list=samples, nthread=nthread, write_cat=True, want_2PCF=True, want_poles=False)
+hip.sample_HOD_measure_ps()
+# dirEZmocks = '/pscratch/sd/s/siyizhao/EZmock/output/mocks/QSO-z1_c302_fnl1200/'
+dirEZmocks = '/pscratch/sd/s/siyizhao/EZmock/output/mocks/QSO-z1_c302/'
+hip.sample_HOD_plot_ps(dirEZmocks=dirEZmocks)
 
-hip.fit_p_chain()
+# ========== summary results ==========
+
+results = hip.combine_chains()
+print("Combined HOD fitting results:")
+print(results)
 
 # ========== save configurations ==========
 

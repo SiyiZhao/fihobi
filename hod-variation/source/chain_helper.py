@@ -8,7 +8,6 @@ import numpy as np
 from getdist import loadMCSamples, plots
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-mpl.rc_file('fig/matplotlibrc')
 
 
 def load_chain_prefix(fn):
@@ -29,6 +28,8 @@ def bestfit_params(gdsamples):
     return max_logwt_sample
 
 def compare_chain(fn_all, labels=['chain1', 'chain2'], colors=['red', 'blue'], fn_out=None):
+    mpl.rc_file('fig/matplotlibrc')
+
     samples_all = []
     params = []
     param_limits = {}

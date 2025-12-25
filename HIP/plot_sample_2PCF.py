@@ -1,12 +1,12 @@
 # source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main # for pypower
-# python plot_sample_2PCF.py --WORKDIR test/QSO_2.8_3.5
+# python HIP/plot_sample_2PCF.py --WORKDIR test/QSO_2.8_3.5
 import argparse
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib as mpl
-mpl.rc_file('../fig/matplotlibrc')
+mpl.rc_file('fig/matplotlibrc')
 import os, sys
-sys.path.insert(0, '../src')
+sys.path.insert(0, 'src')
 from io_def import path_to_clustering, load_config
 from HIPanOBSample import HIPanOBSample
 
@@ -25,7 +25,7 @@ y1labels=[r'$\Delta w_{\rm p}/w_{\rm p}^{\rm obs}$',r'$\Delta \xi_{0}/\xi_{0}^{\
 xlabels=[r'$r_{\rm p}$',r'$s$',r'$s$']
 
 def load_data(tracer, zmin, zmax, version='v1.1'):
-    ddir=f'../data/for_hod/{version}_rp6s11/'
+    ddir=f'data/for_hod/{version}_rp6s11/'
     path=ddir+f'wp_{tracer}_{zmin}_{zmax}_cut.dat'
     data=np.loadtxt(path)
     wp=data[:,1]
