@@ -10,8 +10,8 @@ print(f"Added {src_path} to sys.path\n")
 from HIPanOBSample import HIPanOBSample
 
 tracer = 'QSO'
-# zmin = 0.8
-zmin = 2.8
+zmin = 0.8
+# zmin = 2.8
 zmax = 3.5
 WORK_DIR = THIS_REPO / "HIP/test" / f"{tracer}_{zmin}_{zmax}"
 # WORK_DIR = THIS_REPO / "HIP/work" / f"{tracer}_{zmin}_{zmax}"
@@ -43,7 +43,7 @@ prior = {
 }
 hip.config_HOD_fitting(prior=prior, version='v1')
 
-hip.fit_HOD(time_hms='08:00:00', ntasks=8)
+hip.fit_HOD(time_hms='08:00:00', ntasks=4)
 
 # # ========== sample HOD parameters ==========
 
