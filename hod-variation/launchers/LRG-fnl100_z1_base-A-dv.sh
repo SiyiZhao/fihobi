@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=QSO-fnl100_z6_base-A-dv
+#SBATCH --job-name=LRG-fnl100_z1_base-A-dv
 #SBATCH --output=/global/homes/s/siyizhao/projects/fihobi/hod-variation/logs/%x_%j.log
 #SBATCH --error=/global/homes/s/siyizhao/projects/fihobi/hod-variation/logs/%x_%j.err
 #SBATCH --qos=regular
@@ -17,9 +17,9 @@ source /global/common/software/desi/desi_environment.sh
 export PYTHONPATH=$PYTHONPATH:$HOME/lib
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/lib/MultiNest/lib
 export OMP_NUM_THREADS=64
-outdir=/pscratch/sd/s/siyizhao/desi-dr2-hod/loa-v2_HODv1/QSO-fnl100/z6_base-A-dv/
+outdir=/pscratch/sd/s/siyizhao/desi-dr2-hod/loa-v2_HODv1/LRG-fnl100/z1_base-A-dv/
 mkdir -p $outdir
-config=configs/QSO-fnl100/z6_base-A-dv.yaml
+config=configs/LRG-fnl100/z1_base-A-dv.yaml
 cd /global/homes/s/siyizhao/projects/fihobi/hod-variation
 
 # srun -n 1 -c 64 --cpu-bind=cores python -m abacusnbody.hod.prepare_sim_profiles --path2config $config

@@ -13,7 +13,7 @@ __all__ = ["z_to_tag", "def_OBSample",
     "write_catalogs", "read_catalog"]
 
 def z_to_tag(z):
-        return f"{float(z):.3f}".replace('.', 'p')
+    return f"{float(z):.3f}".replace('.', 'p')
 
 def def_OBSample(tracer: str, zmin: float, zmax: float)->dict:
     def tag_OBSample(tracer, zmin, zmax):

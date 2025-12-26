@@ -288,7 +288,7 @@ def generate_slurm_launcher(
     config_path: str,
     chain_path: str,
     *,
-    version: str = "v2",
+    version: str = "v1",
     job_name: str | None = None,
     logs_dir: str | None = None,   # defaults to workdir/logs if None
     account: str = "desi",
