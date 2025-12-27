@@ -33,7 +33,7 @@ prepare_sim:
   Nparallel_load: 18
 sim_params:
   cleaned_halos: true
-  output_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/loa-v2_HODv1/mocks_base-A-dv/
+  output_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/loa-v2_HODv2/mocks_base-A-dv/
   sim_dir: /global/cfs/projectdirs/desi/cosmosim/Abacus/
   sim_name: Abacus_pngbase_c302_ph000
   subsample_dir: /pscratch/sd/s/siyizhao/AbacusSummit/subsample_desidr2_profile_withAB/
@@ -50,8 +50,8 @@ data_params:
   tracer_density_std:
     QSO: 3.052e-06
 chain_params:
-  chain_prefix: chain_v1_
-  output_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/loa-v2_HODv1/QSO-fnl100/z1_base-A-dv/
+  chain_prefix: chain_v2_
+  output_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/loa-v2_HODv2/QSO-fnl100/z1_base-A-dv/
   nlive: 500
   tol: 0.5
   labels:
@@ -73,17 +73,17 @@ fit_params:
     - flat
     logM1:
     - 1
-    - 10.0
-    - 18.0
+    - 5.0
+    - 20.0
     - flat
     sigma:
     - 2
-    - 0.0001
-    - 3.0
-    - flat
+    - -5.0
+    - 1.0
+    - log
     alpha:
     - 3
-    - -1.0
+    - -2.0
     - 3.0
     - flat
     kappa:
@@ -93,14 +93,14 @@ fit_params:
     - flat
     alpha_c:
     - 5
-    - 0.0
-    - 3.0
-    - flat
+    - -4.0
+    - 1.0
+    - log
     alpha_s:
     - 6
-    - 0.0
-    - 10.0
-    - flat
+    - -4.0
+    - 1.0
+    - log
     Acent:
     - 7
     - -10.0
@@ -108,6 +108,6 @@ fit_params:
     - flat
     Asat:
     - 8
-    - -15.0
-    - 15.0
+    - -20.0
+    - 20.0
     - flat

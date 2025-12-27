@@ -32,7 +32,7 @@ _DEFAULT_HOD = {
     "want_dv": True,
     "Assembly": True,
     "BiasENV": False,
-    "version": 'v1'
+    "version": 'v2'
 }
 
 parser = argparse.ArgumentParser(description=__doc__)
@@ -91,9 +91,9 @@ def params_setting(tracer):
     if tracer == 'LRG':
         params_labels = ["\log M_{\\text{cut}}","\log M_1","\log \sigma","\\alpha","\kappa", "\\alpha_{\\text{c}}","\\alpha_{\\text{s}}"]
         params_dict = {"names": ["logM_cut","logM1","sigma","alpha","kappa", "alpha_c","alpha_s"], 
-                            "lo": [11, 10, -4, -1.0, 0.0, 0.0, 0.0], 
-                            "hi": [15, 18, 0, 3.0, 6.0, 3.0, 3.0],
-                            "type": ["flat", "flat", "log", "flat", "flat", "flat", "flat"],
+                            "lo": [11, 10, -4, -1.0, 0.0, -4.0, -4.0], 
+                            "hi": [15, 18, 0, 3.0, 6.0, 1.0, 1.0],
+                            "type": ["flat", "flat", "log", "flat", "flat", "log", "log"],
                             }
         if Assembly:
             params_labels += ["A_{\\text{cent}}", "A_{\\text{sat}}"]
@@ -110,15 +110,15 @@ def params_setting(tracer):
     elif tracer == 'QSO':
         params_labels = ["\log M_{\\text{cut}}","\log M_1","\sigma","\\alpha","\kappa", "\\alpha_{\\text{c}}","\\alpha_{\\text{s}}"]
         params_dict = {"names": ["logM_cut","logM1","sigma","alpha","kappa", "alpha_c","alpha_s"], 
-                            "lo": [11, 10, 0.0001, -1.0, 0.0, 0.0, 0.0], 
-                            "hi": [15, 18, 3.0, 3.0, 10.0, 3.0, 10.0],
-                            "type": ["flat", "flat", "flat", "flat", "flat", "flat", "flat"],
+                            "lo": [11, 5, -5, -2.0, 0.0, -4.0, -4.0], 
+                            "hi": [15, 20, 1.0, 3.0, 10.0, 1.0, 1.0],
+                            "type": ["flat", "flat", "log", "flat", "flat", "log", "log"],
                             }
         if Assembly:
             params_labels += ["A_{\\text{cent}}", "A_{\\text{sat}}"]
             params_dict["names"] += ["Acent", "Asat"]
-            params_dict["lo"] += [-10.0, -15.0]
-            params_dict["hi"] += [10.0, 15.0]
+            params_dict["lo"] += [-10.0, -20.0]
+            params_dict["hi"] += [10.0, 20.0]
             params_dict["type"] += ["flat", "flat"]
         if BiasENV:
             params_labels += ["B_{\\text{cent}}", "B_{\\text{sat}}"]
