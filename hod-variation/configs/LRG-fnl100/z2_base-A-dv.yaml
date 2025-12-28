@@ -60,8 +60,8 @@ chain_params:
   - \log \sigma
   - \alpha
   - \kappa
-  - \alpha_{\text{c}}
-  - \alpha_{\text{s}}
+  - \log \alpha_{\text{c}}
+  - \log \alpha_{\text{s}}
   - A_{\text{cent}}
   - A_{\text{sat}}
 fit_params:

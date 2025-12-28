@@ -89,7 +89,7 @@ z_mock_all = {
 def params_setting(tracer):
     ''' return parameter settings for a given tracer.'''
     if tracer == 'LRG':
-        params_labels = ["\log M_{\\text{cut}}","\log M_1","\log \sigma","\\alpha","\kappa", "\\alpha_{\\text{c}}","\\alpha_{\\text{s}}"]
+        params_labels = ["\log M_{\\text{cut}}","\log M_1","\log \sigma","\\alpha","\kappa", "\log \\alpha_{\\text{c}}", "\log \\alpha_{\\text{s}}"]
         params_dict = {"names": ["logM_cut","logM1","sigma","alpha","kappa", "alpha_c","alpha_s"], 
                             "lo": [11, 10, -4, -1.0, 0.0, -4.0, -4.0], 
                             "hi": [15, 18, 0, 3.0, 6.0, 1.0, 1.0],
