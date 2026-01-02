@@ -1,0 +1,116 @@
+\usepackage[width=170mm, margin=1in]{geometry} % set the page layout
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amsfonts}% to get the \mathbb alphabet
+\usepackage{physics}
+\usepackage{xcolor}
+\usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
+\usepackage{orcidlink}
+\usepackage{mdframed}
+\usepackage{natbib}
+\bibliographystyle{mnras}
+\usepackage{tikz}
+\usepackage{enumitem}
+%%%%%% math %%%%%%
+\newcommand{\C}{\field{C}}
+\newcommand{\R}{\field{R}}
+\newcommand{\Z}{\field{Z}}
+\newcommand{\diracd}{\delta^{\rm D}}
+\newcommand{\diracdelta}[1]{\delta^{\rm D}_{#1}}
+\newcommand{\assprime}[1]{{\left\langle#1\right\rangle}^\prime}
+\newcommand{\cyc}[1]{#1\,\text{cyc.}}
+\newcommand{\FT}{\quad \xrightarrow{\mathrm{FT}} \quad }
+%%%%%%%%% constants %%%%%%%%%
+\newcommand{\ii}{\mathrm{i}}
+\newcommand{\ee}{\mathrm{e}}
+\newcommand{\kB}{k_{\mathrm{B}}} % Boltzmann constant
+%%%%%%%%% cosmology %%%%%%%%%
+\newcommand{\zeff}{z_{\mathrm{eff}}} % effective redshift
+%%%%%%%%% vectors %%%%%%%%%
+\newcommand{\vk}{\vb*{k}}
+\newcommand{\vx}{\vb*{x}}
+\newcommand{\vs}{\vb*{s}}
+\newcommand{\vvr}{\mathbf{r}}
+\newcommand{\vE}{\mathbf{E}}
+\newcommand{\field}[1]{\mathbb{#1}}
+%%%%%%%%% alphabet %%%%%%%%%
+\newcommand{\Dcal}{\mathcal{D}}
+\newcommand{\Ecal}{\mathcal{E}}
+\newcommand{\Hcal}{\mathcal{H}}
+\newcommand{\Kcal}{\mathcal{K}}
+\newcommand{\kcal}{\mathcal{k}}
+\newcommand{\Lcal}{\mathcal{L}}
+\newcommand{\Ucal}{\mathcal{U}}
+\newcommand{\ucal}{\mathcal{u}}
+\newcommand{\Vcal}{\mathcal{V}}
+%%%%%%%%% reference %%%%%%%%%
+\newcommand{\refeq}[1]{Eq.~\ref{eq:#1}}
+\newcommand{\refsec}[1]{Sec.~\ref{sec:#1}}
+\newcommand{\reffig}[1]{Fig.~\ref{fig:#1}}
+%%%%%%%%% notations %%%%%%%%%
+\newcommand{\highlight}[1]{\colorbox{yellow!50}{#1}}
+\newcommand{\attention}{\highlight{Pay attention:}}
+\newcommand{\widelyuse}{\highlight{widely used}}
+\definecolor{lightgray}{gray}{0.9}
+\newcommand{\smallsection}[1]{\par\noindent\colorbox{lightgray}{\textbf{#1}}}
+\newcommand{\concept}[1]{\textit{#1}}
+\newcommand{\core}[1]{\textbf{\emph{#1}}}
+\newcommand{\linkout}[1]{\textcolor{green}{#1}}
+\newcommand{\QQQ}[1]{\textcolor{green}{\textbf{Q:} #1}}
+\newcommand{\comment}[1]{\colorbox{green!50}{#1}}
+%%%%%%%%% env: supplement %%%%%%%%%
+\newmdenv[backgroundcolor=gray!20,shadow=true,shadowsize=6pt,roundcorner=10pt]{supplement}
+%%%%%%%%% env: important %%%%%%%%%
+\newmdenv[backgroundcolor=yellow!20,hidealllines=true]{important}
+%%%%%%%%% env: todo %%%%%%%%%
+\newmdenv[backgroundcolor=blue!12,hidealllines=true]{mytodo}
+
+\swapnumbers % 将编号放在题目前
+
+%%%%%%% env: remark %%%%%%%
+\newtheorem*{remark}{Remark}
+\let\oldremark\remark
+\renewenvironment{remark}
+  {\oldremark\normalfont}
+  {}
+%%%%%%% modify the Remark env %%%%%%%
+%%%%%%% env: theorem %%%%%%%
+\newtheorem*{theorem}{Theorem}
+\let\oldtheorem\theorem
+\renewenvironment{theorem}
+  {\oldtheorem\normalfont}
+  {}
+%%%%%%% modify the Theorem env %%%%%%%
+\theoremstyle{definition} 
+\newcommand{\nameddefname}{}
+\newtheorem{innercustomdef}{\nameddefname} 
+\newenvironment{nameddef}[1]
+  {\renewcommand{\nameddefname}{#1}\innercustomdef}
+  {\endinnercustomdef}
+
+  \theoremstyle{plain}
+\newcommand{\namedthmname}{}
+\newtheorem{innercustomthm}[innercustomdef]{\namedthmname} 
+\newenvironment{namedthm}[1]
+  {\renewcommand{\namedthmname}{#1}\innercustomthm}
+  {\endinnercustomthm}
+
+\newenvironment{question}
+  {
+    \begin{quote} % 环境开始时的格式
+    \textbf{Q:} % 可选的标题或格式
+  }
+  {
+    \end{quote} % 环境结束时的格式
+  }
+
+\newenvironment{answer}
+  {
+    \begin{quote} 
+    \textbf{A:} 
+  }
+  {
+    \end{quote} 
+  }
+
+\numberwithin{innercustomdef}{section}

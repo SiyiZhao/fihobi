@@ -1,0 +1,139 @@
+\documentclass{article}
+\input{macros_en.tex}
+\title{HOD informed prior of PNG bias}
+\author{Siyi Zhao}
+\date{}
+
+\begin{document}    
+\maketitle
+\tableofcontents
+
+\section{Introduction}
+
+
+\section{Mocks and their Power Spectra}
+
+
+\subsection{HOD model}
+
+\subsubsection{velocity bias}
+
+\begin{equation}
+    v_{\text {cent, } \mathrm{z}}=v_{\mathrm{L} 2, \mathrm{z}}+\alpha_{\mathrm{c}} \delta v\left(\sigma_{\mathrm{LoS}}\right)
+\end{equation}
+
+\subsubsection{Secondary properties: concentration}
+
+\subsubsection{Secondary properties: environment}
+
+
+\subsection{HOD fittings}
+
+\begin{table}[t]
+\centering
+\caption{Priors used for LRG and QSO HOD fits. We use broad Gaussian priors on all parameters. We also quote the bounds we impose in addition to the Gaussian priors. Units of mass are in $h^{-1}M_\odot$.}
+\label{tab:priors}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+ & \multicolumn{2}{c|}{LRG (w dv)} & \multicolumn{2}{c|}{QSO (w/ dv)} \\
+\hline
+Params & Prior & Bounds & Prior & Bounds \\
+\hline
+$\log M_{\rm cut}$ & flat & $[11,\,15]$ & $\mathcal{N}(12.7,\,1.0)$ & $[11.2,\,14.0]$ \\
+\hline
+$\log M_1$ & flat & $[10,\,18]$ & $\mathcal{N}(15.0,\,1.0)$ & $[12.0,\,16.0]$ \\
+\hline
+$\sigma$ & log & $[0.0001,\,1]$ & $\mathcal{N}(0.5,\,0.5)$ & $[0.0,\,3.0]$ \\
+\hline
+$\alpha$ & flat & $[-1,\,3]$ & $\mathcal{N}(1.0,\,0.5)$ & $[0.3,\,2.0]$ \\
+\hline
+$\kappa$ & flat & $[0,\,6]$ & $\mathcal{N}(0.5,\,0.5)$ & $[0.3,\,3.0]$ \\
+\hline
+$\alpha_c$ & log & $[0.0001,\,10]$ & $\mathcal{N}(1.5,\,1.0)$ & $[0.0,\,2.0]$ \\
+\hline
+$\alpha_s$ & log & $[0.0001,\,10]$ & $\mathcal{N}(0.2,\,1.0)$ & $[0.0,\,2.0]$ \\
+\hline
+\end{tabular}
+\end{table}
+
+
+
+\subsection{lightcone mocks based on HOD}
+
+
+
+\subsection{Measuring the power spectrum from the mocks}
+
+Following~\cite{chaussidon2024desipng}, we estimate the power spectrum multipoles using the Yamamoto estimator. 
+The multipoles of the power spectrum are estimated as
+\begin{equation} \label{eq:yamamoto}
+    \hat{P}_\ell(k_\mu) = \frac{2\ell +1}{A V_{k_\mu}} \int_{V_{k_\mu}} \dd{\vk} \int \dd{\vx_1} \int \dd{\vx_2} e^{\ii \vk \cdot (\vx_2 - \vx_1)} {\cal F}(\vx_1) {\cal F}(\vx_2) \Lcal_\ell(\hat{\vk}\cdot\hat{\vx}_1) - {\cal N}_\ell \,,
+\end{equation}
+where ${\cal F}(\vx)$ is the FKP weight field estimated from the data and the random catalogues.
+The normalization factor $A$ is given by
+\begin{equation}
+    A = \int \dd{\vx} \bar{n}_{\rm g}^2(\vx) \,,
+\end{equation}
+and the shot noise term is removed with 
+\begin{equation}
+    {\cal N}_\ell = \frac{\delta_{\ell 0}}{A} \int \dd{\vx} \bar{n}_{\rm g}(\vx) w^2(\vx) \Lcal_\ell(\hat{\vk}\cdot\hat{\vx}) \,.
+\end{equation}
+
+By introducing 
+\begin{equation}
+    F_\ell(\vk) = \int \dd{\vx} e^{\ii \vk \cdot \vx} {\cal F}(\vx) \Lcal_\ell(\hat{\vk}\cdot\hat{\vx}) \,,
+\end{equation}
+\refeq{yamamoto} reduces to
+\begin{equation}
+    \hat{P}_\ell(k_\mu) = \frac{2\ell +1}{A V_{k_\mu}} \int_{V_{k_\mu}} \dd{\vk} F_0(\vk) F_\ell(-\vk) - {\cal N}_\ell \,.
+\end{equation}
+
+\section{Inference}
+
+\subsection{The PNG Model in desilike}
+
+We perform the inference with desilike.
+
+The model is as follows,
+the power spectrum of biased tracers is
+\begin{equation}
+    P(k,z) = {\qty(b_1(z)+f_{\rm NL}^{\rm loc}\frac{b_{\Phi}(z)}{T_{\Phi\to\delta}(k,z)})}^2 P_{\rm lin}(k,z) \,,
+\end{equation}
+where $b_1$ is the linear bias, $b_\Phi$ is the PNG bias, $P_{\rm lin}$ is the linear matter power spectrum, and $T_{\Phi\to\delta}$ is the transfer function from the primordial gravitational potential field $\Phi$ to matter overdensity $\delta$ and can be computed from CLASS by
+\begin{equation}
+    T_{\Phi\to\delta}(k,z) \equiv \sqrt{\frac{P_{\rm lin}(k,z)}{P_{\Phi}(k)}} \qquad {\rm with} \quad P_{\Phi}(k)=\frac{9}{25}\frac{2\pi^2}{k^3} A_s{\qty(\frac{k}{k_{\rm pivot}})}^{n_s-1} \,,
+\end{equation}
+where $P_{\Phi}$ is the primordial potential (normalised to $3/5{\cal R}$ to match the usual definition [TBD]) power spectrum, $n_s$ is the spectral index and $A_s$ is the amplitude of initial power spectrum at $k_{\rm pivot}=0.05 {~\rm Mpc}^{-1}$[ToBeCheck].
+
+[ToBeCheck]There are also an usually used equation show the relation between $T_{\Phi\to\delta}(k,z)$ and the matter transfer function $T_m(k,z)$,
+\begin{equation}
+    T_{\Phi\to\delta}(k,z) = \frac{2}{3\Omega_m}\frac{k^2}{H_0^2}(1+z)T_m(k,z) \,.
+\end{equation}
+
+
+The full model should include RSD effect, we adopt a simpler model including the Kaiser effect and a damping factor for small scales as 
+\begin{equation}
+    P(k,\mu)=\frac{{\qty(b_1(\zeff) + f_{\rm NL}^{\rm loc}\frac{b_\Phi(\zeff)}{T_{\Phi\to\delta}(k,\zeff)} + f(\zeff)\mu^2)}^2 }{{\qty[1 + \frac{1}{2}{\qty(k\mu\Sigma_s)}^2]}^2 } P_{\rm lin}(k,\zeff) + s_{\rm n,0}\,.
+\end{equation}
+This is the model used in desilike, an example of the usage can be found in \url{https://github.com/cosmodesi/desilike/blob/hmc/nb/png_examples.ipynb}
+$f$ is the linear growth rate.
+$\Sigma_s$ is the amount of damping at small scales. 
+$s_{\rm n,0}$ is a potential residual shot noise which should be close to $0$ as we always remove the shot noise contribution from our power spectrum measurements.
+
+Finally, the power spectrum is expanded in Legendre multipoles as
+\begin{equation}
+    P_\ell(k) = \frac{2\ell +1}{2} \int_{-1}^{1} \dd{\mu} P(k,\mu) \Lcal_\ell(\mu) \,.
+\end{equation}
+We consider the monopole ($\ell=0$) and quadrupole ($\ell=2$) in our analysis. Since the statistical error on the hexadecapole ($\ell=4$) is too big in large scales, we do not include it in the inference.
+
+For the PNG bias $b_\Phi$, a usual relation is 
+\begin{equation}
+    b_\Phi(z) = 2\delta_c(b_1(z) - p) \,,
+\end{equation}
+where $\delta_c=1.686$ is the critical overdensity for spherical collapse, and $p$ quantifies the merger history of the tracer. We study the redshift evolution of $p$ in [TBD].
+
+
+
+\bibliography{fihobi.bib}
+
+\end{document}
