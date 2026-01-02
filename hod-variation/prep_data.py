@@ -22,11 +22,11 @@ if source_dir not in sys.path:
     sys.path.insert(0, source_dir)
 from loading_helpers import readwp, readxi02, get_combined_jkcov, cov2corr, nz_comb, compute_zeff
 
-# version, output and x bins ---------------------------------------------------
+# data_version, output and x bins ---------------------------------------------------
 
-# version='v1.1'  # loa-v1 v1.1
-version='v2'  # loa-v1 v2
-outdir=f'../data/for_hod/{version}_rp6s11/'
+# data_version='v1.1'  # loa-v1 v1.1
+data_version='v2'  # loa-v1 v2
+outdir=f'../data/for_hod/{data_version}_rp6s11/'
 
 ## rp/s bin midpoints saved to data files
 rpbins=np.geomspace(0.01,100,25)
@@ -43,10 +43,10 @@ idx_max_s  = 21
 ### Data -----------------------------------------------------------------------
 
 ## arocher's meas
-y3rppidir=f'/global/cfs/cdirs/desi/users/arocher/Y3/loa-v1/{version}/PIP/cosmo_0/rppi/'
-y3smudir=f'/global/cfs/cdirs/desi/users/arocher/Y3/loa-v1/{version}/PIP/cosmo_0/smu/'
-y3nzdir=f'/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/{version}/PIP/'
-y3catdir=f'/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y3/LSS/loa-v1/LSScats/{version}/PIP/'
+y3rppidir=f'/global/cfs/cdirs/desi/users/arocher/Y3/loa-v1/{data_version}/PIP/cosmo_0/rppi/'
+y3smudir=f'/global/cfs/cdirs/desi/users/arocher/Y3/loa-v1/{data_version}/PIP/cosmo_0/smu/'
+y3nzdir=f'/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/{data_version}/PIP/'
+y3catdir=f'/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y3/LSS/loa-v1/LSScats/{data_version}/PIP/'
 zbins = {
     'LRG': {'z1': (0.4, 0.6), 'z2': (0.6, 0.8), 'z3': (0.8, 1.1)},
     'QSO': {'z1': (0.8, 1.1), 'z2': (1.1, 1.4), 'z3': (1.4, 1.7)},
@@ -114,7 +114,7 @@ def load_nz(tracer):
         nz_data[tag]=nz_comb(nz_NGC,nz_SGC,z_idx)
     return nz_data
 
-def show_zeff(tracer, version='v1.1'):
+def show_zeff(tracer, data_version='v1.1'):
     ''' measure zeff for a given tracer 
     tracer: 'LRG', 'QSO', 'highz-QSO'
     '''
@@ -122,12 +122,12 @@ def show_zeff(tracer, version='v1.1'):
     if tracer == 'highz-QSO':
         tracer = 'QSO'  # folder name uses 'QSO' for highz-QSO
     zeff_data = {}
-    if version=='v1.1':
+    if data_version=='v1.1':
         for tag, (zmin, zmax) in t_zbins.items():
             zeff = compute_zeff(y3catdir+f'{tracer}_clustering.dat.fits',zrange=[zmin, zmax])
             zeff_data[tag] = zeff
             print(tag, zmin,'-', zmax, 'zeff:', zeff)
-    elif version=='v2':
+    elif data_version=='v2':
         for tag, (zmin, zmax) in t_zbins.items():
             zeff_NGC = compute_zeff(y3catdir+f'{tracer}_NGC_clustering.dat.fits',zrange=[zmin, zmax])
             zeff_SGC = compute_zeff(y3catdir+f'{tracer}_SGC_clustering.dat.fits',zrange=[zmin, zmax])
@@ -144,18 +144,18 @@ if __name__ == "__main__":
     
     if tracer=='highz-QSO':
         ## hanyu's meas
-        if version=='v1.1':
+        if data_version=='v1.1':
             y3rppidir='/pscratch/sd/h/hanyuz/measurements_smallscale/rppi/'
             y3smudir='/pscratch/sd/h/hanyuz/measurements_smallscale/smu/'
         ## my meas
-        elif version=='v2':
+        elif data_version=='v2':
             y3rppidir=f'/global/cfs/cdirs/desi/users/siyizhao/Y3/loa-v1/v2/PIP/rppi/'
             y3smudir=f'/global/cfs/cdirs/desi/users/siyizhao/Y3/loa-v1/v2/PIP/smu/'
 
     ## save clustering data: wp, xi02, cov 
     save_data(tracer, y3rppidir=y3rppidir, y3smudir=y3smudir)
     ## print zmin, zmax, zeff of the z-bins 
-    zeff = show_zeff(tracer, version=version) 
+    zeff = show_zeff(tracer, data_version=data_version) 
     ## load n(z) of the z-bins
     nz = load_nz(tracer)
     print(nz)

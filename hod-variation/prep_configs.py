@@ -23,16 +23,16 @@ from config_helpers import generate_config, fit_params_overrides, merge_override
 src_dir = os.path.join(file_dir,"..","src")
 if src_dir not in sys.path:
     sys.path.insert(0, src_dir)
-from io_def import load_config, prefix_HOD
+from io_def import ensure_dir, load_config, prefix_HOD
 
 ### settings -------------------------------------------------------------------
-_DEFAULT_FNL = 30
+_DEFAULT_FNL = 100
 _DEFAULT_HOD = {
     "prefix": 'base',
-    "want_dv": False,
+    "want_dv": True,
     "Assembly": True,
     "BiasENV": False,
-    "version": 'v2'
+    "version": 'v1'
 }
 
 parser = argparse.ArgumentParser(description=__doc__)
@@ -64,10 +64,11 @@ Assembly = HOD.get("Assembly", False)
 BiasENV = HOD.get("BiasENV", False)
 want_dv = HOD.get("want_dv", False)
 
-version = HOD.get("version", "v2_logpr")
+version = HOD.get("version", "v1")
 chain_prefix = f'chain_{version}_' # p6s11, larger prior
 clusdir=HOD.get("data_dir", "/global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/")
-fitdir=HOD.get("fit_dir", "/pscratch/sd/s/siyizhao/desi-dr2-hod/")
+fitdir=HOD.get("fit_dir", f"/pscratch/sd/s/siyizhao/desi-dr2-hod/loa-v2_HOD{version}/")
+ensure_dir(fitdir)
 
 ### Info: different redshift bins ----------------------------------------------
 zbins = {
@@ -107,11 +108,11 @@ def params_setting(tracer):
             params_dict["hi"] += [20.0, 25.0]
             params_dict["type"] += ["flat", "flat"]
     elif tracer == 'QSO':
-        params_labels = ["\log M_{\\text{cut}}","\log M_1","\sigma","\\alpha","\kappa", "\\alpha_{\\text{c}}","\log \\alpha_{\\text{s}}"]
+        params_labels = ["\log M_{\\text{cut}}","\log M_1","\sigma","\\alpha","\kappa", "\\alpha_{\\text{c}}","\\alpha_{\\text{s}}"]
         params_dict = {"names": ["logM_cut","logM1","sigma","alpha","kappa", "alpha_c","alpha_s"], 
-                            "lo": [11, 10, 0.0001, -1.0, 0.0, 0.0, -4], 
-                            "hi": [15, 18, 3.0, 3.0, 10.0, 3.0, 2.0],
-                            "type": ["flat", "flat", "flat", "flat", "flat", "flat", "log"],
+                            "lo": [11, 10, 0.0001, -1.0, 0.0, 0.0, 0.0], 
+                            "hi": [15, 18, 3.0, 3.0, 10.0, 3.0, 10.0],
+                            "type": ["flat", "flat", "flat", "flat", "flat", "flat", "flat"],
                             }
         if Assembly:
             params_labels += ["A_{\\text{cent}}", "A_{\\text{sat}}"]
@@ -143,7 +144,7 @@ def generate_config_files(tracer):
         config_path = config_dir+f"{tag}_{hod_model}.yaml" #relative config file path
         tweaks = {
             "sim_params.sim_name": sim_name, 
-            "sim_params.output_dir": fitdir+f"mocks_{hod_model}_v2/",
+            "sim_params.output_dir": fitdir+f"mocks_{hod_model}/",
             "HOD_params.want_dv": want_dv,
             "clustering_params.bin_params.logmin": -1.0, # change binning
             "clustering_params.bin_params.nbins": 15,
@@ -180,7 +181,7 @@ def generate_config_files(tracer):
 
 def generate_slurm_files(tracer):
     ''' generate slurm files for all redshift bins of a given tracer.
-    default version: v2
+    default version: v1
     '''
     t_zbins = zbins[tracer]
     for tag, (zmin, zmax) in t_zbins.items():

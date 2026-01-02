@@ -1,6 +1,6 @@
 # Redshift Uncertainty 
 
-We consider the redshift uncertainty in some of the QSO HOD fittings.
+We consider the redshift uncertainty in some of the HOD fittings.
 
 Following Jiaxi & Shengyu's work, we generate the probability cumulative distribution function (CDF) of the redshift uncertainty $\log_{10}|dv|$ (in km/s) from the repeat observation data.
 
