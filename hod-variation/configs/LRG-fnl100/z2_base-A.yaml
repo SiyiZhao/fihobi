@@ -18,7 +18,7 @@ HOD_params:
   want_AB: true
   want_rsd: true
   want_dv: false
-  dv_draw_L: /global/homes/s/siyizhao/projects/fihobi/data/dv_draws/LRG_z0.8-1.1_CDF.npz
+  dv_draw_L: /global/homes/s/siyizhao/projects/fihobi/data/dv_draws/LRG_z0.6-0.8_CDF.npz
   write_to_disk: false
 clustering_params:
   bin_params:
@@ -31,13 +31,13 @@ clustering_params:
 data_params:
   tracer_combos:
     LRG_LRG:
-      path2cov: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/cov_LRG_0.8_1.1_cut.dat
-      path2wp: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/wp_LRG_0.8_1.1_cut.dat
-      path2xi02: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/xi02_LRG_0.8_1.1_cut.dat
+      path2cov: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/cov_LRG_0.6_0.8_cut.dat
+      path2wp: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/wp_LRG_0.6_0.8_cut.dat
+      path2xi02: /global/homes/s/siyizhao/projects/fihobi/data/for_hod/v2_rp6s11/xi02_LRG_0.6_0.8_cut.dat
   tracer_density_mean:
-    LRG: 0.0002834
+    LRG: 0.0005247
   tracer_density_std:
-    LRG: 2.8340000000000003e-05
+    LRG: 5.2470000000000004e-05
 nthread: 64
 prepare_sim:
   Nparallel_load: 18
@@ -47,11 +47,11 @@ sim_params:
   sim_dir: /global/cfs/projectdirs/desi/cosmosim/Abacus/
   sim_name: Abacus_pngbase_c302_ph000
   subsample_dir: /pscratch/sd/s/siyizhao/AbacusSummit/subsample_desidr2_profile_withAB/
-  z_mock: 0.95
+  z_mock: 0.725
   force_mt: true
 chain_params:
   chain_prefix: chain_v3_
-  output_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/loa-v2_HODv3/LRG-fnl100/z3_base-A/
+  output_dir: /pscratch/sd/s/siyizhao/desi-dr2-hod/loa-v2_HODv3/LRG-fnl100/z2_base-A/
   nlive: 500
   tol: 0.5
   labels:

@@ -29,11 +29,13 @@ from io_def import ensure_dir, load_config, prefix_HOD
 _DEFAULT_FNL = 100
 _DEFAULT_HOD = {
     "prefix": 'base',
-    "want_dv": True,
+    "want_dv": False,
     "Assembly": True,
     "BiasENV": False,
-    "version": 'v2'
+    "version": 'v3'
 }
+_DEFAULT_TIME_HMS = "12:00:00"
+_DEFAULT_NTASKS = 8
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--config", type=str, default=None, help="Configuration YAML file")
@@ -89,11 +91,11 @@ z_mock_all = {
 def params_setting(tracer):
     ''' return parameter settings for a given tracer.'''
     if tracer == 'LRG':
-        params_labels = ["\log M_{\\text{cut}}","\log M_1","\log \sigma","\\alpha","\kappa", "\log \\alpha_{\\text{c}}", "\log \\alpha_{\\text{s}}"]
+        params_labels = ["\log M_{\\text{cut}}","\log M_1","\log \sigma","\\alpha","\kappa", "\\alpha_{\\text{c}}", "\\alpha_{\\text{s}}"]
         params_dict = {"names": ["logM_cut","logM1","sigma","alpha","kappa", "alpha_c","alpha_s"], 
-                            "lo": [11, 10, -4, -1.0, 0.0, -4.0, -4.0], 
-                            "hi": [15, 18, 0, 3.0, 6.0, 1.0, 1.0],
-                            "type": ["flat", "flat", "log", "flat", "flat", "log", "log"],
+                            "lo": [11, 10, -4, -1.0, 0.0, 0.0, 0.0], 
+                            "hi": [15, 18, 0, 3.0, 6.0, 3.0, 3.0],
+                            "type": ["flat", "flat", "log", "flat", "flat", "flat", "flat"],
                             }
         if Assembly:
             params_labels += ["A_{\\text{cent}}", "A_{\\text{sat}}"]
@@ -189,7 +191,8 @@ def generate_slurm_files(tracer):
         chain_path = fitdir+f"{tracer}-{sim_model}/{tag}_{hod_model}/"
         config_path = f"configs/{tracer}-{sim_model}/{tag}_{hod_model}.yaml" #relative config file path
         launcher_path = f"launchers/{tracer}-{sim_model}_{tag}_{hod_model}.sh" #relative launcher file path
-        generate_slurm_launcher(time_hms="8:00:00",
+        generate_slurm_launcher(time_hms=_DEFAULT_TIME_HMS,
+                                ntasks=_DEFAULT_NTASKS,
                                 config_path=config_path, 
                                 chain_path=chain_path,
                                 job_name=f"{tracer}-{sim_model}_{tag}_{hod_model}",  #job name

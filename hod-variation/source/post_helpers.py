@@ -94,7 +94,7 @@ def plot_all(data_obj,tracer,clustering,idxwp=np.arange(3,21), idxxi=np.arange(8
             x=rp_wp
         else:
             x=s_xi
-        axs[0,i].errorbar(x,x*obs[ctype],yerr=x*err_obs[ctype],marker='o',ls='',color='black',label='loa-v1.1')
+        axs[0,i].errorbar(x,x*obs[ctype],yerr=x*err_obs[ctype],marker='o',ls='',color='black',label='loa-v2')
         label_the='Best fit' if labels is None else labels[0]
         axs[0,i].plot(x,x*the[ctype],color='black',label=label_the)
         axs[1,i].plot(x,(the[ctype]-obs[ctype])/obs[ctype],color='black')
