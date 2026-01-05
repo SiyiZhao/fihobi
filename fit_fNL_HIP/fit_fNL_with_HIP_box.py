@@ -1,5 +1,10 @@
 """
-HIP.fit_fNL_with_HIPp_box: run desilike analysis to fit fNL using HIP of p for a box mock.
+HIP.fit_fNL_with_HIP_box: run desilike analysis to fit fNL for a box mock.
+- theory: default model is 'b-p'
+- prior of p: using HIP of p (default), or fixed p
+- covariance: path to EZmocks poles, or thecov box covariance
+- output: chain, triangle plot and power spectrum plot
+
 Author: Siyi Zhao
 """
 
@@ -34,6 +39,9 @@ klim0 = config.get('klim0', [0.003, 0.1])  # k range for monopole fitting
 fix_p = config.get('fix_p', False)
 p_fixed_value = config.get('p_fixed_value', 1.0)
 
+### enable thecov box covariance, default is EZmocks
+cov_mode = config.get('cov_mode', 'EZmocks')  # 'EZmocks' or 'thecov_box'
+
 ## define output ---------------------------------------------------------------
 ensure_dir(odir)
 fn_triangle = odir+'/triangle.png'
@@ -48,23 +56,26 @@ ells = [0]
 
 data, cov = load_data(config)
 
-## PNG likelihood
+## PNG likelihood --------------------------------------------------------------
 print('Setting up likelihood ...')
 priors = config.get('prior', {})
 theory = prepare_theory(z=z, mode=mode, priors=priors, fix_fNL=False, fix_p=fix_p, p=p_fixed_value)
 
-## status of all parameters
+## status of all parameters 
 for key in theory.params:
     print(key, theory.params[key].value, theory.params[key].fixed, theory.params[key].derived, theory.params[key].prior, theory.params[key].ref)
 
-observable = TracerPowerSpectrumMultipolesObservable(data=data, covariance=cov, ells=ells, klim={0: klim0}, theory=theory)
+if cov_mode == 'EZmocks':
+    observable = TracerPowerSpectrumMultipolesObservable(data=data, covariance=cov, ells=ells, klim={0: klim0}, theory=theory)
+elif cov_mode == 'thecov_box':
+    observable = TracerPowerSpectrumMultipolesObservable(data=data['P_0'], covariance=cov, ells=ells, k=data['k'], klim={0: klim0}, theory=theory)
 
 likelihood = ObservablesGaussianLikelihood(observables=[observable])
 
 likelihood()  # just to initialize
 
 
-## sampling
+## sampling --------------------------------------------------------------------
 print('Minuit Profiler...')
 # Seed used to decide on starting point
 profiler = MinuitProfiler(likelihood, seed=42)
@@ -81,17 +92,17 @@ chain.write_getdist(chain_fn)
 print(chain.to_stats(tablefmt='pretty'))
 
 
-## bestfit
+## bestfit from Minuit Profiler ------------------------------------------------
 bestfit_dict = {}
 for key in theory.all_params:
     bestfit_value = profiles.bestfit.choice(input=True)[str(key)].value
     theory.init.params[key].update(value=bestfit_value)
     bestfit_dict[str(key)] = bestfit_value
 
-## plot triangle
+## plot triangle ---------------------------------------------------------------
 plotting.plot_triangle(chain, markers={'fnl_loc': bestfit_dict['fnl_loc'], 'p': bestfit_dict['p'], 'b1': bestfit_dict['b1'], 'sn0': bestfit_dict['sn0'], 'sigmas': bestfit_dict['sigmas']}, fn=fn_triangle)
 
-## plot power spectrum
+## plot power spectrum ---------------------------------------------------------
 prediction = theory(fnl_loc=bestfit_dict['fnl_loc'], p=bestfit_dict['p'], b1=bestfit_dict['b1'], sn0=bestfit_dict['sn0'], sigmas=bestfit_dict['sigmas'])
 plot_observable(observable, prediction, scaling='kpk', fn=fn_ps)
 
