@@ -4,8 +4,8 @@ path2config=sys.argv[1]
 odir=sys.argv[2]
 z = 3.0
 ## prior
-p_mean = 1.91
-p_sigma = 0.36
+p_mean = 1.83
+p_sigma = 0.34
 fix_p = False
 p_fixed_value = 1.6
 ## data
