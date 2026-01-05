@@ -5,7 +5,7 @@ cd ${THIS_REPO}
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 
-odir=fit_fNL_HIP/works/QSO_box_z3_base-A_MAP_thecov
+odir=fit_fNL_HIP/works/QSO_box_z3_base-A_ph001_thecov
 mkdir -p ${odir}
 config=${odir}/config.yaml
 
