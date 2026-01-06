@@ -17,3 +17,5 @@ Here we describe the works done with the codes in this directory.
 13. `QSO_box_z3_base-A_c300_thecov`: test our $p$-prior $p=1.91\pm 0.36$ on $f_{\rm NL}=30$ simulation `c300_ph000` MAP AbacusHOD mock. The results $f_{\rm NL}=39^{+9.9}_{-14}$ are consistent with the true value $f_{\rm NL}=30$ ($\sim 0.64\sigma$ biased).
 14. `QSO_box_z3_base-A_c300_thecov_fixp1.6`: same as work 13, but fix $p=1.6$. The results $f_{\rm NL}=33.9^{+9.1}_{-8.0}$ are consistent with the true value $f_{\rm NL}=30$ ($\sim 0.48\sigma$ biased).
 15. `QSO_box_z3_base-A_c300_thecov_fixp1.4`: same as work 13, but fix $p=1.4$. The results $f_{\rm NL}=31.2^{+7.8}_{-8.3}$ are consistent with the true value $f_{\rm NL}=30$ ($\sim 0.14\sigma$ biased).
+16. `QSO_box_z3_base-A_ph001_thecov_fixp1.4`: same as work 11, but fix $p=1.4$. The results $f_{\rm NL}=77^{+11}_{-12}$ are $\sim 2\sigma$ lower than the true value $f_{\rm NL}=100$.
+17. `QSO_box_z3_base-A_ph001_thecov_fixp1.6`: same as work 11, but fix $p=1.6$. The results $f_{\rm NL}=83^{+12}_{-13}$ are $\sim 1.4\sigma$ lower than the true value $f_{\rm NL}=100$.
