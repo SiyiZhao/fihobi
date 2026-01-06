@@ -6,8 +6,8 @@ z = 3.0
 ## prior
 p_mean = 1.91
 p_sigma = 0.36
-fix_p = False
-p_fixed_value = 1.6
+fix_p = True
+p_fixed_value = 1.4
 ## data
 # cov_mode = 'EZmocks'
 cov_mode = 'thecov_box'

@@ -99,10 +99,10 @@ for key in theory.all_params:
     theory.init.params[key].update(value=bestfit_value)
     bestfit_dict[str(key)] = bestfit_value
 
-## plot triangle ---------------------------------------------------------------
-plotting.plot_triangle(chain, markers={'fnl_loc': bestfit_dict['fnl_loc'], 'p': bestfit_dict['p'], 'b1': bestfit_dict['b1'], 'sn0': bestfit_dict['sn0'], 'sigmas': bestfit_dict['sigmas']}, fn=fn_triangle)
-
 ## plot power spectrum ---------------------------------------------------------
 prediction = theory(fnl_loc=bestfit_dict['fnl_loc'], p=bestfit_dict['p'], b1=bestfit_dict['b1'], sn0=bestfit_dict['sn0'], sigmas=bestfit_dict['sigmas'])
 plot_observable(observable, prediction, scaling='kpk', fn=fn_ps)
+
+## plot triangle ---------------------------------------------------------------
+plotting.plot_triangle(chain, markers={'fnl_loc': bestfit_dict['fnl_loc'], 'p': bestfit_dict['p'], 'b1': bestfit_dict['b1'], 'sn0': bestfit_dict['sn0'], 'sigmas': bestfit_dict['sigmas']}, fn=fn_triangle)
 
