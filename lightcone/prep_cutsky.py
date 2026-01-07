@@ -110,15 +110,25 @@ OUTPUT         = ['{lc_out_path}']
     return conf_content
 
 if __name__ == "__main__":
-    import os
-    catalog_path = '/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_base-A_v2/abacus_HF/DR2_v2.0/Abacus_pngbase_c302_ph000/Boxes/QSO/z3p000/abacus_HF_QSO_3p000_DR2_v2.0_Abacus_pngbase_c302_ph000_MAP_realspace_clustering.dat.h5'
-    boxsize = 2000.0  # Mpc/h
-    WORKDIR = 'works/test_prep_cutsky'
+    import argparse, os
+    
+    parser = argparse.ArgumentParser(description="Prepare cutsky configuration and input catalog.")
+    parser.add_argument('--catalog_path', type=str, required=True, help='Path to the input catalog file.')
+    parser.add_argument('--boxsize', type=float, default=2000.0, help='Size of the simulation box in Mpc/h.')
+    parser.add_argument('--workdir', type=str, default='works/test_prep_cutsky', help='Working directory to save outputs.')
+    parser.add_argument('--galactic_cap', type=str, choices=['N', 'S'], default='N', help="Galactic cap to use ('N' or 'S').")
+    parser.add_argument('--nz_path', type=str, default='/global/homes/s/siyizhao/projects/fihobi/data/nz/QSO_NGC_nz_v2.txt', help='Path to the n(z) file.')
+    parser.add_argument('--zmin', type=float, default=2.8, help='Minimum redshift.')
+    parser.add_argument('--zmax', type=float, default=3.5, help='Maximum redshift.')
+    args = parser.parse_args()
+    catalog_path = args.catalog_path
+    boxsize = args.boxsize
+    WORKDIR = args.workdir
     os.makedirs(WORKDIR, exist_ok=True)
-    galactic_cap = 'N'  # 'N' or 'S'
-    nz_path = '/global/homes/s/siyizhao/projects/fihobi/data/nz/QSO_NGC_nz_v2.txt'
-    zmin = 2.8
-    zmax = 3.5
+    galactic_cap = args.galactic_cap  # 'N' or 'S'
+    nz_path = args.nz_path
+    zmin = args.zmin
+    zmax = args.zmax
     box_path = WORKDIR + f'/box_{galactic_cap}_{zmin}_{zmax}.dat'
     lc_path = WORKDIR + f'/cutsky_{galactic_cap}_{zmin}_{zmax}.dat'
     write_to = WORKDIR + f'/cutsky_{galactic_cap}_{zmin}_{zmax}.conf'

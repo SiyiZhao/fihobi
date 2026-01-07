@@ -4,15 +4,22 @@ We use cutsky to generate the lightcone.
 
 ## Workflow
 
-Assuming working in the `lightcone/` directory:
-1. run `prep_nz.py` to prepare the target n(z) file. (After modify the path in the script as needed.)
-2. change the parameters in `prep_cutsky.py` as needed, including the input catalog path, workdir, galactic cap, n(z) file path, redshift range, etc.
-3. run `prep_cutsky.py` to prepare the cutsky configuration file and the input catalog in the required format.
+Assuming working in the `lightcone/` directory.
+
+### 1. Prepare the target n(z) file
+
+Run `prep_nz.py` to prepare the target n(z) file. (After modify the path in the script as needed.)
+
+### 2. Prepare and run `cutsky`
+
+Please refer to `run_cutsky.sh`, you can **either** set the parameters there and directly run the script, **or** follow the following steps:
+1. set the input parameters to `prep_cutsky.py` as needed, including the input catalog path, workdir, galactic cap, n(z) file path, redshift range, etc.
+2. run `prep_cutsky.py` to prepare the cutsky configuration file and the input catalog in the required format.
 ```sh
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main # for mockfactory
 python prep_cutsky.py
 ```
-4. run cutsky following the output instruction printed by `prep_cutsky.py`.
+3. run cutsky following the output instruction printed by `prep_cutsky.py`.
 
 ## Notes about `cutsky` Usage
 
