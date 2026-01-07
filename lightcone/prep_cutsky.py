@@ -111,7 +111,7 @@ OUTPUT         = ['{lc_out_path}']
 
 if __name__ == "__main__":
     import os
-    catalog_path = '/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_base-A_v2/abacus_HF/DR2_v2.0/Abacus_pngbase_c302_ph000/Boxes/QSO/z3p000/abacus_HF_QSO_3p000_DR2_v2.0_Abacus_pngbase_c302_ph000_MAP_clustering.dat.h5'
+    catalog_path = '/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_base-A_v2/abacus_HF/DR2_v2.0/Abacus_pngbase_c302_ph000/Boxes/QSO/z3p000/abacus_HF_QSO_3p000_DR2_v2.0_Abacus_pngbase_c302_ph000_MAP_realspace_clustering.dat.h5'
     boxsize = 2000.0  # Mpc/h
     WORKDIR = 'works/test_prep_cutsky'
     os.makedirs(WORKDIR, exist_ok=True)
