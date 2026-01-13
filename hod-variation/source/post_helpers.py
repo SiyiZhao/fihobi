@@ -98,7 +98,7 @@ def plot_all(data_obj,tracer,clustering,idxwp=np.arange(3,21), idxxi=np.arange(8
         label_the='Best fit' if labels is None else labels[0]
         axs[0,i].plot(x,x*the[ctype],color='black',label=label_the)
         axs[1,i].plot(x,(the[ctype]-obs[ctype])/obs[ctype],color='black')
-        axs[1,i].fill_between(x,(-err_obs[ctype])/obs[ctype],(err_obs[ctype])/obs[ctype],color='lightgray')
+        axs[1,i].fill_between(x,(-err_obs[ctype])/obs[ctype],(err_obs[ctype])/obs[ctype],color='gray')
         if clustering_other is not None:
             for j,d in enumerate(the_others):
                 axs[0,i].plot(x,x*d[ctype],lw=1.5,color=colors[(j+1)%len(colors)],label=labels[j+1] if i==1 else None)
