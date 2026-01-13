@@ -26,7 +26,7 @@ python HIP/hip_an_HODchain.py --work_dir ${WORK_DIR} --chain_root ${chain_root} 
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main # for pypower
 # python HIP/plot_sample_2PCF.py --WORKDIR ${WORK_DIR}
-python HIP/hip_an_OBS_summary.py --work_dir ${WORK_DIR}
+python HIP/hip_an_OBS_summary.py --work_dir ${WORK_DIR} > ${WORK_DIR}/logs/hip_anOBS_summary.log 2>&1
 
 echo "All Done. \n"
 

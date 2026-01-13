@@ -20,7 +20,7 @@ from thecov_helper import read_mock, power_spectrum, thecov_box
 from desilike_helper import prepare_theory, plot_observable
 
 WORK_DIR = Path(sys.argv[1])
-i = sys.argv[2] 
+prefix = sys.argv[2] 
 
 print(f"Working directory: {WORK_DIR}\n")
 
@@ -32,9 +32,9 @@ priors = {
 }
 
 
-fname = path_to_catalog(sim_params=hip.cfgHOD['sim_params'], tracer=hip.OBSample['tracer'], prefix=f'r{i}')
-path2poles = path_to_poles(sim_params=hip.cfgHOD['sim_params'], tracer=hip.OBSample['tracer'], prefix=f'r{i}')
-ODIR = WORK_DIR / "HIP" / "mocks" / f"r{i}"
+fname = path_to_catalog(sim_params=hip.cfgHOD['sim_params'], tracer=hip.OBSample['tracer'], prefix=prefix)
+path2poles = path_to_poles(sim_params=hip.cfgHOD['sim_params'], tracer=hip.OBSample['tracer'], prefix=prefix)
+ODIR = WORK_DIR / "HIP" / "mocks" / prefix
 ensure_dir(ODIR)
 fn_chain = ODIR / "chain_zeus"
 fn_ps = ODIR / "power_spectrum.png"
