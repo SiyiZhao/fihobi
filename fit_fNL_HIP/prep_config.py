@@ -6,7 +6,7 @@ z = 3.0
 ## prior
 p_mean = 1.91
 p_sigma = 0.36
-fix_p = True
+fix_p = False
 p_fixed_value = 1.6
 ## data
 # cov_mode = 'EZmocks'
@@ -17,7 +17,7 @@ ezmock_poles = '/pscratch/sd/s/siyizhao/EZmock/output/mocks/QSO-z6_c302_fnl300/'
 n_EZmocks = 1000
 ## data: thecov
 box_volume = 2000.0**3  # (Mpc/h)^3
-abacus_catalog = '/pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_base-A_v2/abacus_HF/DR2_v2.0/Abacus_pngbase_c302_ph001/Boxes/QSO/z3p000/abacus_HF_QSO_3p000_DR2_v2.0_Abacus_pngbase_c302_ph001_MAP_clustering.dat.h5'
+abacus_catalog = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/Boxes/QSO/abacus_HF_QSO_3p000_DR2_v1.0_AbacusSummit_base_c000_ph000_clustering.dat.fits'
 
 configs = {
     'odir': odir,
