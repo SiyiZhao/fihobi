@@ -21,6 +21,20 @@ python prep_cutsky.py
 ```
 3. run cutsky following the output instruction printed by `prep_cutsky.py`.
 
+### 3. Prepare Random catalog
+
+Run `random_box.py` after modifying the parameters in the script as needed:
+- Lbox: box size in Mpc/h, should be able to cover the lightcone range.
+- number: 10 times the number density of galaxies in the lightcone catalog. 
+    - eg. for our LRGs, the number density is $\lesssim 6\times10^{-4}$ (Mpc/h)$^{-3}$, so the random density should be $\lesssim 6\times 10^{-3}$ (Mpc/h)$^{-3}$, times the box volume $6000^3$ (Mpc/h)$^3$, the total number of randoms should be $\lesssim 1.3\times 10^{9}$. We used 2.3e9 randoms for LRGs.
+        - For 2Gpc/h box, it's 4.8e6, and we have 4155184 -> 1077723, 4194074 -> 1679597, 2269763 -> 1896222 for NGC, and 4155184 -> 553684, 4194074 -> 858725, 2269763 -> 967334 for SGC, in total 10619021 -> 4653542 for NGC and -> 2379743 for SGC. ~ 2e7 -> 7e6 objects in total.
+    - eg. for our QSOs, the number density is $\lesssim 4\times10^{-5}$ (Mpc/h)$^{-3}$, so the random density should be $\lesssim 4\times 10^{-4} \times 6000^3 \sim 9\times 10^{7}$.
+- random seed should be different for different galactic caps and tracers.
+
+### 4. Cutsky Random
+
+Run `genLCrandom.sh` after modifying the parameters in the script as needed: output directory, input random catalog path, redshift range, etc.
+
 ## Notes about `cutsky` Usage
 
 Tips: 

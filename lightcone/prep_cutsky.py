@@ -12,7 +12,6 @@ Author: Siyi Zhao
 """
 from pathlib import Path
 import numpy as np
-from mockfactory import Catalog
 
 __all__ = [
     "prep_cat_in_ASCII_format",
@@ -31,6 +30,8 @@ def prep_cat_in_ASCII_format(
         output_path (str): Path to save the formatted ASCII catalog.
         boxsize (float | None, optional): Size of the simulation box in Mpc/h. If provided, apply periodic wrapping. Defaults to None.
     """
+    from mockfactory import Catalog
+
     cat=Catalog.read(input_path)
     x = cat['X']
     y = cat['Y']
@@ -115,6 +116,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Prepare cutsky configuration and input catalog.")
     parser.add_argument('--catalog_path', type=str, required=True, help='Path to the input catalog file.')
     parser.add_argument('--boxsize', type=float, default=2000.0, help='Size of the simulation box in Mpc/h.')
+    parser.add_argument('--rewrite_cat', action='store_true', help='Whether to rewrite the input catalog in ASCII format.')
     parser.add_argument('--workdir', type=str, default='works/test_prep_cutsky', help='Working directory to save outputs.')
     parser.add_argument('--galactic_cap', type=str, choices=['N', 'S'], default='N', help="Galactic cap to use ('N' or 'S').")
     parser.add_argument('--nz_path', type=str, default='/global/homes/s/siyizhao/projects/fihobi/data/nz/QSO_NGC_nz_v2.txt', help='Path to the n(z) file.')
@@ -129,16 +131,19 @@ if __name__ == "__main__":
     nz_path = args.nz_path
     zmin = args.zmin
     zmax = args.zmax
-    box_path = WORKDIR + f'/box_{galactic_cap}_{zmin}_{zmax}.dat'
+    box_path = WORKDIR + f'/box_{zmin}_{zmax}.dat'
     lc_path = WORKDIR + f'/cutsky_{galactic_cap}_{zmin}_{zmax}.dat'
     write_to = WORKDIR + f'/cutsky_{galactic_cap}_{zmin}_{zmax}.conf'
 
-    prep_cat_in_ASCII_format(
-        input_path=catalog_path,
-        output_path=box_path,
-        boxsize=boxsize,
-    )
-    
+    if args.rewrite_cat:
+        prep_cat_in_ASCII_format(
+            input_path=catalog_path,
+            output_path=box_path,
+            boxsize=boxsize,
+        )
+    else:
+        box_path = catalog_path  # use the original catalog path
+        
     write_cutsky_cfg(
         box_path=box_path,
         boxsize=boxsize,
