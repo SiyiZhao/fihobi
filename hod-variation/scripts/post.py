@@ -85,8 +85,12 @@ def main(config):
     print("Save bestfit clustering to:", path2cluster)
 
     
-    # ## generate mock in real space
-    # mock_bf_r,clustering_bf_r=compute_mock_and_multipole(ball_profiles, nthread=nthread, want_rsd=False, out=True, verbose=True)
+    ## generate mock in real space
+    mock_bf_r,clustering_bf_r=compute_mock_and_multipole(ball_profiles, nthread=nthread, want_rsd=False, out=False, verbose=True)
+    write_catalogs(ball_profiles, mock_bf_r, fit_params, out_root=out_root, prefix=f'MAP_realspace')
+    path2cluster_r  = path_to_clustering(sim_params, tracer=tracer, prefix='MAP_realspace')
+    np.save(path2cluster_r, clustering_bf_r)
+    print("Save bestfit mock in real-space's clustering to:", path2cluster_r)
     # if ball_profiles.want_dv==False:
     #     ## generate mock with dv
     #     mock_bf_dv,clustering_bf_dv=compute_mock_and_multipole(ball_profiles, nthread=nthread, want_rsd=True, want_dv=True, out=True, verbose=True)
