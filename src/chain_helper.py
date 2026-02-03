@@ -2,11 +2,8 @@ import numpy as np
 import os
 from getdist import loadMCSamples, plots
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-mpl.rc_file('../fig/matplotlibrc')
-# current_dir = os.path.dirname(os.path.abspath(__file__))
-# mplrc_path = os.path.join(current_dir, "matplotlibrc")
-# mpl.rc_file(mplrc_path)
+from io_def import plot_style
+plot_style()
 
 class chain:
     '''
@@ -27,7 +24,9 @@ class chain:
         
         if not os.path.exists(self.outdir):
             raise FileNotFoundError(f"The dir {self.outdir} does not exist, please prepare the chain first!")
-
+        gdsamples = loadMCSamples(self.outdir+self.filename)   
+        self.gdsamples = gdsamples
+        
     def read_pmn(self):
         '''
         read the chain from pymultinest.
@@ -56,8 +55,15 @@ class chain:
         '''
         return the best fit parameters.
         '''
-        best_fit = self.chain[np.argmax(self.chain[:,0])]
-        return best_fit[2:]  # exclude weight and -loglike
+        # best_fit = self.chain[np.argmax(self.chain[:,0])]
+        # return best_fit[2:]  # exclude weight and -loglike
+        ## max weight
+        samples, weights = self.gdsamples.samples, self.gdsamples.weights
+        max_weight_idx = np.argmax(weights)
+        max_logwt_sample = samples[max_weight_idx]
+        print('MAP:', max_logwt_sample)
+        return max_logwt_sample  
+
     
     def derive_new_params(self, derive_func, new_para, new_para_label=None, filename='/derived_'):
         '''
@@ -90,9 +96,9 @@ class chain:
         
     def plot_result(self, plot_path=None):
         'plot the result.'
-        samples = loadMCSamples(self.outdir+self.filename, settings={'ignore_rows':0.01})     
+          
         g = plots.get_subplot_plotter()
-        g.triangle_plot(samples, filled=True, title_limit=1)
+        g.triangle_plot(self.gdsamples, filled=True, title_limit=1)
         if plot_path is not None:
             plt.savefig(plot_path)
             print(f"plot saved to {plot_path}")
