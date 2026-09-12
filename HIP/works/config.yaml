@@ -1,0 +1,27 @@
+OBSample:
+  tracer: QSO
+  zmin: 0.8
+  zmax: 3.5
+  tag: QSO_z0p800_3p500
+  zeff:
+    NGC: 1.655295361038166
+    SGC: 1.653944767494234
+  nbar: 2.053931473870837e-05
+  zsnap: 1.625
+work_dir: /global/u1/s/siyizhao/projects/fihobi/HIP/test/QSO_0.8_3.5
+ObsClus:
+  verspec: loa-v1
+  version: v2
+  weight_type: pip_angular_bitwise
+  path_script: /global/u1/s/siyizhao/projects/fihobi/HIP/test/QSO_0.8_3.5/scripts/clustering_QSO_z0p800_3p500.sh
+  path2ObsClus: /global/cfs/cdirs/desicollab/users/siyizhao/Y3/loa-v1/v2/PIP
+HODfit:
+  path2data4HOD:
+    path2cov: /global/u1/s/siyizhao/projects/fihobi/data/HOD_fitting/loa-v1/v2/PIP/cov_QSO_0.8_3.5_cut.dat
+    path2wp: /global/u1/s/siyizhao/projects/fihobi/data/HOD_fitting/loa-v1/v2/PIP/wp_QSO_0.8_3.5_cut.dat
+    path2xi02: /global/u1/s/siyizhao/projects/fihobi/data/HOD_fitting/loa-v1/v2/PIP/xi02_QSO_0.8_3.5_cut.dat
+  path2cfgHOD: /global/u1/s/siyizhao/projects/fihobi/HIP/test/QSO_0.8_3.5/scripts/cfgHOD.yaml
+  path2chain: /pscratch/sd/s/siyizhao/fihobi/HIP_test/QSO_0.8_3.5/HOD_chains
+  chain_prefix: chain_v2_HOD_v1_
+  path2mock: /pscratch/sd/s/siyizhao/fihobi/HIP_test/QSO_0.8_3.5/mocks
+  version: v1

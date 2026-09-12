@@ -1,0 +1,10 @@
+odir: /pscratch/sd/s/siyizhao/EZmock/output/mocks/QSO-z4_c000
+
+redshift: 2.0
+
+fnl4ezmocks: 0
+ntracer: 3288003
+rho_c: 1.025
+rho_exp: 1.
+pdf_base: 0.3
+sigma_v: 410. 

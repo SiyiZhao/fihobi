@@ -9,7 +9,7 @@ from desilike.samples import plotting
 
 import os, sys
 from pathlib import Path
-THIS_REPO = Path(__file__).parent.parent
+THIS_REPO = Path(__file__).parent.parent.parent
 src_path = os.path.abspath(os.path.join(THIS_REPO, 'src'))
 if src_path not in sys.path:
     sys.path.insert(0, src_path)

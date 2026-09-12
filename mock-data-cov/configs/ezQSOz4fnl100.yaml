@@ -1,0 +1,9 @@
+redshift: 2.0
+
+ntracer: 7163018
+fnl4ezmocks: 600
+# [1.4, 0.6, 0.3, 470],
+rho_c: 1.4
+rho_exp: 0.6
+pdf_base: 0.3
+sigma_v: 470.

@@ -1,0 +1,20 @@
+redshift: 3.0
+fnl: 100
+mode: b-p
+klim0:
+- 0.003
+- 0.1
+- 0.005
+n_EZmocks: 500
+input:
+  abacus_poles: /pscratch/sd/s/siyizhao/desi-dr2-hod/mocks_base_v2/abacus_HF/DR2_v2.0/Abacus_pngbase_c302_ph000/Boxes/QSO/base_8_pypower_poles.npy
+  ezmock_poles: /pscratch/sd/s/siyizhao/EZmock/output/mocks/QSO-z6_c302/
+prior:
+  p:
+    limits:
+    - -1
+    - 3
+  sigmas:
+    limits:
+    - 0
+    - 20

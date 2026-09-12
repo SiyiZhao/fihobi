@@ -1,6 +1,8 @@
 #!/bin/bash
 
-source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+# source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+source ~/envs/ohip/bin/activate
+
 cd /global/homes/s/siyizhao/projects/fihobi/inference
 
 name=QSO-z6_fNL100_base-dv

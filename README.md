@@ -21,3 +21,7 @@ This repo. is under active development. If you have any questions, please contac
 
 See `env/README.md` for details. Run `source env/env.sh` to set up the environment variables whenever you start a new shell.
 
+## WorkFlow
+
+HIP to one observational sample, refer `HIP/README.md` for version 2, 
+and `ohip/`, `lssutils/` and `usage/` for version 3.

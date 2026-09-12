@@ -1,0 +1,112 @@
+sim_params:
+  cleaned_halos: true
+  output_dir: /pscratch/sd/s/siyizhao/fihobi/HIP_test/QSO_0.8_3.5/mocks
+  sim_dir: /global/cfs/projectdirs/desi/cosmosim/Abacus/
+  sim_name: Abacus_pngbase_c302_ph000
+  subsample_dir: /pscratch/sd/s/siyizhao/AbacusSummit/subsample_desidr2_profile_withAB/
+  z_mock: 1.625
+  force_mt: true
+HOD_params:
+  tracer_flags:
+    ELG: false
+    LRG: false
+    QSO: true
+  use_particles: false
+  use_profiles: true
+  want_AB: true
+  want_rsd: true
+  want_dv: false
+  write_to_disk: false
+  QSO_params:
+    logM_cut: 13.0
+    logM1: 14.0
+    sigma: 0.5
+    alpha: 1.0
+    kappa: 0.0
+    alpha_c: 0.0
+    alpha_s: 1.0
+    ic: 1.0
+    profile_code: 1
+clustering_params:
+  bin_params:
+    logmax: 1.5
+    logmin: -1.0
+    nbins: 15
+  clustering_type: all
+  pi_bin_size: 40
+  pimax: 40
+data_params:
+  tracer_combos:
+    QSO_QSO:
+      path2cov: /global/u1/s/siyizhao/projects/fihobi/data/HOD_fitting/loa-v1/v2/PIP/cov_QSO_0.8_3.5_cut.dat
+      path2wp: /global/u1/s/siyizhao/projects/fihobi/data/HOD_fitting/loa-v1/v2/PIP/wp_QSO_0.8_3.5_cut.dat
+      path2xi02: /global/u1/s/siyizhao/projects/fihobi/data/HOD_fitting/loa-v1/v2/PIP/xi02_QSO_0.8_3.5_cut.dat
+  tracer_density_mean:
+    QSO: 2.053931473870837e-05
+  tracer_density_std:
+    QSO: 2.053931473870837e-06
+chain_params:
+  chain_prefix: chain_v2_HOD_v1_
+  output_dir: /pscratch/sd/s/siyizhao/fihobi/HIP_test/QSO_0.8_3.5/HOD_chains/
+  nlive: 500
+  tol: 0.5
+  labels:
+  - \log M_{\mathrm{cut}}
+  - \log M_1
+  - \sigma
+  - \alpha
+  - \kappa
+  - \alpha_{\mathrm{c}}
+  - \log \alpha_{\mathrm{s}}
+  - A_{\mathrm{cent}}
+  - A_{\mathrm{sat}}
+fit_params:
+  QSO:
+    logM_cut:
+    - 0
+    - 11.0
+    - 15.0
+    - flat
+    logM1:
+    - 1
+    - 10.0
+    - 18.0
+    - flat
+    sigma:
+    - 2
+    - 0.0001
+    - 3.0
+    - flat
+    alpha:
+    - 3
+    - -1
+    - 3.0
+    - flat
+    kappa:
+    - 4
+    - 0.0
+    - 10.0
+    - flat
+    alpha_c:
+    - 5
+    - 0
+    - 3.0
+    - flat
+    alpha_s:
+    - 6
+    - -4
+    - 2.0
+    - log
+    Acent:
+    - 7
+    - -10.0
+    - 10.0
+    - flat
+    Asat:
+    - 8
+    - -15.0
+    - 15.0
+    - flat
+nthread: 64
+prepare_sim:
+  Nparallel_load: 18
